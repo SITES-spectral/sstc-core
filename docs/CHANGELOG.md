@@ -11,4 +11,8 @@
 - Depreciated module `sites_spectral_core`
 - Added mkdocs
 - added `core`module
-- `abisko` module ready
+- `abisko` module
+
+## [v0.1.3]
+- restricted platforms and locations to match active instruments duing site visit  2024
+

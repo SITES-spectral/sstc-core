@@ -6,10 +6,25 @@ meta ={
     "short_name": "Abisko"
 }
 
-
+# Active platforms confirmed 2024
+ 
 platforms ={
-    'PhenoCam':{
-        'P-ROI1-1': {
+    'PhenoCams':{   
+        'P-BH-FOR-01':{
+            'description': 'Building H Top at ANS. Lars Eklundh custom optical camera.', 
+            'legacy_acronym':"ANS-FOR-P01", 
+            'status': 'active',
+            'platform_key': 'P-BH-FOR-01',
+            'ROI': 'Forest in Alpine Montain - Abiskojaure at Abisko National Park',
+            'Viewing_Direction': 'West',                         
+        }, 
+    }, 
+    
+} 
+ 
+
+legacy_platforms =  {
+    'Phenocams':{ 'P-ROI1-1': {
             'description': 'mobotix',
             'legacy_acronym': "OPH-1", 
             'status': 'active'},
@@ -36,8 +51,8 @@ platforms ={
             'description': 'mobotix', 
             'legacy_acronym':"M45P01", 
             'status': 'active'},
-        
-    'Fixed_Sensors':{ 
+        },
+        'Fixed_Sensors':{ 
         'FMS-STO-M10-1': {
             'description': 'Stordalen Mire Spectral West',
             'legacy_acronym':"SSW", 
@@ -133,11 +148,20 @@ platforms ={
             'type': 'DJI Mavic 3 Multispectral', 
             },
     } 
+
+    }
+
+
+locations ={
+    'BH-FOR':{
+        'name': 'ANS Building H Top. Observatorium and Meteorology building',
+        'location_id': 'BH-FOR',
+        'legacy_acronym': 'ANS-FOR',
+        'platforms':{'PhenoCams':['P-BH-FOR-01'] }  
     } 
 } 
 
-
-locations = {
+tobe_depreciated_locations = {
     'ROI1': {
         "name": "Abisko Scientific Research Station",
         "description": "Phenocam Area 1, P01-ROI1-LG",

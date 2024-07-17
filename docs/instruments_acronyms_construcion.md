@@ -83,6 +83,19 @@
 
 ---
 
+## Best Practice for platform metadata.
+'PhenoCams':{   
+        'P-BH-FOR-01':{
+            'description': 'Building H Top at ANS. Lars Eklundh custom optical camera.', 
+            'legacy_acronym':"ANS-FOR-P01", 
+            'status': 'active',
+            'platform_key': 'P-BH-FOR-01',
+            'ROI': 'Forest in Alpine Montain - Abiskojaure at Abisko National Park',
+            'Viewing_Direction': 'West',
+            
+        }, 
+    }, 
+
 ## Best practice for naming UAV files pre-processing
 
 `SITES-<STATION acronym>-<LOC_Acronym>-<Ecosystem-Acronym>-AOI<number>-<TYPEofDrone (Mavic3Multispectral [M3M] or Phantom 4 Multispectral [P4M])>-UAV<FlyingHeight>`
