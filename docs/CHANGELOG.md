@@ -9,3 +9,6 @@
 - Added `status` module with a description of `stations_status`
 - Added in `docs` `instruments_acronyms_construction.md` supporting the platforms
 - Depreciated module `sites_spectral_core`
+- Added mkdocs
+- added `core`module
+- `abisko` module ready

@@ -83,9 +83,13 @@
 
 ---
 
-SITES-<STATION acronym>-<LOC_Acronym>-<Ecosystem-Acronym>-AOI<number>-<TYPEofDrone (Mavic3Multispectral [M3M] or Phantom 4 Multispectral [P4M])>-UAV<FlyingHeight>
-example:
+## Best practice for naming UAV files pre-processing
 
+`SITES-<STATION acronym>-<LOC_Acronym>-<Ecosystem-Acronym>-AOI<number>-<TYPEofDrone (Mavic3Multispectral [M3M] or Phantom 4 Multispectral [P4M])>-UAV<FlyingHeight>`
+
+Example:
+
+```
 'SITES-​SVB-​DEG-MIR-AOI3-M3M-UAV40':
         {
         "name": "Degero Mire North|South|West|East|Center|MeaninfulName ",
@@ -101,3 +105,4 @@ example:
         "ecosystems": ['MIR'],
         "is_active": True,        
         }, 
+```
