@@ -116,7 +116,7 @@ platforms ={
     },
     
     'UAV':{
-            'P4M-1': {
+            'P4M': {
             'description': 'Phantom 4 Multispectral', 
             'legacy_acronym':"P4", 
             'status': 'Inactive',
@@ -124,7 +124,7 @@ platforms ={
             'ms_center_channels': [],
             'type': 'DJI Phantom 4 Multispectral', 
             },
-            'M3M-1': {
+            'M3M': {
             'description': 'Mavic 3 Multispectral', 
             'legacy_acronym':"M3M", 
             'status': 'Inactive',
@@ -182,7 +182,7 @@ locations = {
         },
     'STO-ROI6':{
         "name": "Stordalen Mire Spectral", 
-        "description": "Potentially it may be the same as STO-M10",
+        "description": "Potentially it may be the same as STO-M10, SMS",
         "ecosystems": ['MIR'],
         "is_active": False,        
         },
@@ -236,12 +236,8 @@ locations = {
         "ecosystems": ['MIR'],
         "is_active": True,        
         }, 
-},
-               
-    
- 
-
-
+}
+              
 
 legacy_locations ={
     

@@ -81,3 +81,23 @@
 10. **Landsat 8 1**:
     - Acronym: `SAT-LS8-1`
 
+---
+
+SITES-<STATION acronym>-<LOC_Acronym>-<Ecosystem-Acronym>-AOI<number>-<TYPEofDrone (Mavic3Multispectral [M3M] or Phantom 4 Multispectral [P4M])>-UAV<FlyingHeight>
+example:
+
+'SITES-​SVB-​DEG-MIR-AOI3-M3M-UAV40':
+        {
+        "name": "Degero Mire North|South|West|East|Center|MeaninfulName ",
+        "description": "UAV 2024-- Polygon 1out 2 in case it was splited",
+        "ecosystems": ['MIR'],
+        "is_active": True,        
+        }, 
+
+'SITES-DEG-MIR-AOI4-M3M-UAV40':
+        {
+        "name": "Degero Mire North|South|West|East|Center|MeaninfulName ",
+        "description": "UAV 2024-- Polygon 2 out 2 in case it was splited",
+        "ecosystems": ['MIR'],
+        "is_active": True,        
+        }, 
