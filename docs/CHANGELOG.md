@@ -16,3 +16,9 @@
 ## [v0.1.3]
 - restricted platforms and locations to match active instruments duing site visit  2024
 
+## [v0.2.0]
+- trimmed `core` module.
+- added modules `utils`, `sftp` and `catalog`, `io`
+- added `config` package for `platforms` and `locations` as yaml files for each station.
+- refactored modules `ecosystems` and `mantainance_status` as config yaml files.
+

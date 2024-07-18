@@ -1,13 +1,42 @@
 site_name: SITES Spectral Thematic Center (SSTC) - Core
 
+# site_description: Documentation for My Project
+site_author: José M. Beltrán-Abaunza, PhD
+site_url: https://github.com/SITES-spectral/sstc-core
+
 theme:
-  name: 'rtd-dropdown'
+  name: material
+  # logo: images/logo.png
+  # favicon: images/favicon.ico
+  palette:
+    primary: 'green'
+    accent: 'green'
+  features:
+    - navigation.tabs
+    - navigation.sections
+
+nav:
+  - Home: index.md
+  - API:
+      - SITES Spectral IO: reference/sstc_core.sites.spectral.io.md
+      - SITES Spectral SFTP: reference/sstc_core.sites.spectral.sftp.md
+      - SITES Spectral Utils: reference/sstc_core.sites.spectral.utils.md
+      - SITES Spectral Catalog: reference/sstc_core.sites.spectral.catalog.md
+  - Change logs: CHANGELOG.md
+
 
 plugins:
   - search
-  - mkdocstrings
-  - include-markdown
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            separate_modules: true
 
 markdown_extensions:
-  - toc
-  
+  - admonition
+  - codehilite
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
