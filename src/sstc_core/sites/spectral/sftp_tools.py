@@ -109,18 +109,21 @@ def list_files_sftp(hostname, port, username, password, sftp_directory, extensio
         raise Exception(f"An error occurred while listing files from the SFTP server: {e}")
 
 
-def download_file(sftp, remote_filepath, local_filepath):
+def download_file(sftp, remote_filepath, local_dirpath):
     """
     Downloads a file from the SFTP server and ensures that the download is complete by verifying the file size.
 
-    This function downloads a file from the specified remote path on the SFTP server to the specified local path.
-    After downloading, it verifies that the file size matches the size on the SFTP server. If the sizes do not match,
-    it raises a ValueError indicating a file size mismatch.
+    This function downloads a file from the specified remote path on the SFTP server to the specified local directory path.
+    The filename is extracted from the remote path and used to construct the local file path. After downloading, it verifies
+    that the file size matches the size on the SFTP server. If the sizes do not match, it raises a ValueError indicating a file size mismatch.
 
     Parameters:
         sftp (paramiko.SFTPClient): An active SFTP client connection.
         remote_filepath (str): The path to the remote file on the SFTP server.
-        local_filepath (str): The path to the local file where the download will be saved.
+        local_dirpath (str): The path to the local directory where the download will be saved.
+
+    Returns:
+        str: The path to the local file if the download was successful.
 
     Raises:
         ValueError: If the file size of the downloaded file does not match the file size on the SFTP server.
@@ -133,17 +136,26 @@ def download_file(sftp, remote_filepath, local_filepath):
         username = 'your_username'
         password = 'your_password'
         remote_filepath = '/remote/path/to/file.jpg'
-        local_filepath = '/local/path/to/file.jpg'
+        local_dirpath = '/local/path/to/directory'
         transport = paramiko.Transport((hostname, port))
         transport.connect(username=username, password=password)
         sftp = paramiko.SFTPClient.from_transport(transport)
-        download_file(sftp, remote_filepath, local_filepath)
+        download_file(sftp, remote_filepath, local_dirpath)
         sftp.close()
         transport.close()
         ```
     """
     
     try:
+        # Extract the filename from the remote filepath
+        filename = os.path.basename(remote_filepath)
+
+        # Construct the local file path
+        local_filepath = os.path.join(local_dirpath, filename)
+
+        # Ensure the local directory exists
+        os.makedirs(local_dirpath, exist_ok=True)
+
         # Download the file from the SFTP server
         sftp.get(remote_filepath, local_filepath)
 
@@ -154,5 +166,9 @@ def download_file(sftp, remote_filepath, local_filepath):
         if remote_file_size != local_file_size:
             raise ValueError(f"Download failed for {remote_filepath}: file size mismatch. "
                              f"Remote size: {remote_file_size}, Local size: {local_file_size}")
+
+        # Return the local file path if the download was successful
+        return local_filepath
+
     except Exception as e:
         raise Exception(f"An error occurred while downloading {remote_filepath}: {e}")

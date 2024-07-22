@@ -3,13 +3,13 @@ import importlib
 import importlib.util
 from dataclasses import dataclass
 from typing import List, Optional, Union
-from ..catalog import table_name_decorator
+from sstc_core.sites.spectral.catalog import table_name_decorator
 
 
 @dataclass
-class StationData:
+class PlatformData:
     """
-    A data class to represent a station's data with attributes for station acronym,
+    A data class to represent a station's platform's data with attributes for station acronym,
     location ID, platform ID, and the file path to a DuckDB database.
 
     Attributes:
@@ -81,9 +81,13 @@ def stations_names()->dict:
     }
 
 
-# using Lazy Loading to improve performance and flexibility. 
+# using Lazy Loading to improve performance and flexibility.
+ 
 def load_station_module(system_name: str):
     """
+    DEPRECIATION WARNING: 
+        Better to load using `from sstc_core.sites.spectral.stations import <station_name>
+                
     Load a Python module dynamically based on the provided system name.
 
     Parameters:
