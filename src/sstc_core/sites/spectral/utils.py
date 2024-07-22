@@ -4,7 +4,21 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 
 
-def get_image_dates(filepath:str):
+def extract_year(creation_date):
+    """
+    Extracts the year from the creation date.
+
+    Parameters:
+        creation_date (str): The creation date in 'YYYY-MM-DD' format.
+
+    Returns:
+        int: The year extracted from the creation date.
+    """
+    date_obj = datetime.strptime(creation_date, '%Y-%m-%d')
+    return date_obj.year
+
+
+def get_image_dates(filepath:str)->str:
     """
     Extracts the creation date from an image file's EXIF data.
 
