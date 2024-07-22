@@ -30,4 +30,8 @@
 
 ## [v0.2.1.2]
 - Fixed config paths 
-- Added `sites>spectral>data>duckdb_catalog` in .gitignore 
+- Added `sites>spectral>data>duckdb_catalog` in .gitignore
+
+## [v0.2.1.3]
+- Expanded `load_yaml` functionality to allow paths to be instances of `Path` or `str`.
+  
