@@ -3,7 +3,7 @@ import importlib
 import importlib.util
 from dataclasses import dataclass
 from typing import List, Optional, Union
-from catalog import table_name_decorator
+from ..catalog import table_name_decorator
 
 
 @dataclass

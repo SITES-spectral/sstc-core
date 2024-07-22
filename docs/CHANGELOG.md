@@ -1,5 +1,8 @@
+## [v0.2.3.1]
+- Fixed misspelling relative import of catalog
+
 ## [v0.2.3]
-- Mincor changes on platforms schemas
+- Minor changes on platforms schemas
 - Improved docs with getting_started and user_guide
 - Added `table_name_decorator` for the `catalog` module
 - Added `sites.spectral.StationData` with `get_table_name` inherited from decorator class 
