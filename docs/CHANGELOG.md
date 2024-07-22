@@ -36,4 +36,5 @@
 - Expanded `load_yaml` functionality to allow paths to be instances of `Path` or `str`.
   
 ## [v0.2.2]
-- Refactored `platforms` as dictionary instead of list 
+- Refactored `platforms` as dictionary instead of list
+- refactored docs subdiirectories and Rebuild docs 
