@@ -15,12 +15,3 @@
 * José M. Beltrán-Abaunza, PhD | Lund University, Department of Physical Geography and Ecosystem Science | SITES spectral Research Engineer
 
 * Shangharsha Thapa | Lund University, Department of Physical Geography and Ecosystem Science
-
-
-
-## Installation
-
-To install **sstc-core**, use pip:
-```bash
-pip install sstc-core
-```

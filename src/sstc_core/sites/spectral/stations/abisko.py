@@ -5,9 +5,6 @@ from pathlib import Path
 stations_dirpath = Path(__file__).parent
 spectral_dirpath = Path(stations_dirpath).parent
 config_dirpath = spectral_dirpath / "config"
-data_dirpath = spectral_dirpath / "data"
-duckdb_data_catalog_dirpath = data_dirpath / "duckdb_catalog"
-duckdb_data_catalog_filepath = duckdb_data_catalog_dirpath / "duckdb_catalog__abisko.db"
 
 
 meta ={
@@ -19,7 +16,7 @@ meta ={
     "system_name": "abisko",    
     "locations_dirpath": config_dirpath / 'locations' / 'locations_abisko.yaml',
     "platforms_dirpath": config_dirpath / 'platforms' / 'platforms_abisko.yaml',
-    "duckdb_data_catalog_filepath": duckdb_data_catalog_filepath
+    
 }
 
 

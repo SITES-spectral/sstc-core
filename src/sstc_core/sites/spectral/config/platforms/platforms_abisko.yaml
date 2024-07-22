@@ -6,6 +6,6 @@ PhenoCams:
     viewing_direction': 'West'
     mantainance_status: 'active'
     height_in_meters_above_ground: 4 
-    platform: 'PhenoCam'
+    platform_type: 'PhenoCam'
     legacy_acronym: "ANS-FOR-P01"
     

@@ -13,7 +13,7 @@ def load_yaml(filepath: Union[str, Path]) -> dict:
         python load_yaml.py --filepath /file/path/to/filename.yaml
         python load_yaml.py --filepath http://example.com/path/to/filename.yaml
 
-    Args:
+    Parameters:
         filepath (str): The absolute path to the YAML file or a URL to the YAML file.
 
     Returns:

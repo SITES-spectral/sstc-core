@@ -12,26 +12,28 @@ def open_sftp_connection(hostname, port, username, password):
     before returning the objects.
 
     Parameters:
-    hostname (str): The hostname or IP address of the SFTP server.
-    port (int): The port number of the SFTP server.
-    username (str): The username for authentication.
-    password (str): The password for authentication.
+        hostname (str): The hostname or IP address of the SFTP server.
+        port (int): The port number of the SFTP server.
+        username (str): The username for authentication.
+        password (str): The password for authentication.
 
     Returns:
-    tuple: A tuple containing the SFTP client and transport objects.
+        tuple: A tuple containing the SFTP client and transport objects.
 
     Raises:
-    Exception: If an error occurs while establishing the SFTP connection.
+        Exception: If an error occurs while establishing the SFTP connection.
 
     Example:
-    >>> hostname = 'sftp.example.com'
-    >>> port = 22
-    >>> username = 'your_username'
-    >>> password = 'your_password'
-    >>> sftp, transport = open_sftp_connection(hostname, port, username, password)
-    >>> # Use the sftp client for file operations
-    >>> sftp.close()
-    >>> transport.close()
+        ```python
+        hostname = 'sftp.example.com'
+        port = 22
+        username = 'your_username'
+        password = 'your_password'
+        sftp, transport = open_sftp_connection(hostname, port, username, password)
+        # Use the sftp client for file operations
+        sftp.close()
+        transport.close()
+        ```
     """
     try:
         transport = paramiko.Transport((hostname, port))
@@ -51,27 +53,29 @@ def list_files_sftp(hostname, port, username, password, sftp_directory, extensio
     based on the provided extensions.
 
     Parameters:
-    hostname (str): The hostname or IP address of the SFTP server.
-    port (int): The port number of the SFTP server.
-    username (str): The username for authentication.
-    password (str): The password for authentication.
-    sftp_directory (str): The directory on the SFTP server to start listing files from.
-    extensions (list): A list of file extensions to filter by. Defaults to ['.jpg', '.jpeg'].
+        hostname (str): The hostname or IP address of the SFTP server.
+        port (int): The port number of the SFTP server.
+        username (str): The username for authentication.
+        password (str): The password for authentication.
+        sftp_directory (str): The directory on the SFTP server to start listing files from.
+        extensions (list): A list of file extensions to filter by. Defaults to ['.jpg', '.jpeg'].
 
     Returns:
-    list: A list of file paths from the SFTP server that match the specified extensions.
+        list: A list of file paths from the SFTP server that match the specified extensions.
 
     Raises:
-    Exception: If an error occurs while connecting to the SFTP server or retrieving files.
+        Exception: If an error occurs while connecting to the SFTP server or retrieving files.
 
     Example:
-    >>> hostname = 'sftp.example.com'
-    >>> port = 22
-    >>> username = 'your_username'
-    >>> password = 'your_password'
-    >>> sftp_directory = '/path/to/sftp/directory'
-    >>> list_files_sftp(hostname, port, username, password, sftp_directory)
-    ['/path/to/sftp/directory/image1.jpg', '/path/to/sftp/directory/subdir/image2.jpeg']
+        ```python
+        hostname = 'sftp.example.com'
+        port = 22
+        username = 'your_username'
+        password = 'your_password'
+        sftp_directory = '/path/to/sftp/directory'
+        list_files_sftp(hostname, port, username, password, sftp_directory)
+        ['/path/to/sftp/directory/image1.jpg', '/path/to/sftp/directory/subdir/image2.jpeg']
+        ```
     """
     try:
         # Open SFTP connection
@@ -114,27 +118,29 @@ def download_file(sftp, remote_filepath, local_filepath):
     it raises a ValueError indicating a file size mismatch.
 
     Parameters:
-    sftp (paramiko.SFTPClient): An active SFTP client connection.
-    remote_filepath (str): The path to the remote file on the SFTP server.
-    local_filepath (str): The path to the local file where the download will be saved.
+        sftp (paramiko.SFTPClient): An active SFTP client connection.
+        remote_filepath (str): The path to the remote file on the SFTP server.
+        local_filepath (str): The path to the local file where the download will be saved.
 
     Raises:
-    ValueError: If the file size of the downloaded file does not match the file size on the SFTP server.
-    Exception: If any other error occurs during the file download process.
+        ValueError: If the file size of the downloaded file does not match the file size on the SFTP server.
+        Exception: If any other error occurs during the file download process.
 
     Example:
-    >>> hostname = 'sftp.example.com'
-    >>> port = 22
-    >>> username = 'your_username'
-    >>> password = 'your_password'
-    >>> remote_filepath = '/remote/path/to/file.jpg'
-    >>> local_filepath = '/local/path/to/file.jpg'
-    >>> transport = paramiko.Transport((hostname, port))
-    >>> transport.connect(username=username, password=password)
-    >>> sftp = paramiko.SFTPClient.from_transport(transport)
-    >>> download_file(sftp, remote_filepath, local_filepath)
-    >>> sftp.close()
-    >>> transport.close()
+        ```python    
+        hostname = 'sftp.example.com'
+        port = 22
+        username = 'your_username'
+        password = 'your_password'
+        remote_filepath = '/remote/path/to/file.jpg'
+        local_filepath = '/local/path/to/file.jpg'
+        transport = paramiko.Transport((hostname, port))
+        transport.connect(username=username, password=password)
+        sftp = paramiko.SFTPClient.from_transport(transport)
+        download_file(sftp, remote_filepath, local_filepath)
+        sftp.close()
+        transport.close()
+        ```
     """
     
     try:

@@ -1,21 +1,53 @@
 import duckdb
 from datetime import datetime
+from functools import wraps
 
 
-def generate_catalog_table_name(station, location, platform):
+def get_catalog_table_name(acronym, location_id, platform_id):
     """
-    Generates a table name based on station, location, and platform abbreviations.
+    Get a table name based on station acronym, location, and platform abbreviations.
 
     Parameters:
-    station (str): The abbreviation for the station.
-    location (str): The abbreviation for the location.
-    platform (str): The abbreviation for the platform.
+        acronym (str): The abbreviation for the station.
+        location_id (str): The abbreviation for the location.
+        platform_id (str): The abbreviation for the platform.
 
     Returns:
-    str: The generated table name.
+        str: The generated table name.
     """
-    return f"{station}_{location}_{platform}_data"
+    return f"{acronym}_{location_id}_{platform_id}"
 
+
+def table_name_decorator(func):
+    """
+    A decorator to generate a table name based on the instance's acronym, location ID,
+    and platform ID attributes, and pass it as an argument to the decorated function.
+
+    This decorator assumes that the instance passed to the decorated function has
+    the attributes 'acronym', 'location_id', and 'platform_id'.
+
+    Parameters:
+        func (Callable): The function to be decorated.
+
+    Returns:
+        Callable: The decorated function with the table name passed as an argument.
+
+    Note: 
+        use in sites.spectral.stations.StationData()
+        
+    Example:
+    --------
+    @table_name_decorator
+    def get_table_name(self, table_name):
+        return(table_name)
+    """
+
+    @wraps(func)
+    def wrapper(instance, *args, **kwargs):
+        table_name = get_catalog_table_name(instance.acronym, instance.location_id, instance.platform_id)
+        return func(instance, table_name, *args, **kwargs)
+    
+    return wrapper
 
 
 def save_date_grouped_filepaths_to_duckdb(db_path, table_name, data_dict):
@@ -27,20 +59,22 @@ def save_date_grouped_filepaths_to_duckdb(db_path, table_name, data_dict):
     dates and the values are lists of file paths.
 
     Parameters:
-    db_path (str): The path to the DuckDB database file.
-    table_name (str): The name of the table to insert data into.
-    data_dict (dict): A dictionary where keys are formatted creation dates (as strings) and values 
+        db_path (str): The path to the DuckDB database file.
+        table_name (str): The name of the table to insert data into.
+        data_dict (dict): A dictionary where keys are formatted creation dates (as strings) and values 
                       are lists of file paths that correspond to those dates.
 
     Raises:
-    ValueError: If any error occurs during the process.
+        ValueError: If any error occurs during the process.
 
     Example:
-    >>> data_dict = {
-    >>>     '2023-01-01 12:00:00': ['/path/to/image1.jpg'],
-    >>>     '2023-01-02 13:00:00': ['/path/to/image2.jpg']
-    >>> }
-    >>> save_date_grouped_filepaths_to_duckdb('/path/to/database.duckdb', 'STA_LOC_PLT_data', data_dict)
+        ```python  
+        data_dict = {
+            '2023-01-01 12:00:00': ['/path/to/image1.jpg'],
+            '2023-01-02 13:00:00': ['/path/to/image2.jpg']
+        }
+        save_date_grouped_filepaths_to_duckdb('/path/to/database.duckdb', 'STA_LOC_PLT_data', data_dict)
+        ```
     """
     try:
         # Connect to DuckDB
@@ -77,23 +111,25 @@ def filter_by_year_from_grouped_filepaths_duckdb(db_path, table_name, year):
     a dictionary where the keys are creation dates and the values are lists of file paths.
 
     Parameters:
-    db_path (str): The path to the DuckDB database file.
-    table_name (str): The name of the table to query.
-    year (int): The year to filter entries by.
+        db_path (str): The path to the DuckDB database file.
+        table_name (str): The name of the table to query.
+        year (int): The year to filter entries by.
 
     Returns:
-    dict: A dictionary where keys are creation dates (as strings) and values are lists
+        dict: A dictionary where keys are creation dates (as strings) and values are lists
           of file paths that correspond to those dates.
 
     Example:
-    >>> db_path = '/path/to/database.duckdb'
-    >>> table_name = 'image_table'
-    >>> year = 2023
-    >>> filter_by_year_from_duckdb(db_path, table_name, year)
-    {
-        '2023-01-01 12:00:00': ['/path/to/image1.jpg'],
-        '2023-02-01 13:00:00': ['/path/to/image2.jpg']
-    }
+        ```python
+        db_path = '/path/to/database.duckdb'
+        table_name = 'image_table'
+        year = 2023
+        filter_by_year_from_duckdb(db_path, table_name, year)
+        {
+            '2023-01-01 12:00:00': ['/path/to/image1.jpg'],
+            '2023-02-01 13:00:00': ['/path/to/image2.jpg']
+        }
+        ```
     """
     # Connect to DuckDB
     conn = duckdb.connect(database=db_path, read_only=True)
@@ -128,17 +164,19 @@ def get_all_filepaths_in_duckdb(db_path, table_name):
     table, and returns them as a list.
 
     Parameters:
-    db_path (str): The path to the DuckDB database file.
-    table_name (str): The name of the table to retrieve file paths from.
+        db_path (str): The path to the DuckDB database file.
+        table_name (str): The name of the table to retrieve file paths from.
 
     Returns:
-    list: A list of file paths stored in the specified table.
+        list: A list of file paths stored in the specified table.
 
     Example:
-    >>> db_path = '/path/to/database.duckdb'
-    >>> table_name = 'backup_files'
-    >>> get_all_backup_filepaths_in_duckdb(db_path, table_name)
-    ['/path/to/backup/file1.jpg', '/path/to/backup/file2.jpg']
+        ```python    
+        db_path = '/path/to/database.duckdb'
+        table_name = 'backup_files'
+        get_all_backup_filepaths_in_duckdb(db_path, table_name)
+        ['/path/to/backup/file1.jpg', '/path/to/backup/file2.jpg']
+        ```
     """
     # Connect to the DuckDB database and retrieve stored file paths
     conn = duckdb.connect(db_path)

@@ -9,13 +9,13 @@ def get_image_dates(filepath:str):
     Extracts the creation date from an image file's EXIF data.
 
     Parameters:
-    filepath (str): The path to the image file.
+        filepath (str): The path to the image file.
 
     Returns:
-    datetime: The creation date of the image if found, otherwise None.
+        datetime: The creation date of the image if found, otherwise None.
 
     Raises:
-    Exception: If an error occurs during the extraction process, it will print an error message.
+        Exception: If an error occurs during the extraction process, it will print an error message.
     """
     try:
         image = Image.open(filepath)
@@ -37,11 +37,11 @@ def list_image_files(dirpath:str, extensions:list = ['.jpg', '.jpeg']):
     Lists all image files in a directory and its subdirectories with specified extensions.
 
     Parameters:
-    dirpath (str): The root directory to search for image files.
-    extensions (list): A list of file extensions to include in the search. Defaults to ['.jpg', '.JPEG', '.jpeg', '.JPG'].
+        dirpath (str): The root directory to search for image files.
+        extensions (list): A list of file extensions to include in the search. Defaults to ['.jpg', '.JPEG', '.jpeg', '.JPG'].
 
     Returns:
-    list: A list of file paths that match the specified extensions.
+        list: A list of file paths that match the specified extensions.
     """
     file_paths = []
     for root, _, files in os.walk(dirpath):
@@ -61,19 +61,21 @@ def group_images_by_date(filepaths: list):
     to those dates.
 
     Parameters:
-    filepaths (list): A list of file paths to the image files.
+        filepaths (list): A list of file paths to the image files.
 
     Returns:
-    dict: A dictionary where keys are formatted creation dates (as strings) and values are lists 
+        dict: A dictionary where keys are formatted creation dates (as strings) and values are lists 
           of file paths that have those creation dates.
 
     Example:
-    >>> filepaths = ['/path/to/image1.jpg', '/path/to/image2.jpg']
-    >>> group_images_by_date(filepaths)
-    {
-        '2023-01-01 12:00:00': ['/path/to/image1.jpg'],
-        '2023-01-02 13:00:00': ['/path/to/image2.jpg']
-    }
+        ```python    
+        filepaths = ['/path/to/image1.jpg', '/path/to/image2.jpg']
+        group_images_by_date(filepaths)
+        {
+            '2023-01-01 12:00:00': ['/path/to/image1.jpg'],
+            '2023-01-02 13:00:00': ['/path/to/image2.jpg']
+        }
+        ```
     """
     date_dict = {}
 
@@ -96,19 +98,21 @@ def filter_keys_with_multiple_files(image_date_dict:dict):
     that have more than one file path associated with them in the provided dictionary.
 
     Parameters:
-    image_date_dict (dict): A dictionary where keys are formatted creation dates (as strings) 
+        image_date_dict (dict): A dictionary where keys are formatted creation dates (as strings) 
                             and values are lists of file paths that correspond to those dates.
 
     Returns:
-    list: A list of keys (formatted creation dates) that have multiple file paths, indicating duplicates.
+        list: A list of keys (formatted creation dates) that have multiple file paths, indicating duplicates.
 
     Example:
-    >>> image_date_dict = {
-    >>>     '2023-01-01 12:00:00': ['/path/to/image1.jpg', '/path/to/image1_duplicate.jpg'],
-    >>>     '2023-01-02 13:00:00': ['/path/to/image2.jpg']
-    >>> }
-    >>> filter_keys_with_multiple_files(image_date_dict)
-    ['2023-01-01 12:00:00']
+        ```python
+        image_date_dict = {
+             '2023-01-01 12:00:00': ['/path/to/image1.jpg', '/path/to/image1_duplicate.jpg'],
+             '2023-01-02 13:00:00': ['/path/to/image2.jpg']
+        }
+        filter_keys_with_multiple_files(image_date_dict)
+        ['2023-01-01 12:00:00']
+        ```
     """
     return [key for key, value in image_date_dict.items() if len(value) > 1]
 
@@ -123,24 +127,26 @@ def extract_two_dirs_and_filename(filepaths:list):
     subdirectories are present), and the values are the full file paths.
 
     Parameters:
-    filepaths (list): A list of file paths to process.
+        filepaths (list): A list of file paths to process.
 
     Returns:
-    dict: A dictionary where keys are tuples of (subdir_1, subdir_2, filename) or fewer
+        dict: A dictionary where keys are tuples of (subdir_1, subdir_2, filename) or fewer
           components, and values are the corresponding full file paths.
 
     Example:
-    >>> filepaths = [
-    >>>     '/path/to/subdir1/file1.jpg',
-    >>>     '/another/path/to/subdir2/file2.jpg',
-    >>>     '/file3.jpg'
-    >>> ]
-    >>> extract_two_dirs_and_filename(filepaths)
-    {
-        ('to', 'subdir1', 'file1.jpg'): '/path/to/subdir1/file1.jpg',
-        ('to', 'subdir2', 'file2.jpg'): '/another/path/to/subdir2/file2.jpg',
-        ('file3.jpg',): '/file3.jpg'
-    }
+        ```python    
+        filepaths = [
+             '/path/to/subdir1/file1.jpg',
+             '/another/path/to/subdir2/file2.jpg',
+             '/file3.jpg'
+         ]
+        extract_two_dirs_and_filename(filepaths)
+        {
+            ('to', 'subdir1', 'file1.jpg'): '/path/to/subdir1/file1.jpg',
+            ('to', 'subdir2', 'file2.jpg'): '/another/path/to/subdir2/file2.jpg',
+            ('file3.jpg',): '/file3.jpg'
+        }
+        ```
     """
     extracted = {}
     for filepath in filepaths:

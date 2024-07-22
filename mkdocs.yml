@@ -17,16 +17,21 @@ theme:
 
 nav:
   - Home: index.md
+  - Getting started:
+    - Installation: getting_started/installation.md
+  - User Guide:
+    - Using the SITES Spectral catalog: user_guide/catalog_how_to.md
   - Tutorials:
     - Intro: tutorials/tutorials_intro.md
-  - API:
+  - API Reference:
+      - SITES Spectral Stations: api_reference/sstc_core.sites.spectral.stations.md
       - SITES Spectral IO Tools: api_reference/sstc_core.sites.spectral.io_tools.md
       - SITES Spectral SFTP Tools: api_reference/sstc_core.sites.spectral.sftp_tools.md
       - SITES Spectral Utils: api_reference/sstc_core.sites.spectral.utils.md
       - SITES Spectral Catalog: api_reference/sstc_core.sites.spectral.catalog.md
-  - Change logs: CHANGELOG.md
-  - Internal docs: 
-      - Acronyms construction: internal/instruments_acronyms_construcion.md
+  - Development docs: 
+      - Acronyms construction: development/instruments_acronyms_construction.md
+  - Release notes: CHANGELOG.md
 
 plugins:
   - search
