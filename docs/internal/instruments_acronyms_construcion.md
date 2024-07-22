@@ -1,4 +1,4 @@
-### SITES Spectral Acronym Construction Guide Version 2024.0.1
+### SITES Spectral Acronym Construction Guide Version 2024.0.1 (alpha)
 
 1. **Fixed Multispectral Sensors (FMS)**
    - **Mast**:

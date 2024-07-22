@@ -17,13 +17,16 @@ theme:
 
 nav:
   - Home: index.md
+  - Tutorials:
+    - Intro: tutorials/tutorials_intro.md
   - API:
-      - SITES Spectral IO Tools: reference/sstc_core.sites.spectral.io_tools.md
-      - SITES Spectral SFTP Tools: reference/sstc_core.sites.spectral.sftp_tools.md
-      - SITES Spectral Utils: reference/sstc_core.sites.spectral.utils.md
-      - SITES Spectral Catalog: reference/sstc_core.sites.spectral.catalog.md
+      - SITES Spectral IO Tools: api_reference/sstc_core.sites.spectral.io_tools.md
+      - SITES Spectral SFTP Tools: api_reference/sstc_core.sites.spectral.sftp_tools.md
+      - SITES Spectral Utils: api_reference/sstc_core.sites.spectral.utils.md
+      - SITES Spectral Catalog: api_reference/sstc_core.sites.spectral.catalog.md
   - Change logs: CHANGELOG.md
-
+  - Internal docs: 
+      - Acronyms construction: internal/instruments_acronyms_construcion.md
 
 plugins:
   - search

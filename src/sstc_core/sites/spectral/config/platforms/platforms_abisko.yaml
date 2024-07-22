@@ -1,5 +1,6 @@
 PhenoCams:
-  - platform_id: 'P-BH-FOR-01'    
+  P-BH-FOR-01:
+    platform_id: 'P-BH-FOR-01'    
     description: 'Building H Top at ANS. Lars Eklundh custom optical camera.'
     roi: 'Forest in Alpine Montain - Abiskojaure at Abisko National Park'
     viewing_direction': 'West'

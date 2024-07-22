@@ -1,4 +1,3 @@
-import os
 from ..io_tools import load_yaml
 from pathlib import Path
 
