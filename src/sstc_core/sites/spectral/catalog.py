@@ -1,7 +1,7 @@
 import duckdb
 from datetime import datetime
 from functools import wraps
-from utils import extract_year
+from sstc_core.sites.spectral.utils import extract_year
 
 
 def get_catalog_table_name(acronym, location_id, platform_id):

@@ -1,3 +1,6 @@
+## [v0.2.4.0.1] 
+- fixed util import error
+
 ## [v0.2.4.0] 
 - added `sstc_core.sites.spectral.catalog.insert_phenocam_record_to_duckdb` function
 
