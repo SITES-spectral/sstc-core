@@ -1,26 +1,32 @@
 import os
 from ..io_tools import load_yaml
+from pathlib import Path
 
-version = '2024_v0.1'
 
-stations_dirpath = os.path.dirname(os.path.abspath(__file__))
-spectral_dirpath = os.path.basename(stations_dirpath)
+stations_dirpath = Path(__file__).parent
+spectral_dirpath = Path(stations_dirpath).parent
+config_dirpath = spectral_dirpath / "config"
+data_dirpath = spectral_dirpath / "data"
+duckdb_data_catalog_dirpath = data_dirpath / "duckdb_catalog"
+duckdb_data_catalog_filepath = duckdb_data_catalog_dirpath / "duckdb_catalog__abisko.db"
 
 
 meta ={
+    "version": '2024_v0.1',
     "acronym": "ANS",
     "name": "Abisko Scientific Research Station",
     "is_active": True,
     "short_name": "Abisko",
-    "system_name": "abisko",
-    "config_locations_dirpath": os.path.join(spectral_dirpath,'config/locations', 'locations_abisko.yaml'),
-    "config_platforms_dirpath": os.path.join(spectral_dirpath,'config/platforms', 'platforms_abisko.yaml')
+    "system_name": "abisko",    
+    "locations_dirpath": config_dirpath / 'locations' / 'locations_abisko.yaml',
+    "platforms_dirpath": config_dirpath / 'platforms' / 'platforms_abisko.yaml',
+    "duckdb_data_catalog_filepath": duckdb_data_catalog_filepath
 }
 
 
 # Loading station locations config
-locations = load_yaml(meta["config_locations_dirpath"])
+locations = load_yaml(meta["locations_dirpath"])
 
 # Loading station platforms config
-platforms = load_yaml(meta["config_platforms-dirpath"] )
+platforms = load_yaml(meta["platforms_dirpath"] )
 
