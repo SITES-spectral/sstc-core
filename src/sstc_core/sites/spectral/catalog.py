@@ -14,7 +14,7 @@ def get_catalog_table_name(acronym, location_id, platform_id):
     Returns:
         str: The generated table name.
     """
-    return f"{acronym}_{location_id}_{platform_id}"
+    return f"{acronym}__{location_id}__{platform_id}"
 
 
 def table_name_decorator(func):

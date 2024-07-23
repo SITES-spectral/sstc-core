@@ -1,3 +1,6 @@
+## [v0.2.6]
+- Refactored location ids and plattform ids, to use underscore instead of hyppens to avoid errors by creating table names with hyppens in duckdb wich is not allowed. 
+
 ## [v0.2.5.2]
 - Added record_id hashed for `duckdb_manager`
 

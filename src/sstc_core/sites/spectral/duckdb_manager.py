@@ -389,6 +389,7 @@ def phenocam_table_schema() -> str:
 
     This function generates and returns the SQL schema definition as a string for the Phenocam table.
     The schema includes the following columns:
+        ```markdown
         - record_id: TEXT (unique identifier)
         - year: INTEGER
         - creation_date: TEXT
@@ -399,6 +400,7 @@ def phenocam_table_schema() -> str:
         - catalog_filepath: TEXT
         - source_filepath: TEXT
         - is_selected: BOOL
+        ```
 
     Returns:
         str: The SQL schema definition for the Phenocam table.

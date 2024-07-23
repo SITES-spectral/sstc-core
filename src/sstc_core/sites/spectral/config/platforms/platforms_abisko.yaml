@@ -1,6 +1,8 @@
+# Ensure you do not use hyppens "-" better to use `double__underscore`
 PhenoCams:
-  P-BH-FOR-01:
-    platform_id: 'P-BH-FOR-01'    
+  P_BTH_1:
+    platform_id: 'P_BTH_1'
+    location_id: 'BTH_FOR'    
     description: 'Building H Top at ANS. Lars Eklundh custom optical camera.'
     roi: 'Forest in Alpine Montain - Abiskojaure at Abisko National Park'
     viewing_direction': 'West'
