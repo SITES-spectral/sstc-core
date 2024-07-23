@@ -1,3 +1,6 @@
+## [v0.2.8.1]
+- Minor fixes
+  
 ## [v0.2.8]
 - Added `duckdb_manager.download_files_and_create_records`
 - Improved `sftp_tools.download_file` to split the subdirs based on a variable `split_subdir="data"`

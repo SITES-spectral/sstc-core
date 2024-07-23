@@ -532,7 +532,7 @@ def _download_files_and_create_records_generator(acronym, location_id, platform_
             print(f"Failed to move file: {e}")
 
 
-def download_files_and_create_records(platform_dict: dict, catalog_dict: dict, db_filepath: str):
+def download_files_and_create_records(platform_dict: dict, db_filepath: str):
     """
     Downloads files from an SFTP server and creates records in the database.
 
@@ -595,7 +595,7 @@ def download_files_and_create_records(platform_dict: dict, catalog_dict: dict, d
         
     # Step 3: Connect to the database
     db = DuckDBManager(db_path=db_filepath)
-    schema = DuckDBManager.phenocam_table_schema()
+    schema = phenocam_table_schema()
     db.create_table(table_name, schema=schema)
         
     # Step 4: Download files and create records
