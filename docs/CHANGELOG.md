@@ -1,3 +1,6 @@
+## [v0.2.5.2]
+- Added record_id hashed for `duckdb_manager`
+
 ## [v0.2.5.1]
 - updated documentation for `duckdb_manager`
 

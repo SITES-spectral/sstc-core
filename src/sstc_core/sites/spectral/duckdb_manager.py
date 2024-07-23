@@ -1,37 +1,6 @@
+import hashlib
 import duckdb
 from typing import List, Dict, Any
-
-
-def phenocam_table_schema() -> str:
-    """
-    Returns the SQL schema definition for the Phenocam table.
-
-    This function generates and returns the SQL schema definition as a string for the Phenocam table.
-    The schema includes the following columns:
-        - year: INTEGER
-        - creation_date: TEXT
-        - station_acronym: TEXT
-        - location_id: TEXT
-        - platform_id: TEXT
-        - platform_type: TEXT
-        - catalog_filepath: TEXT
-        - source_filepath: TEXT
-        - is_selected: BOOL
-
-    Returns:
-        str: The SQL schema definition for the Phenocam table.
-    """
-    return """
-    year INTEGER,
-    creation_date TEXT,
-    station_acronym TEXT,
-    location_id TEXT,
-    platform_id TEXT,
-    platform_type TEXT,            
-    catalog_filepath TEXT,
-    source_filepath TEXT, 
-    is_selected BOOL    
-    """
 
 class DatabaseError(Exception):
     """Base class for other exceptions"""
@@ -58,23 +27,10 @@ class DuckDBManager:
         db_manager = DuckDBManager('example.db')
 
         # Define table schema
-        schema = '''
-            year INTEGER,
-            creation_date TEXT,
-            station_acronym TEXT,
-            location_id TEXT,
-            platform_id TEXT,
-            platform_type TEXT,            
-            catalog_filepath TEXT,
-            source_filepath TEXT, 
-            is_selected BOOL
-        '''
+        schema = phenocam_table_schema()
 
         # Create table
         db_manager.create_table('phenocam', schema)
-
-        # Unique condition for record existence check
-        unique_condition = "year = ? AND creation_date = ? AND station_acronym = ? AND location_id = ? AND platform_id = ?"
 
         # Insert single record
         try:
@@ -89,7 +45,7 @@ class DuckDBManager:
                 'source_filepath': '/path/to/source',
                 'is_selected': True
             }
-            db_manager.insert_record('phenocam', record, unique_condition)
+            db_manager.insert_record('phenocam', record)
         except RecordExistsError as e:
             print(e)
         except DatabaseError as e:
@@ -121,7 +77,7 @@ class DuckDBManager:
                     'is_selected': False
                 }
             ]
-            db_manager.insert_multiple_records('phenocam', records, unique_condition)
+            db_manager.insert_multiple_records('phenocam', records)
         except RecordExistsError as e:
             print(e)
         except DatabaseError as e:
@@ -175,10 +131,12 @@ class DuckDBManager:
                 print(record)
         except DatabaseError as e:
             print(e)
-        ```
+
         
-    """
+        ```
     
+    
+    """
     
     def __init__(self, db_path: str):
         """
@@ -205,6 +163,7 @@ class DuckDBManager:
         """
         try:
             conn = duckdb.connect(database=self.db_path, read_only=False)
+            print(f"Executing query: {query} with params: {params}")  # Debug statement
             result = conn.execute(query, params).fetchall()
             return result
         except Exception as e:
@@ -223,42 +182,41 @@ class DuckDBManager:
         query = f"CREATE TABLE IF NOT EXISTS {table_name} ({schema});"
         self._execute_query(query)
 
-    def record_exists(self, table_name: str, unique_condition: str, params: tuple) -> bool:
+    def record_exists(self, table_name: str, record_id: str) -> bool:
         """
-        Checks if a record exists in the specified table based on a unique condition.
+        Checks if a record exists in the specified table based on a unique record_id.
 
         Parameters:
             table_name (str): The name of the table to check.
-            unique_condition (str): The SQL condition to check for record uniqueness.
-            params (tuple): The parameters to use with the SQL condition.
+            record_id (str): The unique record ID.
 
         Returns:
             bool: True if the record exists, False otherwise.
         """
-        query = f"SELECT 1 FROM {table_name} WHERE {unique_condition} LIMIT 1"
-        result = self._execute_query(query, params)
+        query = f"SELECT 1 FROM {table_name} WHERE record_id = ? LIMIT 1"
+        result = self._execute_query(query, (record_id,))
         return len(result) > 0
 
-    def insert_record(self, table_name: str, record_dict: Dict[str, Any], unique_condition: str):
+    def insert_record(self, table_name: str, record_dict: Dict[str, Any]):
         """
         Inserts a single record into the specified table if it does not already exist.
 
         Parameters:
             table_name (str): The name of the table to insert the record into.
             record_dict (Dict[str, Any]): The dictionary containing the record data.
-            unique_condition (str): The SQL condition to check for record uniqueness.
 
         Raises:
             RecordExistsError: If the record already exists in the table.
         """
-        unique_params = (
-            record_dict['year'],
+        record_id = generate_unique_id(
             record_dict['creation_date'],
             record_dict['station_acronym'],
             record_dict['location_id'],
             record_dict['platform_id']
         )
-        if self.record_exists(table_name, unique_condition, unique_params):
+        record_dict['record_id'] = record_id
+
+        if self.record_exists(table_name, record_id):
             raise RecordExistsError("Record already exists, skipping insertion.")
         
         columns = ', '.join(record_dict.keys())
@@ -266,14 +224,13 @@ class DuckDBManager:
         query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
         self._execute_query(query, tuple(record_dict.values()))
 
-    def insert_multiple_records(self, table_name: str, records: List[Dict[str, Any]], unique_condition: str):
+    def insert_multiple_records(self, table_name: str, records: List[Dict[str, Any]]):
         """
         Inserts multiple records into the specified table if they do not already exist.
 
         Parameters:
             table_name (str): The name of the table to insert the records into.
             records (List[Dict[str, Any]]): The list of dictionaries containing the record data.
-            unique_condition (str): The SQL condition to check for record uniqueness.
 
         Raises:
             RecordExistsError: If any of the records already exist in the table.
@@ -289,14 +246,15 @@ class DuckDBManager:
         try:
             conn = duckdb.connect(database=self.db_path, read_only=False)
             for record in records:
-                unique_params = (
-                    record['year'],
+                record_id = generate_unique_id(
                     record['creation_date'],
                     record['station_acronym'],
                     record['location_id'],
                     record['platform_id']
                 )
-                if not self.record_exists(table_name, unique_condition, unique_params):
+                record['record_id'] = record_id
+
+                if not self.record_exists(table_name, record_id):
                     conn.execute(query, tuple(record.values()))
                 else:
                     raise RecordExistsError("Record already exists, skipping insertion.")
@@ -403,4 +361,58 @@ class DuckDBManager:
         """
         query = f"SELECT * FROM {table_name} WHERE year = ? AND is_selected = ?"
         return self._execute_query(query, (year, is_selected))
+
+def generate_unique_id(creation_date: str, station_acronym: str, location_id: str, platform_id: str) -> str:
+    """
+    Generates a unique global identifier based on creation_date, station_acronym, location_id, and platform_id.
+
+    Parameters:
+        creation_date (str): The creation date of the record.
+        station_acronym (str): The station acronym.
+        location_id (str): The location ID.
+        platform_id (str): The platform ID.
+
+    Returns:
+        str: A unique global identifier as a SHA-256 hash string.
+    """
+    # Concatenate the input values to form a unique string
+    unique_string = f"{creation_date}_{station_acronym}_{location_id}_{platform_id}"
+    
+    # Generate the SHA-256 hash of the unique string
+    unique_id = hashlib.sha256(unique_string.encode()).hexdigest()
+    
+    return unique_id
+
+def phenocam_table_schema() -> str:
+    """
+    Returns the SQL schema definition for the Phenocam table.
+
+    This function generates and returns the SQL schema definition as a string for the Phenocam table.
+    The schema includes the following columns:
+        - record_id: TEXT (unique identifier)
+        - year: INTEGER
+        - creation_date: TEXT
+        - station_acronym: TEXT
+        - location_id: TEXT
+        - platform_id: TEXT
+        - platform_type: TEXT
+        - catalog_filepath: TEXT
+        - source_filepath: TEXT
+        - is_selected: BOOL
+
+    Returns:
+        str: The SQL schema definition for the Phenocam table.
+    """
+    return """
+    record_id TEXT PRIMARY KEY,
+    year INTEGER,
+    creation_date TEXT,
+    station_acronym TEXT,
+    location_id TEXT,
+    platform_id TEXT,
+    platform_type TEXT,            
+    catalog_filepath TEXT,
+    source_filepath TEXT, 
+    is_selected BOOL    
+    """
 
