@@ -1,3 +1,6 @@
+## [v0.2.7]
+- Updated `sftp_tools.download_file` to preserve the SFTP directory structure 
+
 ## [v0.2.6]
 - Refactored location ids and plattform ids, to use underscore instead of hyppens to avoid errors by creating table names with hyppens in duckdb wich is not allowed. 
 

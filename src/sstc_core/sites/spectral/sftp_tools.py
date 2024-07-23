@@ -1,6 +1,7 @@
 import paramiko
 import os
 import stat
+from sstc_core.sites.spectral.utils import extract_two_dirs_and_filename
 
 
 def open_sftp_connection(hostname, port, username, password):
@@ -146,15 +147,18 @@ def download_file(sftp, remote_filepath, local_dirpath):
         ```
     """
     
+    
     try:
-        # Extract the filename from the remote filepath
-        filename = os.path.basename(remote_filepath)
+        # Split the remote file path into components
+        parts = remote_filepath.split('/')
+        filename = parts[-1]
+        remote_subdir = os.path.join(*parts[-3:-1]) if len(parts) > 2 else ""
 
-        # Construct the local file path
-        local_filepath = os.path.join(local_dirpath, filename)
+        # Construct the local file path using the structure from the SFTP
+        local_filepath = os.path.join(local_dirpath, remote_subdir, filename)
 
         # Ensure the local directory exists
-        os.makedirs(local_dirpath, exist_ok=True)
+        os.makedirs(os.path.dirname(local_filepath), exist_ok=True)
 
         # Download the file from the SFTP server
         sftp.get(remote_filepath, local_filepath)
