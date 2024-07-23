@@ -2,7 +2,26 @@ import duckdb
 from typing import List, Dict, Any
 
 
-phenocam_table_squema = """
+def phenocam_table_schema() -> str:
+    """
+    Returns the SQL schema definition for the Phenocam table.
+
+    This function generates and returns the SQL schema definition as a string for the Phenocam table.
+    The schema includes the following columns:
+        - year: INTEGER
+        - creation_date: TEXT
+        - station_acronym: TEXT
+        - location_id: TEXT
+        - platform_id: TEXT
+        - platform_type: TEXT
+        - catalog_filepath: TEXT
+        - source_filepath: TEXT
+        - is_selected: BOOL
+
+    Returns:
+        str: The SQL schema definition for the Phenocam table.
+    """
+    return """
     year INTEGER,
     creation_date TEXT,
     station_acronym TEXT,
@@ -13,9 +32,6 @@ phenocam_table_squema = """
     source_filepath TEXT, 
     is_selected BOOL    
     """
-
-
-
 
 class DatabaseError(Exception):
     """Base class for other exceptions"""
@@ -37,52 +53,32 @@ class DuckDBManager:
     Attributes:
         db_path (str): The path to the DuckDB database file.
         
-    Use:
-    ```python
-    db_manager = DuckDBManager('example.db')
+    Example:
+        ```python
+        db_manager = DuckDBManager('example.db')
 
-    # Define table schema
-    schema = '''
-        year INTEGER,
-        creation_date TEXT,
-        station_acronym TEXT,
-        location_id TEXT,
-        platform_id TEXT,
-        platform_type TEXT,            
-        catalog_filepath TEXT,
-        source_filepath TEXT, 
-        is_selected BOOL
-    '''
+        # Define table schema
+        schema = '''
+            year INTEGER,
+            creation_date TEXT,
+            station_acronym TEXT,
+            location_id TEXT,
+            platform_id TEXT,
+            platform_type TEXT,            
+            catalog_filepath TEXT,
+            source_filepath TEXT, 
+            is_selected BOOL
+        '''
 
-    # Create table
-    db_manager.create_table('phenocam', schema)
+        # Create table
+        db_manager.create_table('phenocam', schema)
 
-    # Unique condition for record existence check
-    unique_condition = "year = ? AND creation_date = ? AND station_acronym = ? AND location_id = ? AND platform_id = ?"
+        # Unique condition for record existence check
+        unique_condition = "year = ? AND creation_date = ? AND station_acronym = ? AND location_id = ? AND platform_id = ?"
 
-    # Insert single record
-    try:
-        record = {
-            'year': 2024,
-            'creation_date': '2024-07-23',
-            'station_acronym': 'STA01',
-            'location_id': 'LOC01',
-            'platform_id': 'PLT01',
-            'platform_type': 'type1',
-            'catalog_filepath': '/path/to/catalog',
-            'source_filepath': '/path/to/source',
-            'is_selected': True
-        }
-        db_manager.insert_record('phenocam', record, unique_condition)
-    except RecordExistsError as e:
-        print(e)
-    except DatabaseError as e:
-        print(e)
-
-    # Insert multiple records
-    try:
-        records = [
-            {
+        # Insert single record
+        try:
+            record = {
                 'year': 2024,
                 'creation_date': '2024-07-23',
                 'station_acronym': 'STA01',
@@ -92,74 +88,94 @@ class DuckDBManager:
                 'catalog_filepath': '/path/to/catalog',
                 'source_filepath': '/path/to/source',
                 'is_selected': True
-            },
-            {
-                'year': 2024,
-                'creation_date': '2024-07-24',
-                'station_acronym': 'STA02',
-                'location_id': 'LOC02',
-                'platform_id': 'PLT02',
-                'platform_type': 'type2',
-                'catalog_filepath': '/path/to/catalog2',
-                'source_filepath': '/path/to/source2',
+            }
+            db_manager.insert_record('phenocam', record, unique_condition)
+        except RecordExistsError as e:
+            print(e)
+        except DatabaseError as e:
+            print(e)
+
+        # Insert multiple records
+        try:
+            records = [
+                {
+                    'year': 2024,
+                    'creation_date': '2024-07-23',
+                    'station_acronym': 'STA01',
+                    'location_id': 'LOC01',
+                    'platform_id': 'PLT01',
+                    'platform_type': 'type1',
+                    'catalog_filepath': '/path/to/catalog',
+                    'source_filepath': '/path/to/source',
+                    'is_selected': True
+                },
+                {
+                    'year': 2024,
+                    'creation_date': '2024-07-24',
+                    'station_acronym': 'STA02',
+                    'location_id': 'LOC02',
+                    'platform_id': 'PLT02',
+                    'platform_type': 'type2',
+                    'catalog_filepath': '/path/to/catalog2',
+                    'source_filepath': '/path/to/source2',
+                    'is_selected': False
+                }
+            ]
+            db_manager.insert_multiple_records('phenocam', records, unique_condition)
+        except RecordExistsError as e:
+            print(e)
+        except DatabaseError as e:
+            print(e)
+
+        # Update record
+        try:
+            update_values = {
                 'is_selected': False
             }
-        ]
-        db_manager.insert_multiple_records('phenocam', records, unique_condition)
-    except RecordExistsError as e:
-        print(e)
-    except DatabaseError as e:
-        print(e)
+            condition = "station_acronym = 'STA01'"
+            db_manager.update_record('phenocam', update_values, condition)
+        except DatabaseError as e:
+            print(e)
 
-    # Update record
-    try:
-        update_values = {
-            'is_selected': False
-        }
-        condition = "station_acronym = 'STA01'"
-        db_manager.update_record('phenocam', update_values, condition)
-    except DatabaseError as e:
-        print(e)
+        # Delete record
+        try:
+            condition = "station_acronym = 'STA02'"
+            db_manager.delete_record('phenocam', condition)
+        except DatabaseError as e:
+            print(e)
 
-    # Delete record
-    try:
-        condition = "station_acronym = 'STA02'"
-        db_manager.delete_record('phenocam', condition)
-    except DatabaseError as e:
-        print(e)
+        # Fetch records
+        try:
+            records = db_manager.fetch_records('phenocam')
+            for record in records:
+                print(record)
+        except DatabaseError as e:
+            print(e)
 
-    # Fetch records
-    try:
-        records = db_manager.fetch_records('phenocam')
-        for record in records:
-            print(record)
-    except DatabaseError as e:
-        print(e)
+        # Fetch by year
+        try:
+            records = db_manager.fetch_by_year('phenocam', 2024)
+            for record in records:
+                print(record)
+        except DatabaseError as e:
+            print(e)
 
-    # Fetch by year
-    try:
-        records = db_manager.fetch_by_year('phenocam', 2024)
-        for record in records:
-            print(record)
-    except DatabaseError as e:
-        print(e)
+        # Fetch by is_selected
+        try:
+            records = db_manager.fetch_by_is_selected('phenocam', True)
+            for record in records:
+                print(record)
+        except DatabaseError as e:
+            print(e)
 
-    # Fetch by is_selected
-    try:
-        records = db_manager.fetch_by_is_selected('phenocam', True)
-        for record in records:
-            print(record)
-    except DatabaseError as e:
-        print(e)
-
-    # Fetch by year and is_selected
-    try:
-        records = db_manager.fetch_by_year_and_is_selected('phenocam', 2024, True)
-        for record in records:
-            print(record)
-    except DatabaseError as e:
-        print(e)
-    ```
+        # Fetch by year and is_selected
+        try:
+            records = db_manager.fetch_by_year_and_is_selected('phenocam', 2024, True)
+            for record in records:
+                print(record)
+        except DatabaseError as e:
+            print(e)
+        ```
         
     """
     

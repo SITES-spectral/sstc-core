@@ -28,6 +28,7 @@ nav:
       - SITES Spectral IO Tools: api_reference/sstc_core.sites.spectral.io_tools.md
       - SITES Spectral SFTP Tools: api_reference/sstc_core.sites.spectral.sftp_tools.md
       - SITES Spectral Utils: api_reference/sstc_core.sites.spectral.utils.md
+      - SITES Spectral Database Manager: api_reference/sstc_core.sites.spectral.duckdb_manager.md
       - SITES Spectral Catalog: api_reference/sstc_core.sites.spectral.catalog.md
   - Development docs: 
       - Acronyms construction: development/instruments_acronyms_construction.md

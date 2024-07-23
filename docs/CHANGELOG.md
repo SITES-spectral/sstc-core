@@ -1,3 +1,6 @@
+## [v0.2.5.1]
+- updated documentation for `duckdb_manager`
+
 ## [v0.2.5] 
 - Introduced `duckdb_manager` module
 
