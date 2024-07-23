@@ -4,17 +4,17 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 
 
-def extract_year(creation_date):
+def extract_year(creation_date:str):
     """
     Extracts the year from the creation date.
 
     Parameters:
-        creation_date (str): The creation date in 'YYYY-MM-DD' format.
+        creation_date (str): The creation date in 'YYYY-MM-DD HH:MM:SS' format.
 
     Returns:
         int: The year extracted from the creation date.
     """
-    date_obj = datetime.strptime(creation_date, '%Y-%m-%d')
+    date_obj = datetime.strptime(creation_date, '%Y-%m-%d %H:%M:%S')
     return date_obj.year
 
 

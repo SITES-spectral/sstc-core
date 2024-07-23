@@ -1,7 +1,5 @@
 import duckdb
-from datetime import datetime
 from functools import wraps
-from sstc_core.sites.spectral.utils import extract_year
 
 
 def get_catalog_table_name(acronym, location_id, platform_id):
@@ -49,58 +47,6 @@ def table_name_decorator(func):
         return func(instance, table_name, *args, **kwargs)
     
     return wrapper
-
-
-def save_date_grouped_filepaths_to_duckdb(db_path, table_name, data_dict):
-    """
-    Saves grouped image data to a DuckDB database.
-
-    This function connects to a DuckDB database specified by db_path, creates a table if it does
-    not already exist, and inserts data from a dictionary where the keys are formatted creation 
-    dates and the values are lists of file paths.
-
-    Parameters:
-        db_path (str): The path to the DuckDB database file.
-        table_name (str): The name of the table to insert data into.
-        data_dict (dict): A dictionary where keys are formatted creation dates (as strings) and values 
-                      are lists of file paths that correspond to those dates.
-
-    Raises:
-        ValueError: If any error occurs during the process.
-
-    Example:
-        ```python  
-        data_dict = {
-            '2023-01-01 12:00:00': ['/path/to/image1.jpg'],
-            '2023-01-02 13:00:00': ['/path/to/image2.jpg']
-        }
-        save_date_grouped_filepaths_to_duckdb('/path/to/database.duckdb', 'STA_LOC_PLT_data', data_dict)
-        ```
-    """
-    try:
-        # Connect to DuckDB
-        conn = duckdb.connect(database=db_path, read_only=False)
-        
-        # Create table if it doesn't exist
-        conn.execute(f"""
-        CREATE TABLE IF NOT EXISTS {table_name} (
-            creation_date TEXT,
-            filepath TEXT,
-            year INTEGER
-        );
-        """)
-        
-        # Insert data into the table
-        insert_query = f"INSERT INTO {table_name} (creation_date, filepath, year) VALUES (?, ?, ?)"
-        for date, paths in data_dict.items():
-            year = datetime.strptime(date, '%Y-%m-%d %H:%M:%S').year
-            for path in paths:
-                conn.execute(insert_query, [date, path, year])
-    except Exception as e:
-        raise ValueError(f"An error occurred while saving to DuckDB: {e}")
-    finally:
-        # Close the connection
-        conn.close()
 
         
 def filter_by_year_from_grouped_filepaths_duckdb(db_path, table_name, year):
@@ -188,67 +134,3 @@ def get_all_filepaths_in_duckdb(db_path, table_name):
     # Extract file paths from the result
     stored_filepaths = [row[0] for row in result]
     return stored_filepaths
-
-
-def insert_phenocam_record_to_duckdb(db_path, table_name, record_dict):
-    """
-    Saves a new record in the DuckDB catalog database.
-
-    This function connects to a DuckDB database specified by db_path, creates a table if it does
-    not already exist, and inserts a new record into the specified table. The record dictionary 
-    includes the following columns: creation_date, catalog_filepath, source_filepath, year, 
-    station_acronym, location_id, platform_id, platform_type.
-
-    Parameters:
-        db_path (str): The path to the DuckDB database file.
-        table_name (str): The name of the table to insert data into.
-        record_dict (dict): A dictionary with the record data including the columns:
-                            creation_date, catalog_filepath, source_filepath, year,
-                            station_acronym, location_id, platform_id, platform_type.
-
-    Raises:
-        ValueError: If any error occurs during the process.
-    """
-    try:
-        # Extract the year from the creation_date
-        record_dict['year'] = extract_year(record_dict['creation_date'])
-
-        # Connect to DuckDB
-        conn = duckdb.connect(database=db_path, read_only=False)
-        
-        # Create table if it doesn't exist
-        conn.execute(f"""
-        CREATE TABLE IF NOT EXISTS {table_name} (
-            creation_date TEXT,
-            catalog_filepath TEXT,
-            source_filepath TEXT,
-            year INTEGER,
-            station_acronym TEXT,
-            location_id TEXT,
-            platform_id TEXT,
-            platform_type TEXT
-        );
-        """)
-
-        # Insert data into the table
-        insert_query = f"""
-        INSERT INTO {table_name} (
-            creation_date, catalog_filepath, source_filepath, year, 
-            station_acronym, location_id, platform_id, platform_type
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """
-        conn.execute(insert_query, [
-            record_dict['creation_date'],
-            record_dict['catalog_filepath'],
-            record_dict['source_filepath'],
-            record_dict['year'],
-            record_dict['station_acronym'],
-            record_dict['location_id'],
-            record_dict['platform_id'],
-            record_dict['platform_type']
-        ])
-    except Exception as e:
-        raise ValueError(f"An error occurred while saving to DuckDB: {e}")
-    finally:
-        # Close the connection
-        conn.close()

@@ -1,3 +1,6 @@
+## [v0.2.5] 
+- Introduced `duckdb_manager` module
+
 ## [v0.2.4.0.1] 
 - fixed util import error
 
