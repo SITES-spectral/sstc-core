@@ -19,6 +19,7 @@ nav:
   - Home: index.md
   - Getting started:
     - Installation: getting_started/installation.md
+    - Secure SFTP credentials with keyring: getting_started/secure_keyring_credentials.md
   - User Guide:
     - Using the SITES Spectral catalog: user_guide/catalog_how_to.md
   - Tutorials:

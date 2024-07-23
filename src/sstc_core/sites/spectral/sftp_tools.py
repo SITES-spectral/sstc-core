@@ -110,7 +110,7 @@ def list_files_sftp(hostname, port, username, password, sftp_directory, extensio
         raise Exception(f"An error occurred while listing files from the SFTP server: {e}")
 
 
-def download_file(sftp, remote_filepath, local_dirpath):
+def download_file(sftp, remote_filepath, local_dirpath, split_subdir='data'):
     """
     Downloads a file from the SFTP server and ensures that the download is complete by verifying the file size.
 
@@ -122,6 +122,7 @@ def download_file(sftp, remote_filepath, local_dirpath):
         sftp (paramiko.SFTPClient): An active SFTP client connection.
         remote_filepath (str): The path to the remote file on the SFTP server.
         local_dirpath (str): The path to the local directory where the download will be saved.
+        split_subdir (str): The subdirectory name to split the file path on. Defaults to 'data'.
 
     Returns:
         str: The path to the local file if the download was successful.
@@ -136,26 +137,31 @@ def download_file(sftp, remote_filepath, local_dirpath):
         port = 22
         username = 'your_username'
         password = 'your_password'
-        remote_filepath = '/remote/path/to/file.jpg'
+        remote_filepath = '/remote/path/to/data/subdir1/file1.jpg'
         local_dirpath = '/local/path/to/directory'
         transport = paramiko.Transport((hostname, port))
         transport.connect(username=username, password=password)
         sftp = paramiko.SFTPClient.from_transport(transport)
-        download_file(sftp, remote_filepath, local_dirpath)
+        download_file(sftp, remote_filepath, local_dirpath, 'data')
         sftp.close()
         transport.close()
         ```
     """
     
-    
     try:
         # Split the remote file path into components
         parts = remote_filepath.split('/')
         filename = parts[-1]
-        remote_subdir = os.path.join(*parts[-3:-1]) if len(parts) > 2 else ""
 
-        # Construct the local file path using the structure from the SFTP
-        local_filepath = os.path.join(local_dirpath, remote_subdir, filename)
+        # Find the index of the split_subdir in the parts
+        if split_subdir in parts:
+            split_index = parts.index(split_subdir)
+            remote_subdir = os.path.join(*parts[split_index:])
+        else:
+            remote_subdir = ""
+
+        # Construct the local file path using the structure from the split_subdir to the filename
+        local_filepath = os.path.join(local_dirpath, remote_subdir)
 
         # Ensure the local directory exists
         os.makedirs(os.path.dirname(local_filepath), exist_ok=True)

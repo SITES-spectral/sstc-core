@@ -1,3 +1,8 @@
+## [v0.2.8]
+- Added `duckdb_manager.download_files_and_create_records`
+- Improved `sftp_tools.download_file` to split the subdirs based on a variable `split_subdir="data"`
+- Updated `getting_started` docs with `secure_keyring_credentials.md`
+
 ## [v0.2.7]
 - Updated `sftp_tools.download_file` to preserve the SFTP directory structure 
 
