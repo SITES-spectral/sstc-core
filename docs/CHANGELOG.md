@@ -1,3 +1,11 @@
+## [v0.2.9]
+- Improved methods for the `DuckDBManager`:
+  - `list_tables` new method
+  - `get_catalog_filepaths` new method
+  - `get_source_filepaths`
+  - `get_catalog_filepaths_by_year_and_day` of the year
+- Added `utils.get_day_of_year` with trailing zeros. 
+
 ## [v0.2.8.1]
 - Minor fixes
   

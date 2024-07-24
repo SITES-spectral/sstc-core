@@ -1,10 +1,11 @@
-import os
 import hashlib
 import duckdb
 import keyring
+from datetime import datetime
 from typing import List, Dict, Any
 from sstc_core.sites.spectral import utils, sftp_tools
 from sstc_core.sites.spectral.stations import PlatformData
+from collections import defaultdict
 
 class DatabaseError(Exception):
     """Base class for other exceptions"""
@@ -365,6 +366,109 @@ class DuckDBManager:
         """
         query = f"SELECT * FROM {table_name} WHERE year = ? AND is_selected = ?"
         return self._execute_query(query, (year, is_selected))
+    
+    def list_tables(self) -> List[str]:
+        """
+        Returns a list of all tables in the database.
+
+        Returns:
+            List[str]: A list of table names in the database.
+
+        Raises:
+            DatabaseError: If an error occurs during query execution.
+        """
+        query = "SHOW TABLES"
+        result = self._execute_query(query)
+        return [row['name'] for row in result]
+
+    def get_catalog_filepaths(self, table_name: str, year: int = None) -> Dict[str, str]:
+        """
+        Retrieves all catalog filepaths organized by creation_date.
+
+        The returned dictionary uses the creation_date as the key and the catalog_filepath as the value.
+
+        If a specific year is provided, only the data for that year will be returned.
+
+        Parameters:
+            table_name (str): The name of the table to fetch data from.
+            year (int, optional): The specific year to filter the results. If None, data for all years is returned.
+
+        Returns:
+            Dict[str, str]: A dictionary mapping creation_date to catalog_filepath.
+        """
+        if year:
+            query = f"SELECT creation_date, catalog_filepath FROM {table_name} WHERE year(creation_date) = ?"
+            result = self._execute_query(query, (year,))
+        else:
+            query = f"SELECT creation_date, catalog_filepath FROM {table_name}"
+            result = self._execute_query(query)
+
+        catalog_filepaths = {row['creation_date']: row['catalog_filepath'] for row in result}
+        return catalog_filepaths
+
+    def get_source_filepaths(self, table_name: str, year: int = None) -> Dict[str, str]:
+        """
+        Retrieves all source filepaths organized by creation_date.
+
+        The returned dictionary uses the creation_date as the key and the source_filepath as the value.
+
+        If a specific year is provided, only the data for that year will be returned.
+
+        Parameters:
+            table_name (str): The name of the table to fetch data from.
+            year (int, optional): The specific year to filter the results. If None, data for all years is returned.
+
+        Returns:
+            Dict[str, str]: A dictionary mapping creation_date to source_filepath.
+        """
+        if year:
+            query = f"SELECT creation_date, source_filepath FROM {table_name} WHERE year(creation_date) = ?"
+            result = self._execute_query(query, (year,))
+        else:
+            query = f"SELECT creation_date, source_filepath FROM {table_name}"
+            result = self._execute_query(query)
+
+        source_filepaths = {row['creation_date']: row['source_filepath'] for row in result}
+        return source_filepaths
+    
+    def get_catalog_filepaths_by_year_and_day(self, table_name: str, year: int = None) -> Dict[int, Dict[int, List[str]]]:
+        """
+        Retrieves all catalog filepaths organized by year and day of the year.
+
+        The returned dictionary uses the year as the first key, which maps to another dictionary.
+        This nested dictionary uses the day of the year as the key and maps to a list of catalog filepaths.
+
+        If a specific year is provided, only the data for that year will be returned.
+
+        Parameters:
+            table_name (str): The name of the table to fetch data from.
+            year (int, optional): The specific year to filter the results. If None, data for all years is returned.
+
+        Returns:
+            Dict[int, Dict[int, List[str]]]: A nested dictionary with year as the top-level key,
+                                              day of the year as the second-level key, and a list
+                                              of catalog filepaths as the values.
+        """
+        if year:
+            query = f"SELECT creation_date, catalog_filepath FROM {table_name} WHERE year(creation_date) = ?"
+            result = self._execute_query(query, (year,))
+        else:
+            query = f"SELECT creation_date, catalog_filepath FROM {table_name}"
+            result = self._execute_query(query)
+
+        filepaths_by_year_and_day = defaultdict(lambda: defaultdict(list))
+        for row in result:
+            creation_date = row['creation_date']
+            catalog_filepath = row['catalog_filepath']
+            date_obj = datetime.strptime(creation_date, '%Y-%m-%d')
+            year_key = date_obj.year
+            day_of_year = date_obj.timetuple().tm_yday
+
+            filepaths_by_year_and_day[year_key][f"{day_of_year:03d}"].append(catalog_filepath)
+
+        # Convert defaultdicts to regular dicts for the final output
+        return {yr: dict(days) for yr, days in filepaths_by_year_and_day.items()}
+
 
 def generate_unique_id(creation_date: str, station_acronym: str, location_id: str, platform_id: str) -> str:
     """
@@ -387,7 +491,8 @@ def generate_unique_id(creation_date: str, station_acronym: str, location_id: st
     
     return unique_id
 
-def phenocam_table_schema() -> str:
+
+def get_phenocam_table_schema() -> str:
     """
     Returns the SQL schema definition for the Phenocam table.
 
@@ -559,6 +664,8 @@ def download_files_and_create_records(platform_dict: dict, db_filepath: str):
         
         download_files_and_create_records(platform_dict, catalog_dict, db_filepath)
         ```
+    Notes:
+        Recommended to be use for first population of the database or
     """
     # SFTP variables
     hostname = keyring.get_password('sftp', 'hostname')
@@ -595,7 +702,7 @@ def download_files_and_create_records(platform_dict: dict, db_filepath: str):
         
     # Step 3: Connect to the database
     db = DuckDBManager(db_path=db_filepath)
-    schema = phenocam_table_schema()
+    schema = get_phenocam_table_schema()
     db.create_table(table_name, schema=schema)
         
     # Step 4: Download files and create records
@@ -618,3 +725,36 @@ def download_files_and_create_records(platform_dict: dict, db_filepath: str):
             
     sftp.close()
     transport.close()
+    
+    
+def get_all_tables(db_path):
+    """
+    Retrieves all table names from the DuckDB database.
+
+    Parameters:
+        db_path (str): The path to the DuckDB database file.
+
+    Returns:
+        list: A list of table names present in the database.
+
+    Raises:
+        ValueError: If any error occurs during the process.
+    """
+    try:
+        # Connect to DuckDB
+        conn = duckdb.connect(database=db_path, read_only=True)
+
+        # Retrieve all table names
+        query = "SELECT table_name FROM information_schema.tables WHERE table_schema='main';"
+        result = conn.execute(query).fetchall()
+
+        # Extract table names from the result
+        table_names = [row[0] for row in result]
+
+        return table_names
+
+    except Exception as e:
+        raise ValueError(f"An error occurred while retrieving tables from DuckDB: {e}")
+    finally:
+        # Close the connection
+        conn.close()

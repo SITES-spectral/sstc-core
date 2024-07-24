@@ -175,3 +175,18 @@ def extract_two_dirs_and_filename(filepaths:list):
             continue  # Skip empty or invalid file paths
         extracted[key] = filepath
     return extracted
+
+
+def get_day_of_year(formatted_date: str) -> str:
+    """
+    Calculates the day of the year from a formatted date string and returns it as a string with leading zeros.
+
+    Parameters:
+        formatted_date (str): The date string in the format 'YYYY-MM-DD HH:MM:SS'.
+
+    Returns:
+        str: The day of the year corresponding to the given date, formatted as a three-digit string with leading zeros.
+    """
+    date_obj = datetime.strptime(formatted_date, '%Y-%m-%d %H:%M:%S')
+    day_of_year = date_obj.timetuple().tm_yday
+    return f"{day_of_year:03d}"
