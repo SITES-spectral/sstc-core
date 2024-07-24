@@ -1,5 +1,9 @@
+## [v0.2.9.2]
+- Minor fix on the `get_catalog_filepaths_by_year_and_day` method. TypeError: tuple indices must be integers or slices, not str.
+  
 ## [v0.2.9.1]
 - Minor fix on the `list_tables` method
+  
 ## [v0.2.9]
 - Improved methods for the `DuckDBManager`:
   - `list_tables` new method

@@ -450,7 +450,7 @@ class DuckDBManager:
                                               of catalog filepaths as the values.
         """
         if year:
-            query = f"SELECT creation_date, catalog_filepath FROM {table_name} WHERE year(creation_date) = ?"
+            query = f"SELECT creation_date, catalog_filepath FROM {table_name} WHERE EXTRACT(YEAR FROM creation_date) = ?"
             result = self._execute_query(query, (year,))
         else:
             query = f"SELECT creation_date, catalog_filepath FROM {table_name}"
@@ -458,13 +458,13 @@ class DuckDBManager:
 
         filepaths_by_year_and_day = defaultdict(lambda: defaultdict(list))
         for row in result:
-            creation_date = row['creation_date']
-            catalog_filepath = row['catalog_filepath']
+            creation_date = row[0]  # Accessing the first element (creation_date)
+            catalog_filepath = row[1]  # Accessing the second element (catalog_filepath)
             date_obj = datetime.strptime(creation_date, '%Y-%m-%d')
             year_key = date_obj.year
             day_of_year = date_obj.timetuple().tm_yday
 
-            filepaths_by_year_and_day[year_key][f"{day_of_year:03d}"].append(catalog_filepath)
+            filepaths_by_year_and_day[year_key][day_of_year].append(catalog_filepath)
 
         # Convert defaultdicts to regular dicts for the final output
         return {yr: dict(days) for yr, days in filepaths_by_year_and_day.items()}
