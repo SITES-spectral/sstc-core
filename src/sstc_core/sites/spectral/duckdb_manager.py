@@ -460,7 +460,7 @@ class DuckDBManager:
         for row in result:
             creation_date = row[0]  # Accessing the first element (creation_date)
             catalog_filepath = row[1]  # Accessing the second element (catalog_filepath)
-            date_obj = datetime.strptime(creation_date, '%Y-%m-%d')
+            date_obj = datetime.strptime(creation_date, '%Y-%m-%d %H:%M:%S')
             year_key = date_obj.year
             day_of_year = date_obj.timetuple().tm_yday
 

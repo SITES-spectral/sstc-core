@@ -1,3 +1,6 @@
+## [v0.2.9.3] 
+- Minor fix for day of year expected timedate formatted as '%Y-%m-%d %H:%M:%S'.
+  
 ## [v0.2.9.2]
 - Minor fix on the `get_catalog_filepaths_by_year_and_day` method. TypeError: tuple indices must be integers or slices, not str.
   
