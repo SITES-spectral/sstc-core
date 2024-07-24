@@ -1,3 +1,5 @@
+## [v0.2.9.1]
+- Minor fix on the `list_tables` method
 ## [v0.2.9]
 - Improved methods for the `DuckDBManager`:
   - `list_tables` new method

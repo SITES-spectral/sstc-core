@@ -379,7 +379,7 @@ class DuckDBManager:
         """
         query = "SHOW TABLES"
         result = self._execute_query(query)
-        return [row['name'] for row in result]
+        return [row[0] for row in result]
 
     def get_catalog_filepaths(self, table_name: str, year: int = None) -> Dict[str, str]:
         """
