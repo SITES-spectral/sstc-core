@@ -562,6 +562,7 @@ class DuckDBManager:
         except Exception as e:
             raise DatabaseError(f"An error occurred while adding or populating 'is_L1': {e}")
 
+
     def get_catalog_filepaths_by_year_and_day(self, table_name: str, year: int = None, is_L1: bool = None) -> Dict[int, Dict[str, Dict[str, Any]]]:
         """
         Retrieves all catalog filepaths organized by year and L0_name.
@@ -589,8 +590,8 @@ class DuckDBManager:
         conditions = []
         params = []
         if year is not None:
-            conditions.append("EXTRACT(YEAR FROM creation_date) = ?")
-            params.append(year)
+            conditions.append("STRFTIME('%Y', creation_date) = ?")
+            params.append(str(year))  # Year should be a string for comparison
         if is_L1 is not None:
             conditions.append("is_L1 = ?")
             params.append(is_L1)
@@ -619,7 +620,6 @@ class DuckDBManager:
             }
 
         return dict(filepaths_by_year_and_L0_name)
-
             
 
 def generate_unique_id(creation_date: str, station_acronym: str, location_id: str, platform_id: str) -> str:

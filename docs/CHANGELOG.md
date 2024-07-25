@@ -1,3 +1,6 @@
+## [v0.2.11.1]
+- Minor fix `get_catalog_filepaths_by_year_and_day`  use STRFTIME to extract the year instead of EXTRACT which expects a DATE or TIMESTAMP type, not a VARCHAR.
+
 ## [v0.2.11]
 - Added `phenocam_rois` to platforms_abisko.yaml 
 
