@@ -1,3 +1,6 @@
+## [v0.2.11]
+- Added `phenocam_rois` to platforms_abisko.yaml 
+
 ## [v0.2.10]
 - Improved methods for the `DuckDBManager`
   - `add_day_of_year_column`
