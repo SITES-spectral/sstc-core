@@ -1,3 +1,11 @@
+## [v0.2.10]
+- Improved methods for the `DuckDBManager`
+  - `add_day_of_year_column`
+  - `filter_by_time_window`
+  - `populate_L0_name`
+  - `check_is_L1` 
+  - `get_catalog_filepaths_by_year_and_day` filtering capabilities based on the `year` and `is_L1` status.
+
 ## [v0.2.9.3] 
 - Minor fix for day of year expected timedate formatted as '%Y-%m-%d %H:%M:%S'.
   
