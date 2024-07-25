@@ -563,13 +563,13 @@ class DuckDBManager:
             raise DatabaseError(f"An error occurred while adding or populating 'is_L1': {e}")
 
 
-    def get_catalog_filepaths_by_year_and_day(self, table_name: str, year: int = None, is_L1: bool = None) -> Dict[int, Dict[str, Dict[str, Any]]]:
+    def get_catalog_filepaths_by_year_and_day(self, table_name: str, year: int = None, is_L1: bool = None) -> Dict[int, Dict[int, Dict[str, Dict[str, Any]]]]:
         """
-        Retrieves all catalog filepaths organized by year and L0_name.
+        Retrieves all catalog filepaths organized by year, day_of_year, and L0_name.
 
         The returned dictionary uses the year as the first key, which maps to another dictionary.
-        This nested dictionary uses the L0_name as the key and maps to another dictionary with
-        catalog_filepath and is_L1 as keys.
+        This nested dictionary uses the day_of_year as the second-level key, which then maps to another
+        dictionary with L0_name as the third-level key, mapping to a dictionary containing the details.
 
         If a specific year or is_L1 filter is provided, only the data matching these filters will be returned.
 
@@ -579,12 +579,16 @@ class DuckDBManager:
             is_L1 (bool, optional): The specific is_L1 value to filter the results. If None, data for all values is returned.
 
         Returns:
-            Dict[int, Dict[str, Dict[str, Any]]]: A nested dictionary with year as the top-level key,
-                                                  L0_name as the second-level key, and a dictionary containing
-                                                  catalog_filepath and is_L1 as the values.
+            Dict[int, Dict[int, Dict[str, Dict[str, Any]]]]: A nested dictionary with year as the top-level key,
+                                                              day_of_year as the second-level key, L0_name as the third-level key,
+                                                              and a dictionary containing day_of_year, L0_name, is_L1,
+                                                              location_id, platform_id, station_acronym, and catalog_filepath as the values.
         """
         # Construct the base query
-        query = f"SELECT creation_date, L0_name, catalog_filepath, is_L1 FROM {table_name}"
+        query = f"""
+        SELECT creation_date, day_of_year, L0_name, is_L1, location_id, platform_id, station_acronym, catalog_filepath
+        FROM {table_name}
+        """
         
         # Build conditions for filtering
         conditions = []
@@ -603,24 +607,32 @@ class DuckDBManager:
         result = self._execute_query(query, tuple(params))
 
         # Organize the results
-        filepaths_by_year_and_L0_name = defaultdict(dict)
+        filepaths_by_year_and_day = defaultdict(lambda: defaultdict(dict))
         for row in result:
             creation_date = row[0]  # Accessing the creation_date
-            L0_name = row[1]  # Accessing the L0_name
-            catalog_filepath = row[2]  # Accessing the catalog_filepath
+            day_of_year = row[1]  # Accessing the day_of_year
+            L0_name = row[2]  # Accessing the L0_name
             is_L1_status = row[3]  # Accessing the is_L1 status
+            location_id = row[4]  # Accessing the location_id
+            platform_id = row[5]  # Accessing the platform_id
+            station_acronym = row[6]  # Accessing the station_acronym
+            catalog_filepath = row[7]  # Accessing the catalog_filepath
             
             date_obj = datetime.strptime(creation_date, '%Y-%m-%d %H:%M:%S')
             year_key = date_obj.year
 
             # Assign values to the dictionary
-            filepaths_by_year_and_L0_name[year_key][L0_name] = {
-                "catalog_filepath": catalog_filepath,
-                "is_L1": is_L1_status
+            filepaths_by_year_and_day[year_key][day_of_year][L0_name] = {
+                "day_of_year": day_of_year,
+                "L0_name": L0_name,
+                "is_L1": is_L1_status,
+                "location_id": location_id,
+                "platform_id": platform_id,
+                "station_acronym": station_acronym,
+                "catalog_filepath": catalog_filepath
             }
 
-        return dict(filepaths_by_year_and_L0_name)
-            
+        return dict(filepaths_by_year_and_day)            
 
 def generate_unique_id(creation_date: str, station_acronym: str, location_id: str, platform_id: str) -> str:
     """

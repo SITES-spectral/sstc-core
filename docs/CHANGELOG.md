@@ -1,3 +1,6 @@
+## [v0.2.12]
+- Improved result dictionary for `get_catalog_filepaths_by_year_and_day` to return its metadata. 
+
 ## [v0.2.11.2]
 - Fixing incorrect use of STRFTIME on a VARCHAR field, which requires a TIMESTAMP or DATE type. To resolve this, we need to ensure that creation_date is correctly cast to TIMESTAMP before applying STRFTIME. 
 
