@@ -590,7 +590,7 @@ class DuckDBManager:
         conditions = []
         params = []
         if year is not None:
-            conditions.append("STRFTIME('%Y', creation_date) = ?")
+            conditions.append("STRFTIME('%Y', CAST(creation_date AS TIMESTAMP)) = ?")
             params.append(str(year))  # Year should be a string for comparison
         if is_L1 is not None:
             conditions.append("is_L1 = ?")

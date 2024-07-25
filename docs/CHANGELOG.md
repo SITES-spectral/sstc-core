@@ -1,3 +1,6 @@
+## [v0.2.11.2]
+- Fixing incorrect use of STRFTIME on a VARCHAR field, which requires a TIMESTAMP or DATE type. To resolve this, we need to ensure that creation_date is correctly cast to TIMESTAMP before applying STRFTIME. 
+
 ## [v0.2.11.1]
 - Minor fix `get_catalog_filepaths_by_year_and_day`  use STRFTIME to extract the year instead of EXTRACT which expects a DATE or TIMESTAMP type, not a VARCHAR.
 
