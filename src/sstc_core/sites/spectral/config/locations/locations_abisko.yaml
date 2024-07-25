@@ -2,7 +2,7 @@
 
 BTH_FOR:
   location_id: 'BTH_FOR'
-  description: 'ANS Building H Top. Observatorium and Meteorology building'
+  description: 'ANS Building Top H. Observatorium and Meteorology building'
   legacy_acronym: 'ANS-FOR'
   is_active: True
   mantainance_status: active
