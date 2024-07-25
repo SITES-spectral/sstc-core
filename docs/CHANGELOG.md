@@ -1,3 +1,7 @@
+## [v0.2.13]
+- Improved result dictionary for `get_catalog_filepaths_by_year_and_day` to return if it has been selected for processing L2 & L3 processing
+- added `utils.phenocam_save_selected_images`
+
 ## [v0.2.12]
 - Improved result dictionary for `get_catalog_filepaths_by_year_and_day` to return its metadata. 
 

@@ -563,7 +563,7 @@ class DuckDBManager:
             raise DatabaseError(f"An error occurred while adding or populating 'is_L1': {e}")
 
 
-    def get_catalog_filepaths_by_year_and_day(self, table_name: str, year: int = None, is_L1: bool = None) -> Dict[int, Dict[int, Dict[str, Dict[str, Any]]]]:
+    def get_catalog_filepaths_by_year_and_day(self, table_name: str, year: int = None, is_L1: bool = None, is_selected: bool = None) -> Dict[int, Dict[int, Dict[str, Dict[str, Any]]]]:
         """
         Retrieves all catalog filepaths organized by year, day_of_year, and L0_name.
 
@@ -571,22 +571,24 @@ class DuckDBManager:
         This nested dictionary uses the day_of_year as the second-level key, which then maps to another
         dictionary with L0_name as the third-level key, mapping to a dictionary containing the details.
 
-        If a specific year or is_L1 filter is provided, only the data matching these filters will be returned.
+        If a specific year, is_L1, or is_selected filter is provided, only the data matching these filters will be returned.
 
         Parameters:
             table_name (str): The name of the table to fetch data from.
             year (int, optional): The specific year to filter the results. If None, data for all years is returned.
             is_L1 (bool, optional): The specific is_L1 value to filter the results. If None, data for all values is returned.
+            is_selected (bool, optional): The specific is_selected value to filter the results. If None, data for all values is returned.
 
         Returns:
             Dict[int, Dict[int, Dict[str, Dict[str, Any]]]]: A nested dictionary with year as the top-level key,
                                                               day_of_year as the second-level key, L0_name as the third-level key,
                                                               and a dictionary containing day_of_year, L0_name, is_L1,
-                                                              location_id, platform_id, station_acronym, and catalog_filepath as the values.
+                                                              location_id, platform_id, station_acronym, catalog_filepath,
+                                                              and is_selected as the values.
         """
         # Construct the base query
         query = f"""
-        SELECT creation_date, day_of_year, L0_name, is_L1, location_id, platform_id, station_acronym, catalog_filepath
+        SELECT creation_date, day_of_year, L0_name, is_L1, location_id, platform_id, station_acronym, catalog_filepath, is_selected
         FROM {table_name}
         """
         
@@ -599,6 +601,9 @@ class DuckDBManager:
         if is_L1 is not None:
             conditions.append("is_L1 = ?")
             params.append(is_L1)
+        if is_selected is not None:
+            conditions.append("is_selected = ?")
+            params.append(is_selected)
 
         # Combine conditions with 'AND'
         if conditions:
@@ -617,6 +622,7 @@ class DuckDBManager:
             platform_id = row[5]  # Accessing the platform_id
             station_acronym = row[6]  # Accessing the station_acronym
             catalog_filepath = row[7]  # Accessing the catalog_filepath
+            is_selected_status = row[8]  # Accessing the is_selected status
             
             date_obj = datetime.strptime(creation_date, '%Y-%m-%d %H:%M:%S')
             year_key = date_obj.year
@@ -629,11 +635,11 @@ class DuckDBManager:
                 "location_id": location_id,
                 "platform_id": platform_id,
                 "station_acronym": station_acronym,
-                "catalog_filepath": catalog_filepath
+                "catalog_filepath": catalog_filepath,
+                "is_selected": is_selected_status
             }
 
-        return dict(filepaths_by_year_and_day)            
-
+        return dict(filepaths_by_year_and_day)
 def generate_unique_id(creation_date: str, station_acronym: str, location_id: str, platform_id: str) -> str:
     """
     Generates a unique global identifier based on creation_date, station_acronym, location_id, and platform_id.

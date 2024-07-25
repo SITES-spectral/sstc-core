@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 from PIL import Image
 from PIL.ExifTags import TAGS
+from shutil import copy2
+from typing import Dict, Any
 
 
 def extract_year(creation_date:str):
@@ -190,3 +192,36 @@ def get_day_of_year(formatted_date: str) -> str:
     date_obj = datetime.strptime(formatted_date, '%Y-%m-%d %H:%M:%S')
     day_of_year = date_obj.timetuple().tm_yday
     return f"{day_of_year:03d}"
+
+
+def phenocam_save_selected_images(filepaths_by_year_and_day: Dict[int, Dict[int, Dict[str, Dict[str, Any]]]], destination_dir: str):
+    """
+    Saves images with `is_selected` set to True to the specified destination directory.
+
+    Parameters:
+        filepaths_by_year_and_day (Dict[int, Dict[int, Dict[str, Dict[str, Any]]]]): Nested dictionary containing the data.
+        destination_dir (str): The directory where the images will be saved.
+
+    Returns:
+        None
+    """
+    # Ensure the destination directory exists
+    if not os.path.exists(destination_dir):
+        os.makedirs(destination_dir)
+
+    # Iterate through the data structure
+    for year, days in filepaths_by_year_and_day.items():
+        for day_of_year, records in days.items():
+            for L0_name, data in records.items():
+                if data.get('is_selected', False):
+                    src_filepath = data['catalog_filepath']
+                    if os.path.exists(src_filepath):
+                        # Define the destination file path
+                        filename = f"{L0_name}_{os.path.basename(src_filepath)}"
+                        dest_filepath = os.path.join(destination_dir, filename)
+                        
+                        # Copy the file to the destination directory
+                        copy2(src_filepath, dest_filepath)
+                        print(f"Saved: {dest_filepath}")
+                    else:
+                        print(f"File not found: {src_filepath}")
