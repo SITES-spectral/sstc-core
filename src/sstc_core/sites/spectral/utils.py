@@ -4,6 +4,37 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from shutil import copy2
 from typing import Dict, Any
+import unicodedata
+import hashlib
+import base64
+
+
+def generate_unique_id(data: dict, variable_names: list = None) -> str:
+    """
+    Generates a unique global identifier based on the provided variable names from the data dictionary.
+
+    Parameters:
+        data (dict): A dictionary containing the data fields.
+        variable_names (list, optional): A list of variable names to include in the unique identifier. 
+                                         Defaults to ['creation_date', 'station_acronym', 'location_id', 'platform_id'].
+
+    Returns:
+        str: A short unique global identifier.
+    """
+    if variable_names is None:
+        variable_names = ['creation_date', 'station_acronym', 'location_id', 'platform_id']
+
+    # Concatenate the specified fields from the data dictionary to form a unique string
+    unique_string = "_".join(str(data[var]) for var in variable_names if var in data)
+    
+    # Generate the SHA-256 hash of the unique string
+    hash_object = hashlib.sha256(unique_string.encode())
+    hash_digest = hash_object.digest()
+    
+    # Take the first 12 bytes of the hash and encode them in Base64
+    short_hash = base64.urlsafe_b64encode(hash_digest[:12]).decode('utf-8').rstrip('=')
+    
+    return short_hash
 
 
 def extract_year(creation_date:str):
@@ -225,3 +256,29 @@ def phenocam_save_selected_images(filepaths_by_year_and_day: Dict[int, Dict[int,
                         print(f"Saved: {dest_filepath}")
                     else:
                         print(f"File not found: {src_filepath}")
+                        
+                        
+def normalize_string(input_string: str) -> str:
+    """
+    Normalizes a string by converting it to lowercase and replacing accented or non-English
+    characters with their corresponding English characters. Specially handles Nordic characters.
+
+    Parameters:
+    input_string (str): The string to normalize.
+
+    Returns:
+    str: The normalized string with all characters in lowercase and accented characters replaced.
+    """
+    # Decompose the unicode string into its components (base characters and diacritics)
+    normalized = unicodedata.normalize('NFKD', input_string)
+
+    # Encode the decomposed string into ASCII, ignoring non-ASCII characters (diacritics)
+    ascii_bytes = normalized.encode('ASCII', 'ignore')
+
+    # Decode the bytes back into a string
+    ascii_string = ascii_bytes.decode('ASCII')
+
+    # Convert to lowercase
+    lower_string = ascii_string.lower()
+
+    return lower_string

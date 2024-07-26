@@ -2,50 +2,372 @@ import os
 import importlib
 import importlib.util
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import Optional
 from sstc_core.sites.spectral.catalog import table_name_decorator
+from sstc_core.sites.spectral.utils import normalize_string
+from pathlib import Path
+import duckdb
+import hashlib
 
 
-@dataclass
-class PlatformData:
+from typing import Dict, Any, List, Union
+
+
+class DatabaseError(Exception):
+    """Base class for other exceptions"""
+    pass
+
+class RecordExistsError(DatabaseError):
+    """Raised when the record already exists in the database"""
+    pass
+
+class RecordNotFoundError(DatabaseError):
+    """Raised when the record is not found in the database"""
+    pass
+
+
+
+def generate_query_dict() -> Dict[str, Dict[str, Union[str, tuple]]]:
     """
-    A data class to represent a station's platform's data with attributes for station acronym,
-    location ID, platform ID, and the file path to a DuckDB database.
+    Generates a dictionary containing SQL query templates and their associated parameters.
 
-    Attributes:
-        acronym (str):
-            The acronym or system name of the station.
-        location_id (str):
-            The unique identifier for the location of the station.
-        platform_id (str):
-            The unique identifier for the platform at the station.
-        duckdb_filepath (str):
-            The file path to the DuckDB database.
+    This function provides a centralized way to manage SQL queries and the parameters needed for
+    each query. The keys of the dictionary represent the operation type, and each value is a dictionary
+    containing the query template and a tuple of parameter names that are used in the query.
 
-    Methods:
+    Returns:
+        Dict[str, Dict[str, Union[str, tuple]]]: A dictionary where each key is a string representing
+        the operation (e.g., 'create_table', 'insert_record') and each value is another dictionary with:
+            - 'query': The SQL query template as a string, where placeholders are used for dynamic values.
+            - 'params': A tuple containing the names of the parameters expected for the query.
+            
+    Examples:
     
-        get_table_name() -> str
-            Constructs the table name from the station acronym, location ID, and platform ID.
+        ```python
+        
+        queries_dict = generate_query_dict()
+        
+        # Creating a table
+        def create_table_example(db_manager, table_name: str, schema: str):
+            query_info = queries_dict["create_table"]
+            query = query_info["query"].format(table_name=table_name, schema=schema)
+            db_manager.execute_query(query)
+
+        ## Usage
+        db_manager = DuckDBManager("example.db")
+        create_table_example(db_manager, "users", "id INTEGER PRIMARY KEY, name TEXT")
+        db_manager.close()
+        
+        # Inserting a record
+        def insert_record_example(db_manager, table_name: str, record_dict: Dict[str, Any]):
+            columns = ', '.join(record_dict.keys())
+            placeholders = ', '.join(['?'] * len(record_dict))
+            query_info = queries_dict["insert_record"]
+            query = query_info["query"].format(table_name=table_name, columns=columns, placeholders=placeholders)
+            db_manager.execute_query(query, tuple(record_dict.values()))
+
+        ## Usage
+        db_manager = DuckDBManager("example.db")
+        record = {"id": 1, "name": "Alice"}
+        insert_record_example(db_manager, "users", record)
+        db_manager.close()
+        
+        # Fetching records
+        def fetch_records_example(db_manager, table_name: str, condition: str):
+            query_info = queries_dict["fetch_records"]
+            query = query_info["query"].format(table_name=table_name, condition=condition)
+            return db_manager.execute_query(query)
+
+        ## Usage
+        db_manager = DuckDBManager("example.db")
+        records = fetch_records_example(db_manager, "users", "id = 1")
+        print(records)  # Output: [(1, 'Alice')]
+        db_manager.close()
+
+        ``` 
     """
+    queries = {
+        "create_table": {
+            "query": "CREATE TABLE IF NOT EXISTS {table_name} ({schema});",
+            "params": ("table_name", "schema"),
+        },
+        "record_exists": {
+            "query": "SELECT 1 FROM {table_name} WHERE record_id = ? LIMIT 1",
+            "params": ("table_name", "record_id"),
+        },
+        "insert_record": {
+            "query": "INSERT INTO {table_name} ({columns}) VALUES ({placeholders})",
+            "params": ("table_name", "record_dict"),
+        },
+        "insert_multiple_records": {
+            "query": "INSERT INTO {table_name} ({columns}) VALUES ({placeholders})",
+            "params": ("table_name", "records"),
+        },
+        "update_record": {
+            "query": "UPDATE {table_name} SET {set_clause} WHERE {condition}",
+            "params": ("table_name", "update_values", "condition"),
+        },
+        "delete_record": {
+            "query": "DELETE FROM {table_name} WHERE {condition}",
+            "params": ("table_name", "condition"),
+        },
+        "fetch_records": {
+            "query": "SELECT * FROM {table_name} WHERE {condition}",
+            "params": ("table_name", "condition"),
+        },
+        "fetch_by_year": {
+            "query": "SELECT * FROM {table_name} WHERE year = ?",
+            "params": ("table_name", "year"),
+        },
+        "fetch_by_is_selected": {
+            "query": "SELECT * FROM {table_name} WHERE is_selected = ?",
+            "params": ("table_name", "is_selected"),
+        },
+        "fetch_by_year_and_is_selected": {
+            "query": "SELECT * FROM {table_name} WHERE year = ? AND is_selected = ?",
+            "params": ("table_name", "year", "is_selected"),
+        },
+        "list_tables": {
+            "query": "SHOW TABLES",
+            "params": (),
+        },
+        "get_catalog_filepaths": {
+            "query": "SELECT creation_date, catalog_filepath FROM {table_name} WHERE year(creation_date) = ?",
+            "params": ("table_name", "year"),
+        },
+        "get_source_filepaths": {
+            "query": "SELECT creation_date, source_filepath FROM {table_name} WHERE year(creation_date) = ?",
+            "params": ("table_name", "year"),
+        },
+        "add_day_of_year_column": {
+            "query": "ALTER TABLE {table_name} ADD COLUMN day_of_year INTEGER;",
+            "params": ("table_name",),
+        },
+        "filter_by_time_window": {
+            "query": "SELECT rowid, creation_date FROM {table_name}",
+            "params": ("table_name",),
+        },
+        "populate_L0_name": {
+            "query": "ALTER TABLE {table_name} ADD COLUMN L0_name TEXT;",
+            "params": ("table_name",),
+        },
+        "check_is_L1": {
+            "query": "ALTER TABLE {table_name} ADD COLUMN is_L1 BOOLEAN;",
+            "params": ("table_name",),
+        },
+        "get_catalog_filepaths_by_year_and_day": {
+            "query": "SELECT creation_date, day_of_year, L0_name, is_L1, location_id, platform_id, station_acronym, catalog_filepath, is_selected FROM {table_name}",
+            "params": ("table_name", "year", "is_L1", "is_selected"),
+        }
+    }
+    return queries
 
-    acronym: str
-    location_id: str
-    platform_id: str
-    duckdb_filepath: str
+
+def generate_unique_id(creation_date: str, station_acronym: str, location_id: str, platform_id: str) -> str:
+    """
+    Generates a unique global identifier based on creation_date, station_acronym, location_id, and platform_id.
+
+    Parameters:
+        creation_date (str): The creation date of the record.
+        station_acronym (str): The station acronym.
+        location_id (str): The location ID.
+        platform_id (str): The platform ID.
+
+    Returns:
+        str: A unique global identifier as a SHA-256 hash string.
+    """
+    # Concatenate the input values to form a unique string
+    unique_string = f"{creation_date}_{station_acronym}_{location_id}_{platform_id}"
     
+    # Generate the SHA-256 hash of the unique string
+    unique_id = hashlib.sha256(unique_string.encode()).hexdigest()
     
-    @table_name_decorator 
-    def get_table_name(self, table_name):
+    return unique_id
+
+
+
+class DuckDBManager:
+    """
+    A base class for managing DuckDB database connections and operations.
+    """
+    def __init__(self, db_filepath: str):
         """
-        Gets the constructed table name.
+        Initializes the DuckDBManager with the path to the database.
 
-        Parameters:        
-            table_name (str):
-                The constructed table name in the format <acronym>_<location_id>_<platform_id>.
-            """
-        return table_name
-    
+        Parameters:
+        db_filepath (str): The file path to the DuckDB database.
+        """
+        self.db_filepath = db_filepath
+        self.connection = None
+        self.validate_db_filepath()
 
+    def validate_db_filepath(self):
+        """
+        Validates the existence of the database file path.
+
+        Raises:
+        FileNotFoundError: If the database file does not exist at the specified path.
+        """
+        if not Path(self.db_filepath).is_file():
+            raise FileNotFoundError(f"The database file '{self.db_filepath}' does not exist. "
+                                    f"Please provide a valid database file path.")
+
+    def connect(self):
+        """
+        Establishes a connection to the DuckDB database.
+
+        Raises:
+        duckdb.Error: If there is an error connecting to the database.
+        """
+        try:
+            self.connection = duckdb.connect(self.db_filepath)
+        except duckdb.Error as e:
+            raise duckdb.Error(f"Failed to connect to the DuckDB database: {e}")
+
+    def execute_query(self, query: str, params: tuple = None):
+        """
+        Executes a SQL query on the DuckDB database.
+
+        Parameters:
+        query (str): The SQL query to execute.
+        params (tuple, optional): A tuple of parameters to pass to the query.
+
+        Returns:
+        list: The result of the query as a list of tuples.
+
+        Raises:
+        duckdb.Error: If there is an error executing the query.
+        """
+        try:
+            if self.connection is None:
+                self.connect()
+            if params:
+                return self.connection.execute(query, params).fetchall()
+            return self.connection.execute(query).fetchall()
+        except duckdb.Error as e:
+            raise duckdb.Error(f"Failed to execute query: {query}. Error: {e}")
+
+    def close(self):
+        """
+        Closes the connection to the DuckDB database.
+
+        This method safely closes the connection if it is open.
+        """
+        if self.connection:
+            try:
+                self.connection.close()
+            except duckdb.Error as e:
+                raise duckdb.Error(f"Failed to close the DuckDB database connection: {e}")
+            finally:
+                self.connection = None
+                
+
+class Stations(DuckDBManager):
+    def __init__(self, db_dirpath: str, station_name: str, meta: dict, locations: dict, platforms: dict):
+        """
+        Initializes the Stations class with the directory path of the database and the station name.
+
+        The database file is named using the normalized station name. If the file does not exist, a new
+        database is created.
+
+        Parameters:
+            db_dirpath (str): The directory path where the DuckDB database is located.
+            station_name (str): The name of the station.
+            meta (dict): Station metadata available in the station module.
+            locations (dict): Station locations, see `sites.spectral.config.locations`
+            platforms (dict): Station measurement platforms, see `sites.spectral.config.platforms`
+        """
+        self.meta = meta
+        self.db_dirpath = Path(db_dirpath)
+        self.station_name = station_name
+        self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}.duckdb"
+        
+        # Ensure the database file is created
+        if not self.db_filepath.exists():
+            self.create_new_database()
+        
+        super().__init__(str(self.db_filepath))
+
+    def create_new_database(self):
+        """
+        Creates a new DuckDB database file at the specified db_filepath.
+        """
+        # This will create a new file if it doesn't exist
+        connection = duckdb.connect(self.db_filepath)
+        connection.close()
+
+    @property
+    def normalized_station_name(self) -> str:
+        """
+        Returns the normalized version of the station name.
+
+        Returns:
+        str: The normalized station name in lowercase with non-English characters replaced.
+        """
+        return normalize_string(self.station_name)
+
+    def get_station_data(self, query: str, params: Optional[tuple] = None):
+        return self.execute_query(query, params)
+
+    def add_station_data(self, table_name: str, data: dict):
+        if not self.table_exists(table_name):
+            self.create_table(table_name, data)
+        columns = ', '.join(data.keys())
+        placeholders = ', '.join(['?'] * len(data))
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        self.execute_query(query, tuple(data.values()))
+
+    def table_exists(self, table_name: str) -> bool:
+        query = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ?"
+        result = self.execute_query(query, (table_name,))
+        return result[0][0] > 0
+
+    def create_table(self, table_name: str, data: dict):
+        columns = []
+        for column_name, value in data.items():
+            column_type = self.infer_type(value)
+            columns.append(f"{column_name} {column_type}")
+        columns_def = ', '.join(columns)
+        query = f"CREATE TABLE {table_name} ({columns_def})"
+        self.execute_query(query)
+
+    @staticmethod
+    def infer_type(value):
+        if isinstance(value, int):
+            return 'INTEGER'
+        elif isinstance(value, float):
+            return 'DOUBLE'
+        elif isinstance(value, str):
+            return 'VARCHAR'
+        elif isinstance(value, bool):
+            return 'BOOLEAN'
+        else:
+            return 'VARCHAR'  # Fallback type
+
+    def list_tables(self):
+        query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
+        result = self.execute_query(query)
+        return [row[0] for row in result]
+
+    def close_connection(self):
+        self.close()
+        
+    def get_metadata(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Returns the metadata of the station.
+
+        Returns:
+            dict: A dictionary with the station name as the key and a nested dictionary containing
+                  db_filepath, meta, locations, and platforms as the value.
+        """
+        return {
+            self.station_name: {
+                "db_filepath": str(self.db_filepath),
+                "meta": self.meta,
+                "locations": self.locations,
+                "platforms": self.platforms
+            }
+        }
     
         
 def stations_names()->dict:
@@ -60,24 +382,24 @@ def stations_names()->dict:
         ```python
         stations_names()
         {
-            'Abisko': {'system_name': 'abisko', 'acronym': 'ANS'},
-            'Asa': {'system_name': 'asa', 'acronym': 'ASA'},
-            'Grimsö': {'system_name': 'grimso', 'acronym': 'GRI'},
-            'Lonnstorp': {'system_name': 'lonnstorp', 'acronym': 'LON'},
-            'Robacksdalen': {'system_name': 'robacksdalen', 'acronym': 'RBD'},
-            'Skogaryd': {'system_name': 'skogaryd', 'acronym': 'SKC'},
-            'Svartberget': {'system_name': 'svartberget', 'acronym': 'SVB'}
+            'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS'},
+            'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA'},
+            'Grimsö': {'normalized_station_name': 'grimso', 'station_acronym': 'GRI'},
+            'Lonnstorp': {'normalized_station_name': 'lonnstorp', 'station_acronym': 'LON'},
+            'Robacksdalen': {'normalized_station_name': 'robacksdalen', 'station_acronym': 'RBD'},
+            'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC'},
+            'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB'}
         }
         ```
     """
     return {
-        'Abisko': {'system_name': 'abisko', 'acronym': 'ANS'},
-        'Asa': {'system_name': 'asa', 'acronym': 'ASA'},
-        'Grimsö': {'system_name': 'grimso', 'acronym': 'GRI'},
-        'Lonnstorp': {'system_name': 'lonnstorp', 'acronym': 'LON'},
-        'Robacksdalen': {'system_name': 'robacksdalen', 'acronym': 'RBD'},
-        'Skogaryd': {'system_name': 'skogaryd', 'acronym': 'SKC'},
-        'Svartberget': {'system_name': 'svartberget', 'acronym': 'SVB'}
+        'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS'},
+        'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA'},
+        'Grimsö': {'normalized_station_name': 'grimso', 'station_acronym': 'GRI'},
+        'Lonnstorp': {'normalized_station_name': 'lonnstorp', 'station_acronym': 'LON'},
+        'Robacksdalen': {'normalized_station_name': 'robacksdalen', 'station_acronym': 'RBD'},
+        'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC'},
+        'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB'}
     }
 
 
