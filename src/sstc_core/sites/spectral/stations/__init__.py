@@ -312,6 +312,7 @@ class Station(DuckDBManager):
         self.platforms = getattr(self.station_module, 'platforms', {})
         self.db_dirpath = Path(db_dirpath)
         self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}.duckdb"
+        self.sftp_dirpath = f'/{self.normalized_station_name}/data/'
         
         # Ensure the database file is created
         if not self.db_filepath.exists():
@@ -447,6 +448,7 @@ class Station(DuckDBManager):
         """
         return {
             self.station_name: {
+                "sftp_dirpath": str(self.sftp_dirpath),
                 "db_filepath": str(self.db_filepath),
                 "meta": self.meta,
                 "locations": self.locations,

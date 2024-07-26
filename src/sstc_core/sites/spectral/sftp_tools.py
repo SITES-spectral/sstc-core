@@ -2,21 +2,60 @@ import paramiko
 import os
 import stat
 from sstc_core.sites.spectral.utils import extract_two_dirs_and_filename
+import keyring
+from typing import Dict, Any
 
 
-def open_sftp_connection(hostname, port, username, password):
+def _get_sftp_credentials():
     """
-    Opens an SFTP connection to the specified server.
+    Retrieves SFTP credentials from the system's keyring.
 
-    This function establishes an SFTP connection using the provided server details and returns the
-    SFTP client and transport objects. It ensures that the connection is properly established
-    before returning the objects.
+    This function accesses the system's keyring to fetch the SFTP server credentials securely. The use of a keyring ensures
+    that sensitive information, such as the SFTP hostname, port, username, and password, is stored and accessed securely.
+
+    Returns:
+        dict: A dictionary containing the SFTP credentials:
+            - "hostname": The SFTP server's hostname.
+            - "port": The port number used for the SFTP connection.
+            - "username": The username for authenticating the SFTP connection.
+            - "password": The password for authenticating the SFTP connection.
+
+    Note:
+        The credentials retrieved by this function are considered sensitive. Ensure that they are handled securely
+        throughout the application's lifecycle. Do not log or expose these credentials in any part of the application
+        to avoid potential security risks.
+
+    Example Usage:
+        credentials = _get_sftp_credentials()
+        print(credentials['hostname'])  # Access hostname securely
+    """
+    hostname = keyring.get_password('sftp', 'hostname')
+    port = int(keyring.get_password('sftp', 'port'))
+    username = keyring.get_password('sftp', 'username')
+    password = keyring.get_password('sftp', 'password')
+    
+    return {
+        "hostname": hostname,
+        "port": port,
+        "username": username,
+        "password": password
+    }
+
+
+def open_sftp_connection(credentials: Dict[str, Any]):
+    """
+    Opens an SFTP connection to the specified server using credentials.
+
+    This function establishes an SFTP connection using the provided server details from the credentials
+    dictionary and returns the SFTP client and transport objects. It ensures that the connection is properly
+    established before returning the objects.
 
     Parameters:
-        hostname (str): The hostname or IP address of the SFTP server.
-        port (int): The port number of the SFTP server.
-        username (str): The username for authentication.
-        password (str): The password for authentication.
+        credentials (dict): A dictionary containing the SFTP credentials:
+            - "hostname": The hostname or IP address of the SFTP server.
+            - "port": The port number of the SFTP server.
+            - "username": The username for authentication.
+            - "password": The password for authentication.
 
     Returns:
         tuple: A tuple containing the SFTP client and transport objects.
@@ -26,17 +65,19 @@ def open_sftp_connection(hostname, port, username, password):
 
     Example:
         ```python
-        hostname = 'sftp.example.com'
-        port = 22
-        username = 'your_username'
-        password = 'your_password'
-        sftp, transport = open_sftp_connection(hostname, port, username, password)
+        credentials = _get_sftp_credentials()
+        sftp, transport = open_sftp_connection(credentials)
         # Use the sftp client for file operations
         sftp.close()
         transport.close()
         ```
     """
     try:
+        hostname = credentials.get('hostname')
+        port = credentials.get('port')
+        username = credentials.get('username')
+        password = credentials.get('password')
+
         transport = paramiko.Transport((hostname, port))
         transport.connect(username=username, password=password)
         sftp = paramiko.SFTPClient.from_transport(transport)
@@ -45,7 +86,7 @@ def open_sftp_connection(hostname, port, username, password):
         raise Exception(f"An error occurred while establishing SFTP connection: {e}")
 
 
-def list_files_sftp(hostname, port, username, password, sftp_directory, extensions=['.jpg', '.jpeg']):
+def list_files_sftp(credentials: Dict[str, Any], sftp_directory: str, extensions=['.jpg', '.jpeg']) -> list:
     """
     Lists files from an SFTP server recursively with specified extensions.
 
@@ -54,10 +95,11 @@ def list_files_sftp(hostname, port, username, password, sftp_directory, extensio
     based on the provided extensions.
 
     Parameters:
-        hostname (str): The hostname or IP address of the SFTP server.
-        port (int): The port number of the SFTP server.
-        username (str): The username for authentication.
-        password (str): The password for authentication.
+        credentials (dict): A dictionary containing the SFTP credentials:
+            - "hostname": The hostname or IP address of the SFTP server.
+            - "port": The port number of the SFTP server.
+            - "username": The username for authentication.
+            - "password": The password for authentication.
         sftp_directory (str): The directory on the SFTP server to start listing files from.
         extensions (list): A list of file extensions to filter by. Defaults to ['.jpg', '.jpeg'].
 
@@ -69,18 +111,15 @@ def list_files_sftp(hostname, port, username, password, sftp_directory, extensio
 
     Example:
         ```python
-        hostname = 'sftp.example.com'
-        port = 22
-        username = 'your_username'
-        password = 'your_password'
+        credentials = _get_sftp_credentials()
         sftp_directory = '/path/to/sftp/directory'
-        list_files_sftp(hostname, port, username, password, sftp_directory)
+        list_files_sftp(credentials, sftp_directory)
         ['/path/to/sftp/directory/image1.jpg', '/path/to/sftp/directory/subdir/image2.jpeg']
         ```
     """
     try:
         # Open SFTP connection
-        sftp, transport = open_sftp_connection(hostname, port, username, password)
+        sftp, transport = open_sftp_connection(credentials)
 
         # Function to recursively list files in a directory
         def recursive_list(sftp, directory):
@@ -110,7 +149,7 @@ def list_files_sftp(hostname, port, username, password, sftp_directory, extensio
         raise Exception(f"An error occurred while listing files from the SFTP server: {e}")
 
 
-def download_file(sftp, remote_filepath, local_dirpath, split_subdir='data'):
+def download_file(sftp, remote_filepath: str, local_dirpath: str, split_subdir='data') -> str:
     """
     Downloads a file from the SFTP server and ensures that the download is complete by verifying the file size.
 
@@ -133,15 +172,10 @@ def download_file(sftp, remote_filepath, local_dirpath, split_subdir='data'):
 
     Example:
         ```python    
-        hostname = 'sftp.example.com'
-        port = 22
-        username = 'your_username'
-        password = 'your_password'
+        credentials = _get_sftp_credentials()
         remote_filepath = '/remote/path/to/data/subdir1/file1.jpg'
         local_dirpath = '/local/path/to/directory'
-        transport = paramiko.Transport((hostname, port))
-        transport.connect(username=username, password=password)
-        sftp = paramiko.SFTPClient.from_transport(transport)
+        sftp, transport = open_sftp_connection(credentials)
         download_file(sftp, remote_filepath, local_dirpath, 'data')
         sftp.close()
         transport.close()
@@ -182,3 +216,4 @@ def download_file(sftp, remote_filepath, local_dirpath, split_subdir='data'):
 
     except Exception as e:
         raise Exception(f"An error occurred while downloading {remote_filepath}: {e}")
+

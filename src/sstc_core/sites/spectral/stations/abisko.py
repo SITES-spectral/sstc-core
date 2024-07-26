@@ -14,8 +14,12 @@ meta = {
     "normalized_station_name": "abisko",
     "locations_dirpath": config_dirpath / 'locations' / 'locations_abisko.yaml',
     "platforms_dirpath": config_dirpath / 'platforms' / 'platforms_abisko.yaml',    
-    'location': {'epsg:4326': {}, 'epsg:3006': {}}
-}
+    'geolocation':{
+        'point':{
+            'epsg:4326': {'latitude_dd': None, 'longitude_dd': None}, 
+            'epsg:3006': {'x_coord': None, 'y_coord': None}},
+    }
+    }
 
 def load_configurations():
     """

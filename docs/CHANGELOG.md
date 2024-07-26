@@ -1,3 +1,8 @@
+## [v0.3.1.1]
+- Improved platforms `.yaml` metadata 
+- Refactored `catalog` module to use `Station` class
+- Code prunning `sft_tools` module
+
 ## [v0.3.1]
 - Renamed `Stations` class to `Station`
 - Improved `Station` class by self construct based on the `station_name`

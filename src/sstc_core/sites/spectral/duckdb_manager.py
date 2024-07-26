@@ -1,7 +1,7 @@
 import duckdb
 import keyring
 from sstc_core.sites.spectral import utils, sftp_tools
-from sstc_core.sites.spectral.stations import DuckDBManager, DatabaseError, RecordExistsError
+from sstc_core.sites.spectral.stations import Station, DatabaseError, RecordExistsError
 
 
 def get_phenocam_table_schema() -> str:
@@ -14,6 +14,7 @@ def get_phenocam_table_schema() -> str:
         - record_id: TEXT (unique identifier)
         - year: INTEGER
         - creation_date: TEXT
+        - day_of_year: INTEGER
         - station_acronym: TEXT
         - location_id: TEXT
         - platform_id: TEXT
@@ -21,6 +22,8 @@ def get_phenocam_table_schema() -> str:
         - catalog_filepath: TEXT
         - source_filepath: TEXT
         - is_selected: BOOL
+        - is_legacy: BOOL
+        
         ```
 
     Returns:
@@ -30,13 +33,15 @@ def get_phenocam_table_schema() -> str:
     record_id TEXT PRIMARY KEY,
     year INTEGER,
     creation_date TEXT,
+    day_of_year INTEGER,
     station_acronym TEXT,
     location_id TEXT,
     platform_id TEXT,
     platform_type TEXT,            
     catalog_filepath TEXT,
     source_filepath TEXT, 
-    is_selected BOOL    
+    is_selected BOOL,
+    is_legacy BOOL    
     """
 
 
