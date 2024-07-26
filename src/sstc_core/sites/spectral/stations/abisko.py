@@ -1,6 +1,5 @@
 from ..io_tools import load_yaml
 from pathlib import Path
-from sstc_core.sites.spectral.stations import Stations 
 
 stations_dirpath = Path(__file__).parent
 spectral_dirpath = Path(stations_dirpath).parent
@@ -23,7 +22,7 @@ def load_configurations():
     Loads configurations for the Abisko station from YAML files.
 
     Returns:
-    tuple: A tuple containing locations and platforms configuration data.
+      tuple: A tuple containing locations and platforms configuration data.
     """
     # Loading station locations config
     locations = load_yaml(meta["locations_dirpath"])
@@ -33,24 +32,9 @@ def load_configurations():
 
     return locations, platforms
 
-def get_station_instance(db_dirpath:str = None):
-    """
-    Creates and returns an instance of the Stations class for the Abisko station.
 
-    Returns:
-    Stations: An instance of the Stations class.
-    """
-    if db_dirpath is None:
-        db_dirpath = spectral_dirpath / "databases"
-    station_name = meta["station_name"]
-    locations, platforms = load_configurations()
-    return Stations(db_dirpath, station_name, meta=meta, locations=locations, platforms=platforms)
+locations, platforms = load_configurations()
 
 
-
-
-# Example usage
-if __name__ == "__main__":    
-    station = get_station_instance()
     
 

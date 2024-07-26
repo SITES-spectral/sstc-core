@@ -1,15 +1,9 @@
-import os
 import importlib
-import importlib.util
-from dataclasses import dataclass
 from typing import Optional
-from sstc_core.sites.spectral.catalog import table_name_decorator
 from sstc_core.sites.spectral.utils import normalize_string
 from pathlib import Path
 import duckdb
 import hashlib
-
-
 from typing import Dict, Any, List, Union
 
 
@@ -262,113 +256,7 @@ class DuckDBManager:
                 self.connection = None
                 
 
-class Stations(DuckDBManager):
-    def __init__(self, db_dirpath: str, station_name: str, meta: dict, locations: dict, platforms: dict):
-        """
-        Initializes the Stations class with the directory path of the database and the station name.
-
-        The database file is named using the normalized station name. If the file does not exist, a new
-        database is created.
-
-        Parameters:
-            db_dirpath (str): The directory path where the DuckDB database is located.
-            station_name (str): The name of the station.
-            meta (dict): Station metadata available in the station module.
-            locations (dict): Station locations, see `sites.spectral.config.locations`
-            platforms (dict): Station measurement platforms, see `sites.spectral.config.platforms`
-        """
-        self.meta = meta
-        self.db_dirpath = Path(db_dirpath)
-        self.station_name = station_name
-        self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}.duckdb"
-        
-        # Ensure the database file is created
-        if not self.db_filepath.exists():
-            self.create_new_database()
-        
-        super().__init__(str(self.db_filepath))
-
-    def create_new_database(self):
-        """
-        Creates a new DuckDB database file at the specified db_filepath.
-        """
-        # This will create a new file if it doesn't exist
-        connection = duckdb.connect(self.db_filepath)
-        connection.close()
-
-    @property
-    def normalized_station_name(self) -> str:
-        """
-        Returns the normalized version of the station name.
-
-        Returns:
-        str: The normalized station name in lowercase with non-English characters replaced.
-        """
-        return normalize_string(self.station_name)
-
-    def get_station_data(self, query: str, params: Optional[tuple] = None):
-        return self.execute_query(query, params)
-
-    def add_station_data(self, table_name: str, data: dict):
-        if not self.table_exists(table_name):
-            self.create_table(table_name, data)
-        columns = ', '.join(data.keys())
-        placeholders = ', '.join(['?'] * len(data))
-        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-        self.execute_query(query, tuple(data.values()))
-
-    def table_exists(self, table_name: str) -> bool:
-        query = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ?"
-        result = self.execute_query(query, (table_name,))
-        return result[0][0] > 0
-
-    def create_table(self, table_name: str, data: dict):
-        columns = []
-        for column_name, value in data.items():
-            column_type = self.infer_type(value)
-            columns.append(f"{column_name} {column_type}")
-        columns_def = ', '.join(columns)
-        query = f"CREATE TABLE {table_name} ({columns_def})"
-        self.execute_query(query)
-
-    @staticmethod
-    def infer_type(value):
-        if isinstance(value, int):
-            return 'INTEGER'
-        elif isinstance(value, float):
-            return 'DOUBLE'
-        elif isinstance(value, str):
-            return 'VARCHAR'
-        elif isinstance(value, bool):
-            return 'BOOLEAN'
-        else:
-            return 'VARCHAR'  # Fallback type
-
-    def list_tables(self):
-        query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
-        result = self.execute_query(query)
-        return [row[0] for row in result]
-
-    def close_connection(self):
-        self.close()
-        
-    def get_metadata(self) -> Dict[str, Dict[str, Any]]:
-        """
-        Returns the metadata of the station.
-
-        Returns:
-            dict: A dictionary with the station name as the key and a nested dictionary containing
-                  db_filepath, meta, locations, and platforms as the value.
-        """
-        return {
-            self.station_name: {
-                "db_filepath": str(self.db_filepath),
-                "meta": self.meta,
-                "locations": self.locations,
-                "platforms": self.platforms
-            }
-        }
-    
+   
         
 def stations_names()->dict:
     """
@@ -403,41 +291,177 @@ def stations_names()->dict:
     }
 
 
-# using Lazy Loading to improve performance and flexibility.
- 
-def load_station_module(system_name: str):
-    """
-    DEPRECIATION WARNING: 
-        Better to load using `from sstc_core.sites.spectral.stations import <station_name>
-                
-    Load a Python module dynamically based on the provided system name.
 
-    Parameters:
-        system_name (str): The name of the system for which the module should be loaded. 
-                       The function expects a file named `<system_name>.py` to be 
-                       present in the same directory as this script.
+class Station(DuckDBManager):
+    def __init__(self, db_dirpath: str, station_name: str):
+        """
+        Initializes the Station class with the directory path of the database and the station name.
 
-    Returns:
-        module: The loaded module object if the module exists and is successfully loaded.
+        The database file is named using the normalized station name. If the file does not exist, a new
+        database is created.
 
-    Raises:
-        FileNotFoundError: If the module file does not exist.
-        ImportError: If the module cannot be imported.
-    """
-    filename = f'{system_name}.py'
-    filepath = os.path.join(os.path.dirname(__file__), filename)
+        Parameters:
+            db_dirpath (str): The directory path where the DuckDB database is located.
+            station_name (str): The name of the station.
+        """
+        self.station_name = station_name
+        self.normalized_station_name = normalize_string(station_name)
+        self.station_module = self._load_station_module()
+        self.meta = getattr(self.station_module, 'meta', {})
+        self.locations = getattr(self.station_module, 'locations', {})
+        self.platforms = getattr(self.station_module, 'platforms', {})
+        self.db_dirpath = Path(db_dirpath)
+        self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}.duckdb"
+        
+        # Ensure the database file is created
+        if not self.db_filepath.exists():
+            self.create_new_database()
+        
+        super().__init__(str(self.db_filepath))
+
+    def _load_station_module(self):
+        """
+        Dynamically loads the specified station submodule.
+
+        Returns:
+            module: The loaded module.
+        """
+        module_path = f"sstc_core.sites.spectral.stations.{self.normalized_station_name}"
+        try:
+            return importlib.import_module(module_path)
+        except ModuleNotFoundError:
+            raise ImportError(f"Module '{module_path}' could not be found or imported.")
+
+    def create_new_database(self):
+        """
+        Creates a new DuckDB database file at the specified db_filepath.
+        """
+        # This will create a new file if it doesn't exist
+        connection = duckdb.connect(str(self.db_filepath))
+        connection.close()
+
+    def get_station_data(self, query: str, params: Optional[tuple] = None):
+        """
+        Retrieves data from the station database based on a SQL query.
+
+        Parameters:
+            query (str): The SQL query to execute.
+            params (tuple, optional): Parameters to pass with the query.
+
+        Returns:
+            Any: The result of the query execution.
+        """
+        return self.execute_query(query, params)
+
+    def add_station_data(self, table_name: str, data: Dict[str, Any]):
+        """
+        Adds data to the specified table in the station database. Creates the table if it does not exist.
+
+        Parameters:
+            table_name (str): The name of the table to insert data into.
+            data (Dict[str, Any]): The data to insert as a dictionary.
+        """
+        if not self.table_exists(table_name):
+            self.create_table(table_name, data)
+        columns = ', '.join(data.keys())
+        placeholders = ', '.join(['?'] * len(data))
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        self.execute_query(query, tuple(data.values()))
+
+    def table_exists(self, table_name: str) -> bool:
+        """
+        Checks if a table exists in the station database.
+
+        Parameters:
+            table_name (str): The name of the table to check.
+
+        Returns:
+            bool: True if the table exists, False otherwise.
+        """
+        query = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ?"
+        result = self.execute_query(query, (table_name,))
+        return result[0][0] > 0
+
+    def create_table(self, table_name: str, data: Dict[str, Any]):
+        """
+        Creates a new table in the station database with the schema based on the provided data.
+
+        Parameters:
+            table_name (str): The name of the table to create.
+            data (Dict[str, Any]): A sample data dictionary to infer column types.
+        """
+        columns = []
+        for column_name, value in data.items():
+            column_type = self.infer_type(value)
+            columns.append(f"{column_name} {column_type}")
+        columns_def = ', '.join(columns)
+        query = f"CREATE TABLE {table_name} ({columns_def})"
+        self.execute_query(query)
+
+    @staticmethod
+    def infer_type(value: Any) -> str:
+        """
+        Infers the DuckDB column type from a Python value.
+
+        Parameters:
+            value (Any): The value to infer the type from.
+
+        Returns:
+            str: The DuckDB column type.
+        """
+        if isinstance(value, int):
+            return 'INTEGER'
+        elif isinstance(value, float):
+            return 'DOUBLE'
+        elif isinstance(value, str):
+            return 'VARCHAR'
+        elif isinstance(value, bool):
+            return 'BOOLEAN'
+        else:
+            return 'VARCHAR'  # Fallback type
+
+    def list_tables(self) -> List[str]:
+        """
+        Lists all tables in the station database.
+
+        Returns:
+            List[str]: A list of table names.
+        """
+        query = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
+        result = self.execute_query(query)
+        return [row[0] for row in result]
+
+    def close_connection(self):
+        """
+        Closes the connection to the station database.
+        """
+        self.close()
+        
+    def get_metadata(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Returns the metadata of the station.
+
+        Returns:
+            dict: A dictionary with the station name as the key and a nested dictionary containing
+                  db_filepath, meta, locations, and platforms as the value.
+        """
+        return {
+            self.station_name: {
+                "db_filepath": str(self.db_filepath),
+                "meta": self.meta,
+                "locations": self.locations,
+                "platforms": self.platforms
+            }
+        }
     
-    if not os.path.isfile(filepath):
-        raise FileNotFoundError(f"No module file found for system '{system_name}' at '{filepath}'")
-    
-    spec = importlib.util.spec_from_file_location(system_name, filepath)
-    if spec is None:
-        raise ImportError(f"Could not create a module specification for '{filename}'")
-    
-    module = importlib.util.module_from_spec(spec)
-    try:
-        spec.loader.exec_module(module)
-    except Exception as e:
-        raise ImportError(f"Failed to load the module '{filename}': {e}")
-    
-    return module
+    def call_load_configurations(self) -> Any:
+        """
+        Calls `load_configurations` from the station submodule, if available.
+
+        Returns:
+            tuple: A tuple containing locations and platforms configuration data or None if the method does not exist.
+        """
+        load_configurations_method = getattr(self.station_module, 'load_configurations', None)
+        if callable(load_configurations_method):
+            return load_configurations_method()
+        return None

@@ -1,3 +1,7 @@
+## [v0.3.1]
+- Renamed `Stations` class to `Station`
+- Improved `Station` class by self construct based on the `station_name`
+
 ## [v0.3.0]
 - added `utils.normalize_string`
 - added `utils.generate_unique_id` creates a short hash. 
