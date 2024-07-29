@@ -140,7 +140,7 @@ def populate_station_db(
             
             catalog_guid = record.get('catalog_guid')
             # Note the difference between platforms_type and platform_type.
-            platform_type = record.get('platform_id')
+            platform_type = record.get('platform_type')
             if not catalog_guid:
                 print(f"Failed to generate catalog_guid for file: {remote_filepath}")
                 continue

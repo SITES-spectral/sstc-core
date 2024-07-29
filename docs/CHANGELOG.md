@@ -1,3 +1,6 @@
+## [v0.3.6] 
+- fixed wrong table name using `platform_id` instead of `platform_type`
+
 ## [v0.3.5.1] 
 - fixed wrong table name using `platforms_type` instead of `platform_type`
   
