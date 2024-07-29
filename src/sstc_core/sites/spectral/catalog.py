@@ -1,5 +1,6 @@
 from sstc_core.sites.spectral import sftp_tools, utils
 from sstc_core.sites.spectral.stations import Station
+import duckdb
 
 
 def create_record_dictionary(remote_filepath: str, station: Station, platforms_type: str, platform_id: str, 
@@ -138,23 +139,26 @@ def populate_station_db(
             )
             
             catalog_guid = record.get('catalog_guid')
+            # Note the difference between platforms_type and platform_type.
+            platform_type = record.get('platform_id')
             if not catalog_guid:
                 print(f"Failed to generate catalog_guid for file: {remote_filepath}")
                 continue
 
             # Define table name based on platform details
-            table_name = f"{platforms_type}_{record['location_id']}_{platform_id}"
+            table_name = f"{platform_type}_{record['location_id']}_{platform_id}"
 
             # Check if the record already exists
-            if not station.catalog_guid_exists(table_name=table_name, catalog_guid=catalog_guid):
+            if not station.catalog_guid_exists(
+                table_name=table_name, 
+                catalog_guid=catalog_guid):
                 station.add_station_data(table_name=table_name, data=record)
+                return True
             else:
                 print(f"Record with catalog_guid {catalog_guid} already exists in {table_name}.")
 
-        return True
-
-    except Exception as e:
-        print(f"An error occurred during the population of the station database: {e}")
+    except duckdb.Error as e:
+        print(f"Error inserting record: {e}")
         return False
 
     finally:

@@ -1,3 +1,9 @@
+## [v0.3.5.1] 
+- fixed wrong table name using `platforms_type` instead of `platform_type`
+  
+## [v0.3.5] 
+- Better error handling on `catalog.populate_station_db`
+
 ## [v0.3.4.2] 
 - fixed bug
 
@@ -5,7 +11,7 @@
 - Fixed refactored variable `platforms_type` in Station class.
 
 ## [v0.3.4]
-- Added `Station.populate_station_db` 
+- Added `Catalog.populate_station_db` 
 
 ## [v0.3.3]
 - added `Station.get_record_count`
