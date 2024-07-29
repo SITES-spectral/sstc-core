@@ -1,3 +1,6 @@
+## [v0.4.2]
+- added `catalog.get-records_count`   
+
 ## [v0.4.1]
 - added `catalog.update_records_count` 
 
