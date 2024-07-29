@@ -33,6 +33,7 @@ PhenoCams:
         points: [[750, 600], [3700, 650], [3500, 950], [100, 830]]
         cv2_polyline_style: [1, (255, 0, 0), 7]
     backups:
-      aurora02_dirpath: '/home/aurora02/data/SITES/Spectral/data/catalog/abisko/locations/BTH_FOR/platforms/PhenoCam/P_BTH_1/' 
+      aurora02_dirpath: '/home/aurora02/data/SITES/Spectral/data/catalog/abisko/locations/BTH_FOR/platforms/PhenoCam/P_BTH_1/'
+    records_count: 0 
     
     

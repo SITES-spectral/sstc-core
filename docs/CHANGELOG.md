@@ -1,3 +1,6 @@
+## [v0.4.1]
+- added `catalog.update_records_count` 
+
 ## [v0.4.0]
 - refactored `populate_station_db` into the `Station` class instead of having it in `catalog` module
 - refactored `create_record_dictionary` into the `Station` class instead of having it in `catalog` module

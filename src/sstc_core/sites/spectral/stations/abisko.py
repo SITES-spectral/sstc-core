@@ -13,8 +13,8 @@ meta = {
     "is_active": True,
     "station_name": "Abisko",
     "normalized_station_name": "abisko",    
-    "locations_dirpath": config_dirpath / 'locations' / 'locations_abisko.yaml',
-    "platforms_dirpath": config_dirpath / 'platforms' / 'platforms_abisko.yaml',    
+    "locations_filepath": config_dirpath / 'locations' / 'locations_abisko.yaml',
+    "platforms_filepath": config_dirpath / 'platforms' / 'platforms_abisko.yaml',    
     'geolocation':{
         'point':{
             'epsg:4326': {'latitude_dd': None, 'longitude_dd': None}, 
@@ -31,10 +31,10 @@ def load_configurations():
       tuple: A tuple containing locations and platforms configuration data.
     """
     # Loading station locations config
-    locations = load_yaml(meta["locations_dirpath"])
+    locations = load_yaml(meta["locations_filepath"])
 
     # Loading station platforms config
-    platforms = load_yaml(meta["platforms_dirpath"])
+    platforms = load_yaml(meta["platforms_filepath"])
 
     return locations, platforms
 
