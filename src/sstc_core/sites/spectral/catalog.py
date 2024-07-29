@@ -96,7 +96,7 @@ def populate_station_db(
     station: Station,
     sftp_filepaths: list,
     platform_id: str,
-    platform_type: str = 'PhenoCams',
+    platforms_type: str = 'PhenoCams',
     backup_dirpath: str = 'aurora02_dirpath',
     start_time: str = "10:00:00",
     end_time: str = "14:00:00",
@@ -113,7 +113,7 @@ def populate_station_db(
         station (Station): An instance of the Station class for database operations.
         sftp_filepaths (list): A list of file paths on the SFTP server to process.
         platform_id (str): The identifier for the specific platform.
-        platform_type (str, optional): The type of platform (default is 'PhenoCams').
+        platforms_type (str, optional): The type of platform (default is 'PhenoCams').
         backup_dirpath (str, optional): The directory path used for backup storage in the local filesystem.
         start_time (str, optional): The start of the time window in 'HH:MM:SS' format (default is "10:00:00").
         end_time (str, optional): The end of the time window in 'HH:MM:SS' format (default is "14:00:00").
@@ -128,7 +128,7 @@ def populate_station_db(
             record = create_record_dictionary(
                 remote_filepath=remote_filepath,
                 station=station,
-                platform_type=platform_type,
+                platforms_type=platforms_type,
                 platform_id=platform_id,
                 is_legacy=False,
                 backup_dirpath=backup_dirpath,
@@ -143,7 +143,7 @@ def populate_station_db(
                 continue
 
             # Define table name based on platform details
-            table_name = f"{platform_type}_{record['location_id']}_{platform_id}"
+            table_name = f"{platforms_type}_{record['location_id']}_{platform_id}"
 
             # Check if the record already exists
             if not station.catalog_guid_exists(table_name=table_name, catalog_guid=catalog_guid):
