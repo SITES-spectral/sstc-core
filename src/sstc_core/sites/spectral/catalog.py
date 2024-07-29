@@ -27,7 +27,7 @@ def create_record_dictionary( remote_filepath:str, station:Station, platform_typ
         end_time = end_time )
     # Create the record dictionary
     record_dict = {
-        'catalog_guid': utils.generate_unique_id(formatted_date, station_acronym, location_id, platform_id),
+        'catalog_guid': None,
         'year': year,
         'creation_date': formatted_date,
         'day_of_year': day_of_year,
@@ -42,6 +42,10 @@ def create_record_dictionary( remote_filepath:str, station:Station, platform_typ
         'source_filepath': remote_filepath, 
         'tag_id': 0,        
     }
+    
+    record_dict['catalog_guid'] =  utils.generate_unique_id(
+        record_dict, 
+        variable_names= ['creation_date', 'station_acronym', 'location_id', 'platform_id'] )
     
     return record_dict
     

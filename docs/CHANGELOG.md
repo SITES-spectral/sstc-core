@@ -1,3 +1,6 @@
+## [v0.3.1.5]
+- fixed incorrect call to `generate_unique_id` in `catalog` module
+
 ## [v0.3.1.4]
 - bug fixed
 
