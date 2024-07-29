@@ -81,6 +81,11 @@ def generate_query_dict() -> Dict[str, Dict[str, Union[str, tuple]]]:
         ``` 
     """
     queries = {
+        "record_exists":{
+            "query": "SELECT COUNT(*) FROM {table_name} WHERE catalog_guid ={catalog_guid}",
+            "params": ("table_name", "catalog_guid"),
+            
+        }, 
         "create_table": {
             "query": "CREATE TABLE IF NOT EXISTS {table_name} ({schema});",
             "params": ("table_name", "schema"),
@@ -255,9 +260,7 @@ class DuckDBManager:
             finally:
                 self.connection = None
                 
-
-   
-        
+     
 def stations_names()->dict:
     """
     Retrieve a dictionary of station names with their respective system names and acronyms.
@@ -467,3 +470,49 @@ class Station(DuckDBManager):
         if callable(load_configurations_method):
             return load_configurations_method()
         return None
+    
+    def catalog_guid_exists(self, table_name: str, catalog_guid: str) -> bool:
+        """
+        Checks if a record with the specified catalog_guid exists in the given table.
+
+        Parameters:
+            table_name (str): The name of the table to check.
+            catalog_guid (str): The unique identifier to search for.
+
+        Returns:
+            bool: True if the record exists, False otherwise.
+        """
+        query = f"SELECT COUNT(*) FROM {table_name} WHERE catalog_guid = ?"
+        result = self.execute_query(query, (catalog_guid,))
+        return result[0][0] > 0
+    
+    def insert_record(self, table_name: str, record_dict: Dict[str, Any]) -> bool:
+        """
+        Inserts a record into the specified table if the catalog_guid does not already exist.
+
+        Parameters:
+            table_name (str): The name of the table to insert the record into.
+            record_dict (Dict[str, Any]): A dictionary representing the record to insert.
+
+        Returns:
+            bool: True if the record was inserted, False if it already existed.
+        """
+        catalog_guid = record_dict['catalog_guid']
+
+        # Check if the catalog_guid already exists
+        if self.catalog_guid_exists(table_name, catalog_guid):
+            print(f"Record with catalog_guid {catalog_guid} already exists.")
+            return False
+
+        # Insert the record as it does not exist
+        columns = ', '.join(record_dict.keys())
+        placeholders = ', '.join(['?'] * len(record_dict))
+        query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+        
+        try:
+            self.execute_query(query, tuple(record_dict.values()))
+            print(f"Inserted record with catalog_guid {catalog_guid}")
+            return True
+        except duckdb.Error as e:
+            print(f"Error inserting record: {e}")
+            return False

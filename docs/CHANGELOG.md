@@ -1,3 +1,6 @@
+## [v0.3.2]
+- Added `Station.catalog_guid_exists` and `Station.insert_record` 
+
 ## [v0.3.1.7]
 - expanded schema for `catalog.create_record_dict`
 
