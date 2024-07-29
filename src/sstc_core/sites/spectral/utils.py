@@ -264,10 +264,10 @@ def normalize_string(input_string: str) -> str:
     characters with their corresponding English characters. Specially handles Nordic characters.
 
     Parameters:
-    input_string (str): The string to normalize.
+        input_string (str): The string to normalize.
 
     Returns:
-    str: The normalized string with all characters in lowercase and accented characters replaced.
+        str: The normalized string with all characters in lowercase and accented characters replaced.
     """
     # Decompose the unicode string into its components (base characters and diacritics)
     normalized = unicodedata.normalize('NFKD', input_string)

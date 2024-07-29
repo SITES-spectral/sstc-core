@@ -1,3 +1,7 @@
+## [v0.3.1.6]
+- Added `sftp_tools.get_new_files_to_download`
+- Improved documentation.
+
 ## [v0.3.1.5]
 - fixed incorrect call to `generate_unique_id` in `catalog` module
 

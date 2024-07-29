@@ -149,8 +149,40 @@ def list_files_sftp(credentials: Dict[str, Any], sftp_directory: str, extensions
         raise Exception(f"An error occurred while listing files from the SFTP server: {e}")
 
 
-def get_remote_file_size(remote_filepath:str, credentials:dict):
-    
+def get_remote_file_size(remote_filepath: str, credentials: dict) -> int:
+    """
+    Retrieves the size of a remote file on an SFTP server using Paramiko.
+
+    This function connects to an SFTP server using the provided credentials and retrieves the size of the specified
+    remote file. The size is returned in bytes. It ensures the proper closing of both SFTP and SSH connections.
+
+    Parameters:
+        remote_filepath (str): The path to the remote file on the SFTP server.
+        credentials (dict): A dictionary containing the SFTP server credentials with the following keys:
+            - 'hostname': The SFTP server's hostname or IP address.
+            - 'port': The port number of the SFTP server.
+            - 'username': The username to authenticate with the SFTP server.
+            - 'password': The password to authenticate with the SFTP server.
+
+    Returns:
+        int: The size of the file in bytes.
+
+    Raises:
+        Exception: If there is an error connecting to the SFTP server or retrieving the file size.
+
+    Example:
+        ```python
+        credentials = {
+            'hostname': 'example.com',
+            'port': 22,
+            'username': 'your_username',
+            'password': 'your_password'
+        }
+        remote_filepath = '/remote/path/to/file.txt'
+        file_size = get_remote_file_size(remote_filepath, credentials)
+        print(f"The size of the remote file is: {file_size} bytes")
+        ```
+    """
     # Initialize the SSH client
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -158,10 +190,11 @@ def get_remote_file_size(remote_filepath:str, credentials:dict):
     try:
         # Connect to the SFTP server
         ssh.connect(
-            hostname= credentials['hostname'],
-            port= credentials['port'],
-            username=  credentials['username'],
-            password= credentials['password'])
+            hostname=credentials['hostname'],
+            port=credentials['port'],
+            username=credentials['username'],
+            password=credentials['password']
+        )
         sftp = ssh.open_sftp()
 
         # Get the file attributes and retrieve the file size
@@ -297,3 +330,45 @@ def download_file(sftp: paramiko.SFTPClient, remote_filepath: str, local_dirpath
 
     except Exception as e:
         raise Exception(f"An error occurred while downloading {remote_filepath}: {e}")
+    
+
+def get_new_files_to_download(local_dirpath: str, sftp_filepaths: list, split_subdir: str = 'data') -> list:
+    """
+    Identifies files that need to be downloaded from an SFTP server by comparing the list of remote filepaths
+    with the files already present in the local directory.
+
+    This function checks if each file in the list of remote filepaths (`sftp_filepaths`) has already been downloaded
+    to the specified local directory (`local_dirpath`). It uses a subdirectory structure (`split_subdir`) to organize
+    the files locally. If a file is not found locally, it is added to the list of files to be downloaded.
+
+    Parameters:
+        local_dirpath (str): The base directory path where the files are stored locally.
+        sftp_filepaths (list): A list of filepaths on the SFTP server to check against the local directory.
+        split_subdir (str, optional): The subdirectory name to split the file path on. Defaults to 'data'.
+
+    Returns:
+        list: A list of filepaths that are not present locally and need to be downloaded.
+
+    Example:
+        ```python
+        local_dirpath = '/local/path/to/directory'
+        sftp_filepaths = [
+            '/remote/path/to/data/file1.jpg',
+            '/remote/path/to/data/file2.jpg'
+        ]
+        files_to_download = get_new_files_to_download(local_dirpath, sftp_filepaths)
+        print(files_to_download)
+        # Output: ['/remote/path/to/data/file1.jpg', '/remote/path/to/data/file2.jpg'] if these files are not locally available
+        ```
+    """
+    files_to_download = []
+    
+    for remote_filepath in sftp_filepaths:
+        if not is_file_downloaded_locally(
+            local_dirpath=local_dirpath,
+            remote_filepath=remote_filepath,
+            split_subdir=split_subdir     
+        ):
+            files_to_download.append(remote_filepath)
+    
+    return files_to_download
