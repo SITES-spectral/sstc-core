@@ -1,3 +1,7 @@
+## [v0.3.10]
+- fixed bug during initailizaion of database if it does not exist. 
+- refactored database auto-naming to `f"{self.normalized_station_name}_catalog.db"`  
+
 ## [v0.3.9]
 - fixed bug `self.db_filepath.exists()` at `Stations` module.
 

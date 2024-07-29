@@ -363,14 +363,14 @@ class Station(DuckDBManager):
         self.locations = getattr(self.station_module, 'locations', {})
         self.platforms = getattr(self.station_module, 'platforms', {})
         self.db_dirpath = Path(db_dirpath)
-        self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_sites_spectral_data_catalog.db"
+        self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_catalog.db"
         self.sftp_dirpath = f'/{self.normalized_station_name}/data/'
         
-        super().__init__(str(self.db_filepath))
-
         # Ensure the database file is created
-        if not os.path.exists(self.db_filepath):
+        if not os.path.exists(self.db_filepath):            
             self.create_new_database()
+        
+        super().__init__(str(self.db_filepath))
         
         # Close the connection after initialization
         self.close_connection()
@@ -396,19 +396,7 @@ class Station(DuckDBManager):
         connection = duckdb.connect(str(self.db_filepath))
         connection.close()
 
-    def get_station_data(self, query: str, params: Optional[tuple] = None):
-        """
-        Retrieves data from the station database based on a SQL query.
-
-        Parameters:
-            query (str): The SQL query to execute.
-            params (tuple, optional): Parameters to pass with the query.
-
-        Returns:
-            Any: The result of the query execution.
-        """
-        return self.execute_query(query, params)
-
+    
     def add_station_data(self, table_name: str, data: Dict[str, Any]):
         """
         Adds data to the specified table in the station database. Creates the table if it does not exist.
