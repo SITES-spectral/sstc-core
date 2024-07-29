@@ -1,3 +1,7 @@
+## [v0.3.4.1]
+- Fixed refactored variable `platforms_type` in Station class.
+
+
 ## [v0.3.4]
 - Added `Station.populate_station_db` 
 

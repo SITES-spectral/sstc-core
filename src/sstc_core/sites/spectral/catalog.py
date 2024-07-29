@@ -40,7 +40,7 @@ def create_record_dictionary(remote_filepath: str, station: Station, platforms_t
     Raises:
         Exception: If there are issues retrieving or processing the file data.
     """
-    local_dirpath = station.platforms[platform_type][platform_id]['backups'][backup_dirpath]
+    local_dirpath = station.platforms[platforms_type][platform_id]['backups'][backup_dirpath]
 
     # Get creation date and formatted date
     local_filepath = sftp_tools.get_local_filepath(
@@ -55,9 +55,9 @@ def create_record_dictionary(remote_filepath: str, station: Station, platforms_t
     year = creation_date.year
     day_of_year = utils.get_day_of_year(formatted_date)
     station_acronym = station.meta['station_acronym']
-    location_id = station.platforms[platform_type][platform_id]['location_id']
-    ecosystem_of_interest = station.platforms[platform_type][platform_id]['ecosystem_of_interest']
-    platform_type = station.platforms[platforms_type][platform_id][ 'platform_type'] 
+    location_id = station.platforms[platforms_type][platform_id]['location_id']
+    ecosystem_of_interest = station.platforms[platforms_type][platform_id]['ecosystem_of_interest']
+    platform_type = station.platforms[platforms_type][platform_id]['platform_type'] 
     L0_name = f'SITES-{station_acronym}-{location_id}-{platform_id}-DOY_{day_of_year}-{normalized_date}'
     is_L1 = utils.is_within_time_window(
         formatted_date=formatted_date,
