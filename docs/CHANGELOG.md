@@ -1,3 +1,6 @@
+## [v0.3.4]
+- Added `Station.populate_station_db` 
+
 ## [v0.3.3]
 - added `Station.get_record_count`
 - added `Station.get_L1_records` 
