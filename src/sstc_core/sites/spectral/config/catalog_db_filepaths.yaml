@@ -1,0 +1,3 @@
+Abisko: 
+  db_dirpath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/databases/'
+  db_filename: 'abisko.duckdb'

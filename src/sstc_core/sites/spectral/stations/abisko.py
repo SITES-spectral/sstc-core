@@ -4,6 +4,7 @@ from pathlib import Path
 stations_dirpath = Path(__file__).parent
 spectral_dirpath = Path(stations_dirpath).parent
 config_dirpath = spectral_dirpath / "config"
+catalog_db_filepath = config_dirpath / "catalog_db_filepaths.yaml"
 
 meta = {
     "version": '2024_v0.3',

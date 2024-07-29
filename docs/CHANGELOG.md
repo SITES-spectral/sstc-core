@@ -1,3 +1,6 @@
+## [v0.3.7] 
+- Fixed db connections locked in `Station.get_record_count` and `Station.get_L1_records`
+
 ## [v0.3.6] 
 - fixed wrong table name using `platform_id` instead of `platform_type`
 

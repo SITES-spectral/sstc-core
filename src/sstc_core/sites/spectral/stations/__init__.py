@@ -210,18 +210,19 @@ class DuckDBManager:
         if not Path(self.db_filepath).is_file():
             raise FileNotFoundError(f"The database file '{self.db_filepath}' does not exist. "
                                     f"Please provide a valid database file path.")
-
     def connect(self):
         """
-        Establishes a connection to the DuckDB database.
+        Establishes a connection to the DuckDB database if not already connected.
 
         Raises:
-        duckdb.Error: If there is an error connecting to the database.
+            duckdb.Error: If there is an error connecting to the database.
         """
-        try:
-            self.connection = duckdb.connect(self.db_filepath)
-        except duckdb.Error as e:
-            raise duckdb.Error(f"Failed to connect to the DuckDB database: {e}")
+        if self.connection is None:
+            try:
+                self.connection = duckdb.connect(self.db_filepath)
+            except duckdb.Error as e:
+                raise duckdb.Error(f"Failed to connect to the DuckDB database: {e}")
+
 
     def execute_query(self, query: str, params: tuple = None):
         """
@@ -246,13 +247,11 @@ class DuckDBManager:
         except duckdb.Error as e:
             raise duckdb.Error(f"Failed to execute query: {query}. Error: {e}")
 
-    def close(self):
+    def close_connection(self):
         """
-        Closes the connection to the DuckDB database.
-
-        This method safely closes the connection if it is open.
+        Closes the connection to the DuckDB database if it is open.
         """
-        if self.connection:
+        if self.connection and self.connection.is_open():
             try:
                 self.connection.close()
             except duckdb.Error as e:
@@ -260,6 +259,38 @@ class DuckDBManager:
             finally:
                 self.connection = None
                 
+    def get_record_count(self, table_name: str) -> int:
+        """
+        Returns the number of records in the specified table.
+
+        This method ensures that the DuckDB connection is open before executing the query.
+        It will reopen the connection if it was closed.
+
+        Parameters:
+            table_name (str): The name of the table to count records in.
+
+        Returns:
+            int: The number of records in the table.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        query = f"SELECT COUNT(*) FROM {table_name}"
+        
+        try:
+            if self.connection is None or not self.connection.is_open():
+                self.connect()
+                
+            result = self.execute_query(query)
+            return result[0][0]
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while getting the record count for table '{table_name}': {e}")
+            raise
+
+        finally:
+            self.close_connection()
+
      
 def stations_names()->dict:
     """
@@ -435,11 +466,6 @@ class Station(DuckDBManager):
         result = self.execute_query(query)
         return [row[0] for row in result]
 
-    def close_connection(self):
-        """
-        Closes the connection to the station database.
-        """
-        self.close()
         
     def get_metadata(self) -> Dict[str, Dict[str, Any]]:
         """
@@ -516,20 +542,7 @@ class Station(DuckDBManager):
         except duckdb.Error as e:
             print(f"Error inserting record: {e}")
             return False
-        
-    def get_record_count(self, table_name: str) -> int:
-        """
-        Returns the number of records in the specified table.
-
-        Parameters:
-            table_name (str): The name of the table to count records in.
-
-        Returns:
-            int: The number of records in the table.
-        """
-        query = f"SELECT COUNT(*) FROM {table_name}"
-        result = self.execute_query(query)
-        return result[0][0]
+            
     
     def get_L1_records(self, table_name: str) -> Dict[int, Dict[str, Dict[str, Any]]]:
         """
@@ -553,23 +566,38 @@ class Station(DuckDBManager):
         Returns:
             dict: A nested dictionary with the year as the first key, `L0_name` as the second key, and 
                   `catalog_filepath` and `day_of_year` as the values.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
         """
         query = f"SELECT year, L0_name, catalog_filepath, day_of_year FROM {table_name} WHERE is_L1 = TRUE"
-        result = self.execute_query(query)
         
-        records_by_year_and_L0_name = {}
-        for row in result:
-            year = row[0]
-            L0_name = row[1]
-            catalog_filepath = row[2]
-            day_of_year = row[3]
+        try:
+            if self.connection is None or not self.connection.is_open():
+                self.connect()
 
-            if year not in records_by_year_and_L0_name:
-                records_by_year_and_L0_name[year] = {}
+            result = self.execute_query(query)
             
-            records_by_year_and_L0_name[year][L0_name] = {
-                'catalog_filepath': catalog_filepath,
-                'day_of_year': day_of_year
-            }
+            records_by_year_and_L0_name = {}
+            for row in result:
+                year = row[0]
+                L0_name = row[1]
+                catalog_filepath = row[2]
+                day_of_year = row[3]
 
-        return records_by_year_and_L0_name
+                if year not in records_by_year_and_L0_name:
+                    records_by_year_and_L0_name[year] = {}
+
+                records_by_year_and_L0_name[year][L0_name] = {
+                    'catalog_filepath': catalog_filepath,
+                    'day_of_year': day_of_year
+                }
+
+            return records_by_year_and_L0_name
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving L1 records from table '{table_name}': {e}")
+            raise
+        
+        finally:
+            self.close_connection()
