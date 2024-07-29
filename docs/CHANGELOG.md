@@ -1,3 +1,6 @@
+## [v0.3.1.4]
+- bug fixed
+
 ## [v0.3.1.3]
 - DEPRECIATED `catalog.get_sftp_list`
 - Added `sftp_tools.get_local_filepath`

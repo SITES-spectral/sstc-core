@@ -18,7 +18,7 @@ def create_record_dictionary( remote_filepath:str, station:Station, platform_typ
     normalized_date = creation_date.strftime('%Y%m%d%H%M%S')
     year = creation_date.year
     day_of_year = utils.get_day_of_year(formatted_date)
-    station_acronym = station['meta']['station_acromym']
+    station_acronym = station.meta['station_acronym']
     location_id = station.platforms[platform_type][platform_id]['location_id']
     L0_name = f'SITES-{station_acronym}-{location_id}-{platform_id}-DOY_{day_of_year}-{normalized_date}'
     is_L1 = utils.is_within_time_window(
