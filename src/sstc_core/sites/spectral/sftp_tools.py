@@ -149,6 +149,76 @@ def list_files_sftp(credentials: Dict[str, Any], sftp_directory: str, extensions
         raise Exception(f"An error occurred while listing files from the SFTP server: {e}")
 
 
+def get_remote_file_size(remote_filepath:str, credentials:dict):
+    
+    # Initialize the SSH client
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    try:
+        # Connect to the SFTP server
+        ssh.connect(
+            hostname= credentials['hostname'],
+            port= credentials['port'],
+            username=  credentials['username'],
+            password= credentials['password'])
+        sftp = ssh.open_sftp()
+
+        # Get the file attributes and retrieve the file size
+        file_attributes = sftp.stat(remote_filepath)
+        file_size = file_attributes.st_size
+
+        # Close the SFTP connection
+        sftp.close()
+
+        return file_size
+    finally:
+        # Close the SSH connection
+        ssh.close()
+
+    
+
+
+def is_file_downloaded_locally(local_dirpath: str, remote_filepath: str, split_subdir: str = 'data') -> bool:
+    """
+    Checks if a file from a remote SFTP server is downloaded locally, based on a specific directory structure.
+
+    This function determines if a file specified by a remote filepath is present in the local directory.
+    It uses a specified subdirectory name (`split_subdir`) to construct the local path relative to the base
+    local directory (`local_dirpath`). The check is performed by comparing the reconstructed local path
+    with the actual file system.
+
+    Parameters:
+        local_dirpath (str): The base directory path where the files are expected to be downloaded locally.
+        remote_filepath (str): The full path of the file on the remote SFTP server.
+        split_subdir (str, optional): The subdirectory in the remote path to start building the local path from.
+                                      Default is 'data'.
+
+    Returns:
+        bool: True if the file exists locally, False otherwise.
+    """
+    # Split the remote file path into components
+    parts = remote_filepath.split('/')
+    filename = parts[-1]
+
+    # Find the index of the split_subdir in the parts
+    if split_subdir in parts:
+        split_index = parts.index(split_subdir)
+        remote_subdir = os.path.join(*parts[split_index:])
+    else:
+        remote_subdir = ""
+        
+    # Construct the local file path using the structure from the split_subdir to the filename
+    local_filepath = os.path.join(local_dirpath, remote_subdir)
+
+    if os.path.exists(local_filepath):
+        return True 
+    else:
+        return False
+        
+
+
+
 def download_file(sftp, remote_filepath: str, local_dirpath: str, split_subdir='data') -> str:
     """
     Downloads a file from the SFTP server and ensures that the download is complete by verifying the file size.

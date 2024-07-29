@@ -1,3 +1,8 @@
+## [v0.3.1.2]
+- Added `catalog.get_sftp_list`
+- Added `sftp.is_file_downloaded_locally`
+- Added `sftp.get_remote_file_size`
+
 ## [v0.3.1.1]
 - Improved platforms `.yaml` metadata 
 - Refactored `catalog` module to use `Station` class

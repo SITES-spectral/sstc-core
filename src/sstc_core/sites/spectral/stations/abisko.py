@@ -12,6 +12,7 @@ meta = {
     "is_active": True,
     "station_name": "Abisko",
     "normalized_station_name": "abisko",
+    "db_catalog_filepath": '/home/aurora02/data/SITES/Spectral/data/catalog/abisko_catalog.duckdb',
     "locations_dirpath": config_dirpath / 'locations' / 'locations_abisko.yaml',
     "platforms_dirpath": config_dirpath / 'platforms' / 'platforms_abisko.yaml',    
     'geolocation':{
@@ -19,6 +20,7 @@ meta = {
             'epsg:4326': {'latitude_dd': None, 'longitude_dd': None}, 
             'epsg:3006': {'x_coord': None, 'y_coord': None}},
     }
+    
     }
 
 def load_configurations():
