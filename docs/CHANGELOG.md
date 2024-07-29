@@ -1,3 +1,6 @@
+## [v0.5.0]
+- extended `record_dict` with `is_L2=False` 
+
 ## [v0.4.2]
 - added `catalog.get-records_count`   
 

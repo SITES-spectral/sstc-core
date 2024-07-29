@@ -701,6 +701,7 @@ class Station(DuckDBManager):
             'is_legacy': is_legacy,
             'L0_name': L0_name,
             'is_L1': is_L1,
+            'is_L2': False,
             'catalog_filepath': local_filepath,
             'source_filepath': remote_filepath, 
             'tag_id': 0,        
