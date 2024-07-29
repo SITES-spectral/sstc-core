@@ -1,3 +1,8 @@
+## [v0.4.0]
+- refactored `populate_station_db` into the `Station` class instead of having it in `catalog` module
+- refactored `create_record_dictionary` into the `Station` class instead of having it in `catalog` module
+- code-pruning `catalog` module
+  
 ## [v0.3.11]
 - code-pruning of `DuckDBManager` 
 
