@@ -1,3 +1,6 @@
+## [v0.3.9]
+- fixed bug `self.db_filepath.exists()` at `Stations` module.
+
 ## [v0.3.8]
 - Added `DuckDBmanager.close_if_open`
   

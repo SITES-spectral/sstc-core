@@ -6,7 +6,7 @@
 
 [tool.poetry]
 name = "sstc-core"
-version = "0.3.8"
+version = "0.3.9"
 description = ""
 authors = ["Jobelund <124563223+jobelund@users.noreply.github.com>"]
 readme = "README.md"

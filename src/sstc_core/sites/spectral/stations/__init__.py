@@ -1,3 +1,4 @@
+import os
 import importlib
 from typing import Optional
 from sstc_core.sites.spectral.utils import normalize_string
@@ -362,13 +363,13 @@ class Station(DuckDBManager):
         self.locations = getattr(self.station_module, 'locations', {})
         self.platforms = getattr(self.station_module, 'platforms', {})
         self.db_dirpath = Path(db_dirpath)
-        self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}.duckdb"
+        self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_sites_spectral_data_catalog.db"
         self.sftp_dirpath = f'/{self.normalized_station_name}/data/'
         
         super().__init__(str(self.db_filepath))
 
         # Ensure the database file is created
-        if not self.db_filepath.exists():
+        if not os.path.exists(self.db_filepath):
             self.create_new_database()
         
         # Close the connection after initialization
