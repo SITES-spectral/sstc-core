@@ -1,3 +1,6 @@
+## [v0.3.1.7]
+- expanded schema for `catalog.create_record_dict`
+
 ## [v0.3.1.6]
 - Added `sftp_tools.get_new_files_to_download`
 - Improved documentation.
