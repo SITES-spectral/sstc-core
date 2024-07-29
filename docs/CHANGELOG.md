@@ -1,7 +1,13 @@
+## [v0.3.1.3]
+- DEPRECIATED `catalog.get_sftp_list`
+- Added `sftp_tools.get_local_filepath`
+- Added `utils.is:within_time_window`
+- Updated `sftp_tools.download_file`
+
 ## [v0.3.1.2]
 - Added `catalog.get_sftp_list`
-- Added `sftp.is_file_downloaded_locally`
-- Added `sftp.get_remote_file_size`
+- Added `sftp_tools.is_file_downloaded_locally`
+- Added `sftp_tools.get_remote_file_size`
 
 ## [v0.3.1.1]
 - Improved platforms `.yaml` metadata 

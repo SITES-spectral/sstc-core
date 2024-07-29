@@ -282,3 +282,27 @@ def normalize_string(input_string: str) -> str:
     lower_string = ascii_string.lower()
 
     return lower_string
+
+
+def is_within_time_window(formatted_date: str, start_time: str = "10:00:00", end_time: str = "14:00:00") -> bool:
+    """
+    Checks if the given date and time fall within the specified time window.
+
+    Parameters:
+        formatted_date (str): The date and time in the format '%Y-%m-%d %H:%M:%S'.
+        start_time (str): The start of the time window in 'HH:MM:SS' format. Default is "10:00:00".
+        end_time (str): The end of the time window in 'HH:MM:SS' format. Default is "14:00:00".
+
+    Returns:
+        bool: True if the time part of the formatted_date is within the time window, False otherwise.
+    """
+    # Convert the start and end times to time objects
+    start_time_obj = datetime.strptime(start_time, '%H:%M:%S').time()
+    end_time_obj = datetime.strptime(end_time, '%H:%M:%S').time()
+
+    # Convert the formatted date to a datetime object and extract the time part
+    date_obj = datetime.strptime(formatted_date, '%Y-%m-%d %H:%M:%S')
+    creation_time = date_obj.time()
+
+    # Check if the creation_time is within the time window
+    return start_time_obj <= creation_time <= end_time_obj
