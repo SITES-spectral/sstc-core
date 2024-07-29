@@ -516,3 +516,60 @@ class Station(DuckDBManager):
         except duckdb.Error as e:
             print(f"Error inserting record: {e}")
             return False
+        
+    def get_record_count(self, table_name: str) -> int:
+        """
+        Returns the number of records in the specified table.
+
+        Parameters:
+            table_name (str): The name of the table to count records in.
+
+        Returns:
+            int: The number of records in the table.
+        """
+        query = f"SELECT COUNT(*) FROM {table_name}"
+        result = self.execute_query(query)
+        return result[0][0]
+    
+    def get_L1_records(self, table_name: str) -> Dict[int, Dict[str, Dict[str, Any]]]:
+        """
+        Returns all records where `is_L1` is True, structured in a nested dictionary format.
+
+        The dictionary structure is as follows:
+        {
+            year: {
+                L0_name: {
+                    'catalog_filepath': catalog_filepath,
+                    'day_of_year': day_of_year
+                },
+                ...
+            },
+            ...
+        }
+
+        Parameters:
+            table_name (str): The name of the table to query.
+
+        Returns:
+            dict: A nested dictionary with the year as the first key, `L0_name` as the second key, and 
+                  `catalog_filepath` and `day_of_year` as the values.
+        """
+        query = f"SELECT year, L0_name, catalog_filepath, day_of_year FROM {table_name} WHERE is_L1 = TRUE"
+        result = self.execute_query(query)
+        
+        records_by_year_and_L0_name = {}
+        for row in result:
+            year = row[0]
+            L0_name = row[1]
+            catalog_filepath = row[2]
+            day_of_year = row[3]
+
+            if year not in records_by_year_and_L0_name:
+                records_by_year_and_L0_name[year] = {}
+            
+            records_by_year_and_L0_name[year][L0_name] = {
+                'catalog_filepath': catalog_filepath,
+                'day_of_year': day_of_year
+            }
+
+        return records_by_year_and_L0_name

@@ -1,3 +1,7 @@
+## [v0.3.3]
+- added `Station.get_record_count`
+- added `Station.get_L1_records` 
+
 ## [v0.3.2]
 - Added `Station.catalog_guid_exists` and `Station.insert_record` 
 
