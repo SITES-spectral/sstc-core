@@ -1,5 +1,4 @@
 import yaml
-import os
 from sstc_core.sites.spectral.io_tools import load_yaml
 from sstc_core.sites.spectral.stations import Station
 
@@ -18,8 +17,7 @@ def update_records_count(station: Station, platforms_type: str, platform_id: str
         FileNotFoundError: If the specified YAML file does not exist.
         KeyError: If the specified platform type or platform ID does not exist in the YAML structure.
     """
-    yaml_filepath = station.meta.get('platforms_filepath')
-    
+    yaml_filepath = station.meta.get('platforms_filepath')    
     config = load_yaml(yaml_filepath)
 
     # Navigate to the specified platform and update the records_count

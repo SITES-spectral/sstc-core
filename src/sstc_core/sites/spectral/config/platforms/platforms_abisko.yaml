@@ -1,39 +1,79 @@
-# Ensure you do not use hyppens "-" better to use `double__underscore`
 PhenoCams:
   P_BTH_1:
-    station_name: 'Abisko'
-    station_acronym: 'ANS'
-    ecosystem_of_interest: 'FOR'
-    platform_id: 'P_BTH_1'
-    location_id: 'BTH_FOR'    
-    description: 'Building H Top at ANS. Lars Eklundh custom optical camera.'
-    aoi: 'Forest in Alpine Montain - Abiskojaure at Abisko National Park'
-    viewing_direction': 'West'
-    mantainance_and_calibrations:
-        status : Active
-        logs: 
-          - event_date_YYYY-MM-DD:
-          - event_type:          
-    height_in_meters_above_ground: 4 
-    platform_type: 'PhenoCam'
-    legacy_acronym: "ANS-FOR-P01"
-    sftp_dirpath: 'abisko/data/PhenoCam/ANS-FOR-P01/'
+    aoi: Forest in Alpine Montain - Abiskojaure at Abisko National Park
+    backups:
+      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/abisko/locations/BTH_FOR/platforms/PhenoCam/P_BTH_1/
+    description: Building H Top at ANS. Lars Eklundh custom optical camera.
+    ecosystem_of_interest: FOR
     geolocation:
-      point: 
-        "epsg:4326": {latitude_dd: , longitude_dd: }  
-        "epsg:3006": {x_coord: , y_coord: } 
+      point:
+        epsg:3006:
+          x_coord: null
+          y_coord: null
+        epsg:4326:
+          latitude_dd: null
+          longitude_dd: null
+    height_in_meters_above_ground: 4
+    legacy_acronym: ANS-FOR-P01
+    location_id: BTH_FOR
+    mantainance_and_calibrations:
+      logs:
+      - event_date_YYYY-MM-DD: null
+      - event_type: null
+      status: Active
     phenocam_rois:
       roi01:
-        points: [[100, 1800], [2700, 1550], [2500, 2700], [100, 2700]]
-        cv2_polyline_style: [1, (0,255,0), 7]        
-      roi02: 
-        points: [[100, 930], [3700, 1050], [3700, 1200], [100, 1400]]
-        cv2_polyline_style: [1, (0, 0, 255), 7]
+        cv2_polyline_style:
+        - 1
+        - (0
+        - 255
+        - 0)
+        - 7
+        points:
+        - - 100
+          - 1800
+        - - 2700
+          - 1550
+        - - 2500
+          - 2700
+        - - 100
+          - 2700
+      roi02:
+        cv2_polyline_style:
+        - 1
+        - (0
+        - 0
+        - 255)
+        - 7
+        points:
+        - - 100
+          - 930
+        - - 3700
+          - 1050
+        - - 3700
+          - 1200
+        - - 100
+          - 1400
       roi03:
-        points: [[750, 600], [3700, 650], [3500, 950], [100, 830]]
-        cv2_polyline_style: [1, (255, 0, 0), 7]
-    backups:
-      aurora02_dirpath: '/home/aurora02/data/SITES/Spectral/data/catalog/abisko/locations/BTH_FOR/platforms/PhenoCam/P_BTH_1/'
-    records_count: 0 
-    
-    
+        cv2_polyline_style:
+        - 1
+        - (255
+        - 0
+        - 0)
+        - 7
+        points:
+        - - 750
+          - 600
+        - - 3700
+          - 650
+        - - 3500
+          - 950
+        - - 100
+          - 830
+    platform_id: P_BTH_1
+    platform_type: PhenoCam
+    records_count: 1367
+    sftp_dirpath: abisko/data/PhenoCam/ANS-FOR-P01/
+    station_acronym: ANS
+    station_name: Abisko
+    viewing_direction': West
