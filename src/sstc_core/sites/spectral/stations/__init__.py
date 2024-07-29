@@ -233,6 +233,7 @@ class DuckDBManager:
         self.db_filepath = db_filepath
         self.connection = None
         self.validate_db_filepath()
+        self.close_connection()  # Close any existing connections on initialization
 
     def validate_db_filepath(self):
         """
@@ -285,14 +286,15 @@ class DuckDBManager:
         """
         Closes the connection to the DuckDB database if it is open.
         """
-        if self.connection and self.connection.is_open():
+        if self.connection is not None:
             try:
                 self.connection.close()
+                print("DuckDB connection closed successfully.")
             except duckdb.Error as e:
-                raise duckdb.Error(f"Failed to close the DuckDB database connection: {e}")
+                print(f"Failed to close the DuckDB connection: {e}")
             finally:
                 self.connection = None
-                
+
     def get_record_count(self, table_name: str) -> int:
         """
         Returns the number of records in the specified table.
@@ -312,7 +314,7 @@ class DuckDBManager:
         query = f"SELECT COUNT(*) FROM {table_name}"
         
         try:
-            if self.connection is None or not self.connection.is_open():
+            if self.connection is None:
                 self.connect()
                 
             result = self.execute_query(query)
@@ -325,24 +327,6 @@ class DuckDBManager:
         finally:
             self.close_connection()
             
-    def close_if_open(self):
-        """
-        Checks if the DuckDB connection is open and closes it if it is.
-
-        This method ensures that the connection to the DuckDB database is properly closed,
-        preventing any potential locking issues or resource leaks.
-        """
-        if self.connection and self.connection.is_open():
-            try:
-                self.connection.close()
-                print("DuckDB connection closed successfully.")
-            except duckdb.Error as e:
-                print(f"Failed to close the DuckDB connection: {e}")
-            finally:
-                self.connection = None
-        else:
-            print("DuckDB connection is already closed or was never opened.")
-
 
 class Station(DuckDBManager):
     def __init__(self, db_dirpath: str, station_name: str):
@@ -366,12 +350,12 @@ class Station(DuckDBManager):
         self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_catalog.db"
         self.sftp_dirpath = f'/{self.normalized_station_name}/data/'
         
-        # Ensure the database file is created
-        if not os.path.exists(self.db_filepath):            
+        # Ensure the database file is created before calling the parent constructor
+        if not self.db_filepath.exists():
             self.create_new_database()
         
         super().__init__(str(self.db_filepath))
-        
+
         # Close the connection after initialization
         self.close_connection()
 
@@ -396,7 +380,19 @@ class Station(DuckDBManager):
         connection = duckdb.connect(str(self.db_filepath))
         connection.close()
 
-    
+    def get_station_data(self, query: str, params: Optional[tuple] = None):
+        """
+        Retrieves data from the station database based on a SQL query.
+
+        Parameters:
+            query (str): The SQL query to execute.
+            params (tuple, optional): Parameters to pass with the query.
+
+        Returns:
+            Any: The result of the query execution.
+        """
+        return self.execute_query(query, params)
+
     def add_station_data(self, table_name: str, data: Dict[str, Any]):
         """
         Adds data to the specified table in the station database. Creates the table if it does not exist.
@@ -581,7 +577,7 @@ class Station(DuckDBManager):
         query = f"SELECT year, L0_name, catalog_filepath, day_of_year FROM {table_name} WHERE is_L1 = TRUE"
         
         try:
-            if self.connection is None or not self.connection.is_open():
+            if self.connection is None:
                 self.connect()
 
             result = self.execute_query(query)

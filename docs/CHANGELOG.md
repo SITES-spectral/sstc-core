@@ -1,3 +1,6 @@
+## [v0.3.11]
+- code-pruning of `DuckDBManager` 
+
 ## [v0.3.10]
 - fixed bug during initailizaion of database if it does not exist. 
 - refactored database auto-naming to `f"{self.normalized_station_name}_catalog.db"`  
