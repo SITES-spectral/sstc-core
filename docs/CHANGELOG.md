@@ -1,3 +1,6 @@
+## [v0.3.8]
+- Added `DuckDBmanager.close_if_open`
+  
 ## [v0.3.7] 
 - Fixed db connections locked in `Station.get_record_count` and `Station.get_L1_records`
 

@@ -184,6 +184,39 @@ def generate_unique_id(creation_date: str, station_acronym: str, location_id: st
     return unique_id
 
 
+    
+def stations_names()->dict:
+    """
+    Retrieve a dictionary of station names with their respective system names and acronyms.
+
+    Returns:
+        dict: A dictionary where each key is a station name and the value is another dictionary
+              containing the system name and acronym for the station.
+
+    Example:
+        ```python
+        stations_names()
+        {
+            'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS'},
+            'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA'},
+            'Grimsö': {'normalized_station_name': 'grimso', 'station_acronym': 'GRI'},
+            'Lonnstorp': {'normalized_station_name': 'lonnstorp', 'station_acronym': 'LON'},
+            'Robacksdalen': {'normalized_station_name': 'robacksdalen', 'station_acronym': 'RBD'},
+            'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC'},
+            'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB'}
+        }
+        ```
+    """
+    return {
+        'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS'},
+        'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA'},
+        'Grimsö': {'normalized_station_name': 'grimso', 'station_acronym': 'GRI'},
+        'Lonnstorp': {'normalized_station_name': 'lonnstorp', 'station_acronym': 'LON'},
+        'Robacksdalen': {'normalized_station_name': 'robacksdalen', 'station_acronym': 'RBD'},
+        'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC'},
+        'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB'}
+    }
+
 
 class DuckDBManager:
     """
@@ -210,6 +243,7 @@ class DuckDBManager:
         if not Path(self.db_filepath).is_file():
             raise FileNotFoundError(f"The database file '{self.db_filepath}' does not exist. "
                                     f"Please provide a valid database file path.")
+
     def connect(self):
         """
         Establishes a connection to the DuckDB database if not already connected.
@@ -222,7 +256,6 @@ class DuckDBManager:
                 self.connection = duckdb.connect(self.db_filepath)
             except duckdb.Error as e:
                 raise duckdb.Error(f"Failed to connect to the DuckDB database: {e}")
-
 
     def execute_query(self, query: str, params: tuple = None):
         """
@@ -290,40 +323,24 @@ class DuckDBManager:
 
         finally:
             self.close_connection()
+            
+    def close_if_open(self):
+        """
+        Checks if the DuckDB connection is open and closes it if it is.
 
-     
-def stations_names()->dict:
-    """
-    Retrieve a dictionary of station names with their respective system names and acronyms.
-
-    Returns:
-        dict: A dictionary where each key is a station name and the value is another dictionary
-              containing the system name and acronym for the station.
-
-    Example:
-        ```python
-        stations_names()
-        {
-            'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS'},
-            'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA'},
-            'Grimsö': {'normalized_station_name': 'grimso', 'station_acronym': 'GRI'},
-            'Lonnstorp': {'normalized_station_name': 'lonnstorp', 'station_acronym': 'LON'},
-            'Robacksdalen': {'normalized_station_name': 'robacksdalen', 'station_acronym': 'RBD'},
-            'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC'},
-            'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB'}
-        }
-        ```
-    """
-    return {
-        'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS'},
-        'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA'},
-        'Grimsö': {'normalized_station_name': 'grimso', 'station_acronym': 'GRI'},
-        'Lonnstorp': {'normalized_station_name': 'lonnstorp', 'station_acronym': 'LON'},
-        'Robacksdalen': {'normalized_station_name': 'robacksdalen', 'station_acronym': 'RBD'},
-        'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC'},
-        'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB'}
-    }
-
+        This method ensures that the connection to the DuckDB database is properly closed,
+        preventing any potential locking issues or resource leaks.
+        """
+        if self.connection and self.connection.is_open():
+            try:
+                self.connection.close()
+                print("DuckDB connection closed successfully.")
+            except duckdb.Error as e:
+                print(f"Failed to close the DuckDB connection: {e}")
+            finally:
+                self.connection = None
+        else:
+            print("DuckDB connection is already closed or was never opened.")
 
 
 class Station(DuckDBManager):
@@ -339,7 +356,7 @@ class Station(DuckDBManager):
             station_name (str): The name of the station.
         """
         self.station_name = station_name
-        self.normalized_station_name = normalize_string(station_name)
+        self.normalized_station_name = self.normalize_string(station_name)
         self.station_module = self._load_station_module()
         self.meta = getattr(self.station_module, 'meta', {})
         self.locations = getattr(self.station_module, 'locations', {})
@@ -348,11 +365,14 @@ class Station(DuckDBManager):
         self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}.duckdb"
         self.sftp_dirpath = f'/{self.normalized_station_name}/data/'
         
+        super().__init__(str(self.db_filepath))
+
         # Ensure the database file is created
         if not self.db_filepath.exists():
             self.create_new_database()
         
-        super().__init__(str(self.db_filepath))
+        # Close the connection after initialization
+        self.close_connection()
 
     def _load_station_module(self):
         """
@@ -466,7 +486,6 @@ class Station(DuckDBManager):
         result = self.execute_query(query)
         return [row[0] for row in result]
 
-        
     def get_metadata(self) -> Dict[str, Dict[str, Any]]:
         """
         Returns the metadata of the station.
@@ -601,3 +620,16 @@ class Station(DuckDBManager):
         
         finally:
             self.close_connection()
+
+    @staticmethod
+    def normalize_string(name: str) -> str:
+        """
+        Normalize a string by converting it to lowercase and replacing spaces with underscores.
+
+        Parameters:
+            name (str): The string to normalize.
+
+        Returns:
+            str: The normalized string.
+        """
+        return name.lower().replace(' ', '_')
