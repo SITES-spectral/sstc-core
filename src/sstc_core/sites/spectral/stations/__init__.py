@@ -558,7 +558,9 @@ class Station(DuckDBManager):
             year: {
                 L0_name: {
                     'catalog_filepath': catalog_filepath,
-                    'day_of_year': day_of_year
+                    'day_of_year': day_of_year,
+                    'catalog_guid': catalog_guid,
+                    'is_L2': is_L2,
                 },
                 ...
             },
@@ -575,7 +577,7 @@ class Station(DuckDBManager):
         Raises:
             duckdb.Error: If there is an error executing the query or managing the connection.
         """
-        query = f"SELECT year, L0_name, catalog_filepath, day_of_year FROM {table_name} WHERE is_L1 = TRUE"
+        query = f"SELECT year, L0_name, catalog_filepath, day_of_year, catalog_guid, is_L2 FROM {table_name} WHERE is_L1 = TRUE"
         
         try:
             if self.connection is None:
@@ -589,13 +591,17 @@ class Station(DuckDBManager):
                 L0_name = row[1]
                 catalog_filepath = row[2]
                 day_of_year = row[3]
+                catalog_guid = row[4]
+                is_L2 = row[5]  
 
                 if year not in records_by_year_and_L0_name:
                     records_by_year_and_L0_name[year] = {}
 
                 records_by_year_and_L0_name[year][L0_name] = {
                     'catalog_filepath': catalog_filepath,
-                    'day_of_year': day_of_year
+                    'day_of_year': day_of_year,
+                    'catalog_guid': catalog_guid,
+                    'is_L2': is_L2
                 }
 
             return records_by_year_and_L0_name
@@ -770,3 +776,33 @@ class Station(DuckDBManager):
         except duckdb.Error as e:
             print(f"Error inserting record: {e}")
             return False
+
+    def update_is_L2(self, table_name: str, catalog_guid: str, is_L2: bool):
+        """
+        Updates the `is_L2` field for a specific record identified by `catalog_guid`.
+
+        Parameters:
+            table_name (str): The name of the table to update the record in.
+            catalog_guid (str): The unique identifier for the record.
+            is_L2 (bool): The new value for the `is_L2` field.
+
+        Raises:
+            ValueError: If the record with the specified catalog_guid does not exist.
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        try:
+            # Check if the record exists
+            if not self.catalog_guid_exists(table_name, catalog_guid):
+                raise ValueError(f"Record with catalog_guid {catalog_guid} does not exist in {table_name}.")
+
+            # Update the is_L2 field for the record
+            query = f"UPDATE {table_name} SET is_L2 = ? WHERE catalog_guid = ?"
+            self.execute_query(query, (is_L2, catalog_guid))
+            print(f"Updated is_L2 for catalog_guid {catalog_guid} to {is_L2}")
+
+        except duckdb.Error as e:
+            print(f"An error occurred while updating is_L2 for catalog_guid {catalog_guid}: {e}")
+            raise
+
+        finally:
+            self.close_connection()

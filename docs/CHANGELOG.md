@@ -1,3 +1,7 @@
+## [v0.5.1]
+- improved `station.get_L1_record
+- added `station.update_is_L2` 
+
 ## [v0.5.0]
 - extended `record_dict` with `is_L2=False` 
 
