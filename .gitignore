@@ -1,3 +1,5 @@
+*.db
+*.duckdb 
 duckdb/
 duckdb_catalog/
 sstc.code-workspace
