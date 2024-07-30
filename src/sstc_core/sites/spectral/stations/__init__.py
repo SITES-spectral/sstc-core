@@ -698,7 +698,7 @@ class Station(DuckDBManager):
         
         quality_flags_dict = assess_image_quality(local_filepath)
         weights = load_weights_from_yaml(self.phenocam_quality_weights_filepath)
-        normalized_quality_index = calculate_normalized_quality_index(
+        normalized_quality_index, quality_index_weights_version = calculate_normalized_quality_index(
             quality_flags_dict=quality_flags_dict,
             weights=weights)
         
@@ -721,6 +721,7 @@ class Station(DuckDBManager):
             'catalog_filepath': local_filepath,
             'source_filepath': remote_filepath,
             'normalized_quality_index': normalized_quality_index,
+            'quality_index_weights_version': quality_index_weights_version,
             }
 
         record_dict = {**record_dict, **quality_flags_dict } 

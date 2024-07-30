@@ -1,3 +1,6 @@
+## [v0.7.4]
+- added `quality_index_weights_version` in the record_dict
+
 ## [v0.7.3]
 - `is_ready_for_products_use` is now included in the record_dict
 

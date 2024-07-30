@@ -485,7 +485,9 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict):
         quality_flags_dict (dict): Dictionary containing results from the image quality assessment.
 
     Returns:
-        float: The normalized quality index (0 to 1 scale).
+        tuple:
+            float: The normalized quality index (0 to 1 scale).
+            str: weights version used.
         
     Example:
         ```python
@@ -542,6 +544,8 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict):
     weight_rotation = weights.get('flag_rotation_weight', 0)
     weight_birds = weights.get('flag_birds_weight', 0)
     weight_other = weights.get('flag_other_weight', 0)
+    quality_index_weights_version = weights.get('quality_index_weights_version', "0.1")
+    
 
     # Convert boolean flags to numeric scores
     blur_score = 1 if not flag_blur else 0
@@ -582,4 +586,4 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict):
     
     normalized_quality_index = raw_quality_index / max_possible_value
 
-    return normalized_quality_index
+    return normalized_quality_index, quality_index_weights_version
