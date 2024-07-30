@@ -1,3 +1,6 @@
+## [v0.7.1]
+- `detect_birds` flag has been disabled until better training model is found, defaults to False. It requires to manually label the image. 
+
 ## [v0.7.0]
 - updated record schema for phenocams, to include quality flags.
 - Autocalculate the quality flags when building the `records_dict`

@@ -319,35 +319,11 @@ def detect_fog(image, threshold=0.5):
     return edge_ratio < threshold
 
 
-def detect_birds(image, cascade_path='bird_cascade.xml'):
-    """
-    Detect birds in an image using a Haar cascade classifier.
-    
-    Detecting birds generally involves object detection. For simplicity, here we use
-    a pre-trained classifier if available (e.g., a Haar cascade), 
-    which can be replace it with more advanced models if needed.
+def detect_birds(image):
+    # Placeholder for birds detection logic
+    # May be not need it, but kepth it to do it by manual tagging    
+    pass
 
-    Parameters:
-        image (numpy.ndarray): The input image in BGR format.
-        cascade_path (str): Path to the Haar cascade XML file for bird detection.
-
-    Returns:
-        bool: True if birds are detected, False otherwise.
-    Example:
-        ```python
-        image_path = 'image.jpg'
-        image = cv2.imread(image_path)
-        if detect_birds(image):
-            print("Birds detected")
-        else:
-            print("No birds detected")        
-        ```
-    """
-    bird_cascade = cv2.CascadeClassifier(cascade_path)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    birds = bird_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
-    
-    return len(birds) > 0
 
 
 def detect_rotation(image, angle_threshold=10):
