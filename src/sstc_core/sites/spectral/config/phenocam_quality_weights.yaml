@@ -1,0 +1,28 @@
+default:
+  flag_brightness_weight: 0.1
+  flag_blur_weight: 0.25
+  flag_snow_weight: 0.1
+  flag_rain_weight: 0.1
+  flag_water_drops_weight: 0.25
+  flag_dirt_weight: 0.1
+  flag_obstructions_weight: 0.2
+  flag_glare_weight: 0.15
+  flag_fog_weight: 0.2
+  flag_rotation_weight: 0.3
+  flag_birds_weight: 0.1
+  flag_other_weight: 0.25
+
+Abisko:
+  P_BTH_1:
+    flag_brightness_weight: 0.1
+    flag_blur_weight: 0.25
+    flag_snow_weight: 0.1
+    flag_rain_weight: 0.1
+    flag_water_drops_weight: 0.25
+    flag_dirt_weight: 0.1
+    flag_obstructions_weight: 0.2
+    flag_glare_weight: 0.15
+    flag_fog_weight: 0.2
+    flag_rotation_weight: 0.3
+    flag_birds_weight: 0.1
+    flag_other_weight: 0.25

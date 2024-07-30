@@ -1,3 +1,17 @@
+## [v0.7.0]
+- updated record schema for phenocams, to include quality flags.
+- Autocalculate the quality flags when building the `records_dict`
+- refactored `Station.update_is_L2` to `Station.update_is_quality_assessed`
+
+## [v0.6.1]
+-  updated quality detection flags to include `flag_other`
+-  expanded `record_dict` with flags and `normalized_quality_index`
+
+## [v0.6.0]
+- Added module `sites.spectral.image_quality`
+- Added `config.phenocam_quality_weights.yaml`
+- Added `sites.spectral.data_products.phenocams` module 
+
 ## [v0.5.1]
 - improved `station.get_L1_record
 - added `station.update_is_L2` 

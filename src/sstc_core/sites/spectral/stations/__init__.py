@@ -7,6 +7,8 @@ from pathlib import Path
 import duckdb
 import hashlib
 from typing import Dict, Any, List, Union
+from sstc_core.sites.spectral.image_quality import assess_image_quality, calculate_normalized_quality_index, load_weights_from_yaml
+
 
 
 class DatabaseError(Exception):
@@ -349,6 +351,7 @@ class Station(DuckDBManager):
         self.platforms = getattr(self.station_module, 'platforms', {})
         self.db_dirpath = Path(db_dirpath)
         self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_catalog.db"
+        self.phenocam_quality_weights_filepath = self.meta.get("phenocam_quality_weights_filepath", None)
         self.sftp_dirpath = f'/{self.normalized_station_name}/data/'
         
         # Ensure the database file is created before calling the parent constructor
@@ -692,7 +695,14 @@ class Station(DuckDBManager):
             start_time=start_time,
             end_time=end_time
         )
-
+        
+        quality_flags_dict = assess_image_quality(local_filepath)
+        weights = load_weights_from_yaml(self.phenocam_quality_weights_filepath)
+        normalized_quality_index = calculate_normalized_quality_index(
+            quality_flags_dict=quality_flags_dict,
+            weights=weights)
+        
+            
         # Create the record dictionary
         record_dict = {
             'catalog_guid': None,
@@ -707,12 +717,13 @@ class Station(DuckDBManager):
             'is_legacy': is_legacy,
             'L0_name': L0_name,
             'is_L1': is_L1,
-            'is_L2': False,
+            'is_quality_assessed': False,            
             'catalog_filepath': local_filepath,
-            'source_filepath': remote_filepath, 
-            'tag_id': 0,        
-        }
+            'source_filepath': remote_filepath,
+            'normalized_quality_index': normalized_quality_index,
+            }
 
+        record_dict = {**record_dict, **quality_flags_dict } 
         # Generate a unique ID for the catalog
         record_dict['catalog_guid'] = utils.generate_unique_id(
             record_dict, 
@@ -777,14 +788,14 @@ class Station(DuckDBManager):
             print(f"Error inserting record: {e}")
             return False
 
-    def update_is_L2(self, table_name: str, catalog_guid: str, is_L2: bool):
+    def update_is_quality_assessed(self, table_name: str, catalog_guid: str, is_quality_assessed: bool):
         """
-        Updates the `is_L2` field for a specific record identified by `catalog_guid`.
+        Updates the `is_quality_assessed` field for a specific record identified by `catalog_guid`.
 
         Parameters:
             table_name (str): The name of the table to update the record in.
             catalog_guid (str): The unique identifier for the record.
-            is_L2 (bool): The new value for the `is_L2` field.
+            is_quality_assessed(bool): The new value for the `is_quality_assessed` field.
 
         Raises:
             ValueError: If the record with the specified catalog_guid does not exist.
@@ -795,13 +806,13 @@ class Station(DuckDBManager):
             if not self.catalog_guid_exists(table_name, catalog_guid):
                 raise ValueError(f"Record with catalog_guid {catalog_guid} does not exist in {table_name}.")
 
-            # Update the is_L2 field for the record
-            query = f"UPDATE {table_name} SET is_L2 = ? WHERE catalog_guid = ?"
-            self.execute_query(query, (is_L2, catalog_guid))
-            print(f"Updated is_L2 for catalog_guid {catalog_guid} to {is_L2}")
+            # Update the is_quality_assessed field for the record
+            query = f"UPDATE {table_name} SET is_quality_assessed = ? WHERE catalog_guid = ?"
+            self.execute_query(query, (is_quality_assessed, catalog_guid))
+            print(f"Updated is_L2 for catalog_guid {catalog_guid} to {is_quality_assessed}")
 
         except duckdb.Error as e:
-            print(f"An error occurred while updating is_L2 for catalog_guid {catalog_guid}: {e}")
+            print(f"An error occurred while updating is_quality_assessed for catalog_guid {catalog_guid}: {e}")
             raise
 
         finally:

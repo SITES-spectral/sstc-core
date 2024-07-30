@@ -14,7 +14,8 @@ meta = {
     "station_name": "Abisko",
     "normalized_station_name": "abisko",    
     "locations_filepath": config_dirpath / 'locations' / 'locations_abisko.yaml',
-    "platforms_filepath": config_dirpath / 'platforms' / 'platforms_abisko.yaml',    
+    "platforms_filepath": config_dirpath / 'platforms' / 'platforms_abisko.yaml',
+    "phenocam_quality_weights_filepath": config_dirpath / "phenocam_quality_weights.yaml",    
     'geolocation':{
         'point':{
             'epsg:4326': {'latitude_dd': None, 'longitude_dd': None}, 

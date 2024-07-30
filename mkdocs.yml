@@ -31,6 +31,7 @@ nav:
       - SITES Spectral Utils: api_reference/sstc_core.sites.spectral.utils.md
       - SITES Spectral Database Manager: api_reference/sstc_core.sites.spectral.duckdb_manager.md
       - SITES Spectral Catalog: api_reference/sstc_core.sites.spectral.catalog.md
+      - SITES Spectral Phenocam Image Quality: api_reference/sstc_core.sites.spectral.image_quality.md
   - Development docs: 
       - Acronyms construction: development/instruments_acronyms_construction.md
   - Release notes: CHANGELOG.md
