@@ -1,3 +1,6 @@
+## [v0.7.2]
+- Ensured quality flags were properly returned boolean when necessary.
+
 ## [v0.7.1]
 - `detect_birds` flag has been disabled until better training model is found, defaults to False. It requires to manually label the image. 
 

@@ -4,6 +4,41 @@ from PIL import Image as PILImage
 from sstc_core.sites.spectral.io_tools import load_yaml
 
 
+def convert_to_bool(value):
+    """
+    Converts a value to a boolean type. This function handles different types of boolean-like values
+    and ensures that the output is a standard Python boolean (`True` or `False`).
+
+    Parameters:
+        value (Any): The input value to be converted to a boolean. This can include various types
+                     such as numpy boolean types, Python boolean types, or other values.
+
+    Returns:
+        bool: The converted boolean value. If the input value is a boolean type (numpy or Python),
+              it returns the corresponding boolean value. For any other input, it returns `False`.
+
+    Examples:
+        ```python
+        >>> convert_to_bool(np.bool_(True))
+        True
+
+        >>> convert_to_bool(True)
+        True
+
+        >>> convert_to_bool(False)
+        False
+
+        >>> convert_to_bool(1)
+        False
+
+        >>> convert_to_bool("string")
+        False
+        ```
+    """
+    if isinstance(value, (np.bool_, bool)):
+        return bool(value)
+    return False
+
 
 def detect_blur(image, method='laplacian', threshold=100):
     """
@@ -50,7 +85,7 @@ def detect_blur(image, method='laplacian', threshold=100):
         blur_value = np.mean(sobel_mag)
     
     # Determine if the image is blurry based on the threshold
-    return blur_value < threshold
+    return convert_to_bool(blur_value < threshold)
 
 
 def detect_snow(image, brightness_threshold=200, saturation_threshold=50):
@@ -85,7 +120,7 @@ def detect_snow(image, brightness_threshold=200, saturation_threshold=50):
     snow_mask = (brightness > brightness_threshold) & (saturation < saturation_threshold)
     snow_percentage = np.sum(snow_mask) / (image.shape[0] * image.shape[1])
 
-    return snow_percentage > 0.01  # Adjust percentage threshold as needed
+    return convert_to_bool(snow_percentage > 0.01)  # Adjust percentage threshold as needed
 
 
 def detect_rain(image, min_line_length=100, max_line_gap=10):
@@ -286,7 +321,7 @@ def detect_glare(image, threshold=240):
     glare_mask = v > threshold
     glare_percentage = np.sum(glare_mask) / (image.shape[0] * image.shape[1])
 
-    return glare_percentage > 0.01  # Adjust percentage threshold as needed
+    return convert_to_bool(glare_percentage > 0.01)  # Adjust percentage threshold as needed
 
 
 def detect_fog(image, threshold=0.5):
@@ -316,7 +351,7 @@ def detect_fog(image, threshold=0.5):
     edges = cv2.Canny(gray, 50, 150)
     edge_ratio = np.sum(edges > 0) / (image.shape[0] * image.shape[1])
 
-    return edge_ratio < threshold
+    return convert_to_bool(edge_ratio < threshold)
 
 
 def detect_birds(image):
@@ -359,7 +394,7 @@ def detect_rotation(image, angle_threshold=10):
             angles.append(angle)
 
         average_angle = np.mean(angles)
-        return abs(average_angle) > angle_threshold
+        return convert_to_bool(abs(average_angle) > angle_threshold)
 
     return False
 
