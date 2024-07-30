@@ -716,8 +716,8 @@ class Station(DuckDBManager):
             'platform_type': platform_type,
             'is_legacy': is_legacy,
             'L0_name': L0_name,
-            'is_L1': is_L1,
-            'is_quality_assessed': False,            
+            'is_L1': is_L1,            
+            'is_ready_for_products_use': False,          
             'catalog_filepath': local_filepath,
             'source_filepath': remote_filepath,
             'normalized_quality_index': normalized_quality_index,
@@ -788,14 +788,14 @@ class Station(DuckDBManager):
             print(f"Error inserting record: {e}")
             return False
 
-    def update_is_quality_assessed(self, table_name: str, catalog_guid: str, is_quality_assessed: bool):
+    def update_is_ready_for_products_use(self, table_name: str, catalog_guid: str, is_ready_for_products_use: bool):
         """
-        Updates the `is_quality_assessed` field for a specific record identified by `catalog_guid`.
+        Updates the `is_ready_for_products_use` field for a specific record identified by `catalog_guid`.
 
         Parameters:
             table_name (str): The name of the table to update the record in.
             catalog_guid (str): The unique identifier for the record.
-            is_quality_assessed(bool): The new value for the `is_quality_assessed` field.
+            is_ready_for_products_use(bool): The new value for the `is_ready_for_products_use` field.
 
         Raises:
             ValueError: If the record with the specified catalog_guid does not exist.
@@ -806,10 +806,10 @@ class Station(DuckDBManager):
             if not self.catalog_guid_exists(table_name, catalog_guid):
                 raise ValueError(f"Record with catalog_guid {catalog_guid} does not exist in {table_name}.")
 
-            # Update the is_quality_assessed field for the record
-            query = f"UPDATE {table_name} SET is_quality_assessed = ? WHERE catalog_guid = ?"
-            self.execute_query(query, (is_quality_assessed, catalog_guid))
-            print(f"Updated is_L2 for catalog_guid {catalog_guid} to {is_quality_assessed}")
+            # Update the `is_ready_for_products_use`` field for the record
+            query = f"UPDATE {table_name} SET is_ready_for_products_use = ? WHERE catalog_guid = ?"
+            self.execute_query(query, (is_ready_for_products_use, catalog_guid))
+            print(f"Updated `is_ready_for_products_use` for catalog_guid {catalog_guid} to {is_ready_for_products_use}")
 
         except duckdb.Error as e:
             print(f"An error occurred while updating is_quality_assessed for catalog_guid {catalog_guid}: {e}")

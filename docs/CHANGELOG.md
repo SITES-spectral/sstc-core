@@ -1,3 +1,6 @@
+## [v0.7.3]
+- `is_ready_for_products_use` is now included in the record_dict
+
 ## [v0.7.2]
 - Ensured quality flags were properly returned boolean when necessary.
 
@@ -26,7 +29,7 @@
 - extended `record_dict` with `is_L2=False` 
 
 ## [v0.4.2]
-- added `catalog.get-records_count`   
+- added `catalog.get_records_count`   
 
 ## [v0.4.1]
 - added `catalog.update_records_count` 
