@@ -1,3 +1,6 @@
+## [v0.7.7]
+- Added `DuckDBManager.update_by_catalog_guid` 
+
 ## [v0.7.6]
 - Added `DuckDBManager.get_filtered_records` 
 - Fixed issue on `Station.get_L1_records` not returning correctly the results.
