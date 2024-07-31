@@ -1,3 +1,6 @@
+## [v0.8.0]
+- Added `sites.spectral.tasks_manager` 
+
 ## [v0.7.7]
 - Added `DuckDBManager.update_by_catalog_guid` 
 
