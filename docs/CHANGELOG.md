@@ -1,3 +1,7 @@
+## [v0.7.6]
+- Added `DuckDBManager.get_filtered_records` 
+- Fixed issue on `Station.get_L1_records` not returning correctly the results.
+
 ## [v0.7.5]
 - Added `DuckDBManager.get_table_schema`
 - Updated results of `Station.get_L1_records` to return all fields of the record. The resulted is a dictionary nested with year as the first key, day_of_year as the second key, and L0_name as the third key. 

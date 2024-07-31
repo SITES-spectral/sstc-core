@@ -368,6 +368,72 @@ class DuckDBManager:
         
         finally:
             self.close_connection()
+            
+    def get_filtered_records(self, table_name: str, filters: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Returns a list of records as dictionaries, filtered by specified field-value pairs.
+
+        Parameters:
+            table_name (str): The name of the table to query.
+            filters (Dict[str, Any]): A dictionary of field-value pairs to filter the records by.
+
+        Returns:
+            List[Dict[str, Any]]: A list of dictionaries, each representing a record with all fields included.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+            
+        Example:
+            ```python
+            # Assuming you have an instance of Station
+            station = Station(db_dirpath="/path/to/db/dir", station_name="StationName")
+
+            # Define the filters for the query
+            filters = {
+                "is_L1": True,
+                "year": 2024
+            }
+
+            # Retrieve the filtered records
+            filtered_records = station.get_filtered_records(table_name="PhenoCams_BTH_FOR_P_BTH_1", filters=filters)
+            for record in filtered_records:
+                print(record)
+            ```
+        """
+        try:
+            if self.connection is None:
+                self.connect()
+
+            # Build the WHERE clause based on the filters
+            where_clauses = []
+            params = []
+            for field, value in filters.items():
+                where_clauses.append(f"{field} = ?")
+                params.append(value)
+
+            where_clause = " AND ".join(where_clauses)
+            query = f"SELECT * FROM {table_name} WHERE {where_clause}"
+            
+            # Execute query and get the column names
+            result = self.execute_query(query, tuple(params))
+            columns = self.connection.execute(f"DESCRIBE {table_name}").fetchall()
+
+            column_names = [col[0] for col in columns]
+            
+            records_list = []
+            for row in result:
+                # Convert tuple to dictionary using column names
+                record_dict = dict(zip(column_names, row))
+                records_list.append(record_dict)
+
+            return records_list
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving records from table '{table_name}': {e}")
+            raise
+        
+        finally:
+            self.close_connection()
 
 
 class Station(DuckDBManager):
@@ -654,16 +720,20 @@ class Station(DuckDBManager):
             if self.connection is None:
                 self.connect()
 
-            result = self.execute_query(query)
+            # Execute query and get the column names
+            result = self.connection.execute(query).fetchall()
+            columns = self.connection.execute(f"DESCRIBE {table_name}").fetchall()
+
+            column_names = [col[0] for col in columns]
             
             records_by_year_day_L0_name = {}
             for row in result:
-                year = row['year']
-                day_of_year = row['day_of_year']
-                L0_name = row['L0_name']
+                # Convert tuple to dictionary using column names
+                record_dict = dict(zip(column_names, row))
                 
-                # Extract all fields from the row
-                record_dict = {key: row[key] for key in row.keys()}
+                year = record_dict['year']
+                day_of_year = record_dict['day_of_year']
+                L0_name = record_dict['L0_name']
 
                 if year not in records_by_year_day_L0_name:
                     records_by_year_day_L0_name[year] = {}
@@ -680,7 +750,7 @@ class Station(DuckDBManager):
         
         finally:
             self.close_connection()
-
+            
     @staticmethod
     def normalize_string(name: str) -> str:
         """
