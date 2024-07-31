@@ -1,3 +1,11 @@
+## [v0.8.2]
+- Added `config.github_backups.yaml`
+- Added `config.catalog_default_filepaths.yaml`
+- Added `config.catalog_filepaths` 
+
+## [v0.8.1]
+- Fixed issue `station.stations_names`  
+
 ## [v0.8.0]
 - Added `sites.spectral.tasks_manager` 
 

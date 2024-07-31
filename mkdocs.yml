@@ -22,6 +22,8 @@ nav:
     - Secure SFTP credentials with keyring: getting_started/secure_keyring_credentials.md
   - User Guide:
     - Using the SITES Spectral catalog: user_guide/catalog_how_to.md
+    - How to backup updates on `station_catalog.db` files : user_guide/how_to_update_catalogs_backups.md 
+
   - Tutorials:
     - Intro: tutorials/tutorials_intro.md
   - API Reference:

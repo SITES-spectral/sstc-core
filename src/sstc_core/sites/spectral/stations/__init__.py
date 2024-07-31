@@ -189,18 +189,23 @@ def generate_unique_id(creation_date: str, station_acronym: str, location_id: st
     return unique_id
 
 
-    
-def stations_names(yaml_file:str = '../config/stations_names.yaml')->dict:
+def stations_names(yaml_filename: str = 'stations_names.yaml') -> Dict[str, Dict[str, str]]:
     """
     Retrieve a dictionary of station names with their respective system names and acronyms.
+
+    Args:
+        yaml_filename (str): The filename of the YAML file containing station information.
 
     Returns:
         dict: A dictionary where each key is a station name and the value is another dictionary
               containing the system name and acronym for the station.
 
+    Raises:
+        FileNotFoundError: If the YAML file is not found in the expected directory.
+        yaml.YAMLError: If there is an error parsing the YAML file.
+
     Example:
-        ```python
-        stations_names()
+        >>> stations_names()
         {
             'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS', 'station_name': 'Abisko'}
             'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA', 'station_name': 'Asa'}
@@ -210,11 +215,21 @@ def stations_names(yaml_file:str = '../config/stations_names.yaml')->dict:
             'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC', 'station_name': 'Skogaryd'}
             'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB', 'station_name': 'Svartberget'}
         }
-        ```
     """
-    
-    return load_yaml(yaml_file)
+    # Get the parent directory of the current file
+    parent_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    config_dirpath = os.path.join(parent_directory, 'config')
+    yaml_filepath = os.path.join(config_dirpath, yaml_filename)
 
+    if not os.path.exists(yaml_filepath):
+        raise FileNotFoundError(f"The file '{yaml_filepath}' does not exist.")
+
+    try:
+        data = load_yaml(yaml_filepath)
+        return data
+    except Exception as e:
+        raise ValueError(f"Error parsing YAML file: {e}")
+    
 
 class DuckDBManager:
     """
