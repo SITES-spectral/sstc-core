@@ -2,7 +2,8 @@ import os
 import importlib
 from typing import Optional
 from sstc_core.sites.spectral import utils, sftp_tools
-from sstc_core.sites.spectral.utils import normalize_string 
+from sstc_core.sites.spectral.utils import normalize_string
+from sstc_core.sites.spectral.io_tools import load_yaml 
 from pathlib import Path
 import duckdb
 import hashlib
@@ -189,7 +190,7 @@ def generate_unique_id(creation_date: str, station_acronym: str, location_id: st
 
 
     
-def stations_names()->dict:
+def stations_names(yaml_file:str = '../config/stations_names.yaml')->dict:
     """
     Retrieve a dictionary of station names with their respective system names and acronyms.
 
@@ -201,25 +202,18 @@ def stations_names()->dict:
         ```python
         stations_names()
         {
-            'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS'},
-            'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA'},
-            'Grimsö': {'normalized_station_name': 'grimso', 'station_acronym': 'GRI'},
-            'Lonnstorp': {'normalized_station_name': 'lonnstorp', 'station_acronym': 'LON'},
-            'Robacksdalen': {'normalized_station_name': 'robacksdalen', 'station_acronym': 'RBD'},
-            'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC'},
-            'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB'}
+            'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS', 'station_name': 'Abisko'}
+            'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA', 'station_name': 'Asa'}
+            'Grimsö': {'normalized_station_name': 'grimso', 'station_acronym': 'GRI', 'station_name': 'Grimsö'}
+            'Lonnstorp': {'normalized_station_name': 'lonnstorp', 'station_acronym': 'LON', 'station_name': 'Lonnstorp'}
+            'Robacksdalen': {'normalized_station_name': 'robacksdalen', 'station_acronym': 'RBD', 'station_name': 'Robacksdalen'}
+            'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC', 'station_name': 'Skogaryd'}
+            'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB', 'station_name': 'Svartberget'}
         }
         ```
     """
-    return {
-        'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS'},
-        'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA'},
-        'Grimsö': {'normalized_station_name': 'grimso', 'station_acronym': 'GRI'},
-        'Lonnstorp': {'normalized_station_name': 'lonnstorp', 'station_acronym': 'LON'},
-        'Robacksdalen': {'normalized_station_name': 'robacksdalen', 'station_acronym': 'RBD'},
-        'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC'},
-        'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB'}
-    }
+    
+    return load_yaml(yaml_file)
 
 
 class DuckDBManager:
@@ -330,6 +324,51 @@ class DuckDBManager:
         finally:
             self.close_connection()
             
+    def get_table_schema(self, table_name: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves the schema of the specified table.
+
+        This method returns the schema information for a given table, including column names, data types, and other attributes.
+
+        Parameters:
+            table_name (str): The name of the table for which to retrieve the schema.
+
+        Returns:
+            List[Dict[str, Any]]: A list of dictionaries, each representing a column in the table.
+                                  The dictionary includes the column name, data type, and other properties.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        query = f"PRAGMA table_info('{table_name}')"
+        
+        try:
+            if self.connection is None:
+                self.connect()
+
+            result = self.execute_query(query)
+            schema_info = []
+
+            for row in result:
+                column_info = {
+                    "column_id": row[0],
+                    "column_name": row[1],
+                    "data_type": row[2],
+                    "not_null": bool(row[3]),
+                    "default_value": row[4],
+                    "primary_key": bool(row[5])
+                }
+                schema_info.append(column_info)
+
+            return schema_info
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving the schema for table '{table_name}': {e}")
+            raise
+        
+        finally:
+            self.close_connection()
+
 
 class Station(DuckDBManager):
     def __init__(self, db_dirpath: str, station_name: str):
@@ -552,18 +591,47 @@ class Station(DuckDBManager):
             return False
             
     
-    def get_L1_records(self, table_name: str) -> Dict[int, Dict[str, Dict[str, Any]]]:
+    def get_L1_records(self, table_name: str) -> Dict[int, Dict[str, Dict[str, Dict[str, Any]]]]:
         """
         Returns all records where `is_L1` is True, structured in a nested dictionary format.
 
         The dictionary structure is as follows:
         {
             year: {
-                L0_name: {
-                    'catalog_filepath': catalog_filepath,
-                    'day_of_year': day_of_year,
-                    'catalog_guid': catalog_guid,
-                    'is_L2': is_L2,
+                day_of_year: {
+                    L0_name: {
+                        'catalog_guid': ...,
+                        'year': ...,
+                        'creation_date': ...,
+                        'day_of_year': ...,
+                        'station_acronym': ...,
+                        'location_id': ...,
+                        'platform_id': ...,
+                        'ecosystem_of_interest': ...,
+                        'platform_type': ...,
+                        'is_legacy': ...,
+                        'L0_name': ...,
+                        'is_L1': ...,
+                        'is_ready_for_products_use': ...,
+                        'catalog_filepath': ...,
+                        'source_filepath': ...,
+                        'normalized_quality_index': ...,
+                        'quality_index_weights_version': ...,
+                        'flag_brightness': ...,
+                        'flag_blur': ...,
+                        'flag_snow': ...,
+                        'flag_rain': ...,
+                        'flag_water_drops': ...,
+                        'flag_dirt': ...,
+                        'flag_obstructions': ...,
+                        'flag_glare': ...,
+                        'flag_fog': ...,
+                        'flag_rotation': ...,
+                        'flag_birds': ...,
+                        'flag_other': ...,
+                        'is_quality_assessed': ...,
+                    },
+                    ...
                 },
                 ...
             },
@@ -574,13 +642,13 @@ class Station(DuckDBManager):
             table_name (str): The name of the table to query.
 
         Returns:
-            dict: A nested dictionary with the year as the first key, `L0_name` as the second key, and 
-                  `catalog_filepath` and `day_of_year` as the values.
+            dict: A nested dictionary with the year as the first key, `day_of_year` as the second key, 
+                  `L0_name` as the third key, and all fields of the record as the values.
 
         Raises:
             duckdb.Error: If there is an error executing the query or managing the connection.
         """
-        query = f"SELECT year, L0_name, catalog_filepath, day_of_year, catalog_guid, is_L2 FROM {table_name} WHERE is_L1 = TRUE"
+        query = f"SELECT * FROM {table_name} WHERE is_L1 = TRUE"
         
         try:
             if self.connection is None:
@@ -588,26 +656,23 @@ class Station(DuckDBManager):
 
             result = self.execute_query(query)
             
-            records_by_year_and_L0_name = {}
+            records_by_year_day_L0_name = {}
             for row in result:
-                year = row[0]
-                L0_name = row[1]
-                catalog_filepath = row[2]
-                day_of_year = row[3]
-                catalog_guid = row[4]
-                is_L2 = row[5]  
+                year = row['year']
+                day_of_year = row['day_of_year']
+                L0_name = row['L0_name']
+                
+                # Extract all fields from the row
+                record_dict = {key: row[key] for key in row.keys()}
 
-                if year not in records_by_year_and_L0_name:
-                    records_by_year_and_L0_name[year] = {}
+                if year not in records_by_year_day_L0_name:
+                    records_by_year_day_L0_name[year] = {}
+                if day_of_year not in records_by_year_day_L0_name[year]:
+                    records_by_year_day_L0_name[year][day_of_year] = {}
 
-                records_by_year_and_L0_name[year][L0_name] = {
-                    'catalog_filepath': catalog_filepath,
-                    'day_of_year': day_of_year,
-                    'catalog_guid': catalog_guid,
-                    'is_L2': is_L2
-                }
+                records_by_year_day_L0_name[year][day_of_year][L0_name] = record_dict
 
-            return records_by_year_and_L0_name
+            return records_by_year_day_L0_name
         
         except duckdb.Error as e:
             print(f"An error occurred while retrieving L1 records from table '{table_name}': {e}")

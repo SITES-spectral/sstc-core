@@ -1,3 +1,8 @@
+## [v0.7.5]
+- Added `DuckDBManager.get_table_schema`
+- Updated results of `Station.get_L1_records` to return all fields of the record. The resulted is a dictionary nested with year as the first key, day_of_year as the second key, and L0_name as the third key. 
+- `stations.stations_names` now reads from `config.stations_names.yaml`  instead of the hardcoded of the dictionary.
+   
 ## [v0.7.4]
 - added `quality_index_weights_version` in the record_dict
 
