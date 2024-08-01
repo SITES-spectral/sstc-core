@@ -284,7 +284,7 @@ def assess_brightness(image, dark_threshold=50, bright_threshold=200):
     average_brightness = np.mean(gray)
 
     if average_brightness < dark_threshold:
-        return -1  # Very dark image
+        return 1  # Very dark image
     elif average_brightness > bright_threshold:
         return 1  # Very bright image
     else:
@@ -357,7 +357,7 @@ def detect_fog(image, threshold=0.5):
 def detect_birds(image):
     # Placeholder for birds detection logic
     # May be not need it, but kepth it to do it by manual tagging    
-    pass
+    return False
 
 
 
@@ -548,6 +548,7 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict):
     
 
     # Convert boolean flags to numeric scores
+    brightness_score = 1 if not flag_brightness else 0
     blur_score = 1 if not flag_blur else 0
     snow_score = 1 if not flag_snow else 0  # Moderate impact if snow is detected
     rain_score = 1 if not flag_rain else 0
@@ -559,9 +560,6 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict):
     rotation_score = 1 if not flag_rotation else 0
     birds_score = 1 if not flag_birds else 0
     other_score = 1 if not flag_other else 0
-
-    # Convert brightness status to a normalized value
-    brightness_score = (flag_brightness + 1) / 2  # Maps -1, 0, 1 to 0, 0.5, 1
 
     # Combine the scores with weights
     raw_quality_index = (weight_brightness * brightness_score +
