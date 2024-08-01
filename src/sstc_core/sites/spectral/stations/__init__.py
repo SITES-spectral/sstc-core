@@ -861,7 +861,7 @@ class Station(DuckDBManager):
     
     def create_record_dictionary(self, remote_filepath: str, platforms_type: str, platform_id: str, 
                                  is_legacy: bool = False, backup_dirpath: str = 'aurora02_dirpath', 
-                                 start_time: str = "10:00:00", end_time: str = "14:00:00", split_subdir: str = 'data') -> Dict[str, Any]:
+                                 start_time: str = "10:00:00", end_time: str = "14:30:00", split_subdir: str = 'data', skip=False) -> Dict[str, Any]:
         """
         Creates a dictionary representing a record for a file, including metadata and derived attributes.
 
@@ -877,9 +877,9 @@ class Station(DuckDBManager):
             is_legacy (bool, optional): Indicates whether the record is considered legacy data. Defaults to False.
             backup_dirpath (str, optional): The directory path used for backup storage in the local filesystem. Defaults to 'aurora02_dirpath'.
             start_time (str, optional): The start of the time window in 'HH:MM:SS' format. Defaults to "10:00:00".
-            end_time (str, optional): The end of the time window in 'HH:MM:SS' format. Defaults to "14:00:00".
+            end_time (str, optional): The end of the time window in 'HH:MM:SS' format. Defaults to "14:30:00".
             split_subdir (str, optional): The subdirectory name used to organize local paths. Defaults to 'data'.
-
+            skip (bool, optional): If True do not auto-assess image quality, leaving default values.
         Returns:
             dict: A dictionary containing the record information, including metadata, derived attributes, and a unique ID.
 
@@ -919,11 +919,12 @@ class Station(DuckDBManager):
             end_time=end_time
         )
         
-        quality_flags_dict = assess_image_quality(local_filepath)
+        quality_flags_dict = assess_image_quality(local_filepath, skip=skip)
         weights = load_weights_from_yaml(self.phenocam_quality_weights_filepath)
         normalized_quality_index, quality_index_weights_version = calculate_normalized_quality_index(
             quality_flags_dict=quality_flags_dict,
-            weights=weights)
+            weights=weights, 
+            skip=skip)
         
             
         # Create the record dictionary
@@ -959,7 +960,7 @@ class Station(DuckDBManager):
     
     def populate_station_db(self, sftp_filepaths: list, platform_id: str, platforms_type: str = 'PhenoCams',
                             backup_dirpath: str = 'aurora02_dirpath', start_time: str = "10:00:00",
-                            end_time: str = "14:00:00", split_subdir: str = 'data') -> bool:
+                            end_time: str = "14:30:00", split_subdir: str = 'data', skip:bool = False) -> bool:
         """
         Populates the station database with records based on SFTP file paths.
 
@@ -975,7 +976,7 @@ class Station(DuckDBManager):
             start_time (str, optional): The start of the time window in 'HH:MM:SS' format (default is "10:00:00").
             end_time (str, optional): The end of the time window in 'HH:MM:SS' format (default is "14:00:00").
             split_subdir (str, optional): The subdirectory name to split the file path on (default is 'data').
-
+            skip (bool, optional): If True do not auto-assess image quality, leaving default values.
         Returns:
             bool: True if the operation was successful, False otherwise.
         """
@@ -990,7 +991,8 @@ class Station(DuckDBManager):
                     backup_dirpath=backup_dirpath,
                     start_time=start_time,
                     end_time=end_time,
-                    split_subdir=split_subdir
+                    split_subdir=split_subdir,
+                    skip=skip,
                 )
                 
                 catalog_guid = record.get('catalog_guid')

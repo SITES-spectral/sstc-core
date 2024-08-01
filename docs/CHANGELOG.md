@@ -1,3 +1,6 @@
+## [v0.9.1]
+- Added `skip` variable to skip the auto-assessing of image quality and auto calculation quality index. Useful when populating databases for the first time.
+
 ## [v0.9.0]
 - refactored `is_quality_assessed` to `is_quality_confirmed`
 - added `Station.get_unique_years`
