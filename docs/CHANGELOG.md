@@ -1,3 +1,12 @@
+## [v0.8.4]
+- Added `utils.day_of_year_to_month_day`
+- Added `utils.extract_keys_with_prefix`
+- Added `utils.set_all_values_to_false`
+- updated `phenocam_quality_weights.yaml` all weights set to 1 but snow=0.1 
+
+## [v0.8.3]
+- Fixed issue not loading `config.catalog_filepaths`
+
 ## [v0.8.2]
 - Added `config.github_backups.yaml`
 - Added `config.catalog_default_filepaths.yaml`

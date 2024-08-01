@@ -549,7 +549,7 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict):
 
     # Convert boolean flags to numeric scores
     blur_score = 1 if not flag_blur else 0
-    snow_score = 1 if not flag_snow else 0.5  # Moderate impact if snow is detected
+    snow_score = 1 if not flag_snow else 0  # Moderate impact if snow is detected
     rain_score = 1 if not flag_rain else 0
     water_drops_score = 1 if not flag_water_drops else 0
     dirt_score = 1 if not flag_dirt else 0

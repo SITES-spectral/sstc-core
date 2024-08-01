@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from PIL import Image
 from PIL.ExifTags import TAGS
 from shutil import copy2
@@ -36,6 +36,11 @@ def generate_unique_id(data: dict, variable_names: list = None) -> str:
     
     return short_hash
 
+def day_of_year_to_month_day(year, day_of_year):
+    # Calculate the date corresponding to the day of year
+    date = datetime(year, 1, 1) + timedelta(days=day_of_year - 1)
+    # Format the date as "MMM DD"
+    return date.strftime('%b %d')
 
 def extract_year(creation_date:str):
     """
@@ -306,3 +311,29 @@ def is_within_time_window(formatted_date: str, start_time: str = "10:00:00", end
 
     # Check if the creation_time is within the time window
     return start_time_obj <= creation_time <= end_time_obj
+
+
+def extract_keys_with_prefix(input_dict, starts_with='flag_'):
+    """
+    Extracts keys from the input dictionary that start with the specified prefix.
+
+    Args:
+        input_dict (dict): The dictionary to filter.
+        starts_with (str): The prefix to filter keys by. Default is 'flag_'.
+
+    Returns:
+        dict: A new dictionary with only the keys starting with the specified prefix and their corresponding values.
+    """
+    return {key: value for key, value in input_dict.items() if key.startswith(starts_with)}
+
+def set_all_values_to_false(input_dict:dict)->dict:
+    """
+    Sets all the values of the given dictionary to False.
+
+    Args:
+        input_dict (dict): The dictionary whose values will be set to False.
+
+    Returns:
+        dict: The dictionary with all values set to False.
+    """
+    return {key: False for key, value in input_dict.items()}
