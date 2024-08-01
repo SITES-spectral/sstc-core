@@ -778,8 +778,7 @@ class Station(DuckDBManager):
                     'flag_fog': ...,
                     'flag_rotation': ...,
                     'flag_birds': ...,
-                    'flag_other': ...,
-                    'is_quality_confirmed': ...,
+                    'flag_other': ...,                    
                 },
                 ...
             },
@@ -946,6 +945,7 @@ class Station(DuckDBManager):
             'source_filepath': remote_filepath,
             'normalized_quality_index': normalized_quality_index,
             'quality_index_weights_version': quality_index_weights_version,
+            'flags_confirmed': False,
             }
 
         record_dict = {**record_dict, **quality_flags_dict } 

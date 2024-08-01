@@ -392,7 +392,7 @@ def detect_rotation(image, angle_threshold=10):
     return False
 
 
-def assess_image_quality(image):
+def assess_image_quality(image, flag_other:0, flag_birds:0):
     """
     Assess the quality of an image by evaluating brightness, glare, fog,  and rotation.
     Handles image inputs as PIL image, OpenCV image, or file path.
@@ -435,9 +435,8 @@ def assess_image_quality(image):
         'flag_glare': detect_glare(image),
         'flag_fog': detect_fog(image),
         'flag_rotation': detect_rotation(image),
-        'flag_birds': False,        
-        'flag_other': False,
-        'is_quality_confirmed': False  # Confirmed is done by visually checking the flags
+        'flag_birds': flag_birds,        
+        'flag_other': flag_other,        
     }
 
     return quality_assessment_results
@@ -505,7 +504,7 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict):
         ```
     """
     # Extract results from the quality assessment dictionary
-    flag_brightness = quality_flags_dict.get('flag_brightness', 0)
+    flag_brightness = quality_flags_dict.get('flag_brightness', False)
     flag_blur = quality_flags_dict.get('flag_blur', False)
     flag_snow = quality_flags_dict.get('flag_snow', False)
     flag_rain = quality_flags_dict.get('flag_rain', False)
