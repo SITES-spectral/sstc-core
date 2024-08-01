@@ -354,13 +354,6 @@ def detect_fog(image, threshold=0.5):
     return convert_to_bool(edge_ratio < threshold)
 
 
-def detect_birds(image):
-    # Placeholder for birds detection logic
-    # May be not need it, but kepth it to do it by manual tagging    
-    return False
-
-
-
 def detect_rotation(image, angle_threshold=10):
     """
     Detect if an image has been rotated by analyzing the orientation of lines.
@@ -401,7 +394,7 @@ def detect_rotation(image, angle_threshold=10):
 
 def assess_image_quality(image):
     """
-    Assess the quality of an image by evaluating brightness, glare, fog, birds, and rotation.
+    Assess the quality of an image by evaluating brightness, glare, fog,  and rotation.
     Handles image inputs as PIL image, OpenCV image, or file path.
 
     Parameters:
@@ -430,27 +423,21 @@ def assess_image_quality(image):
         raise TypeError("Input must be a file path, PIL image, or OpenCV image.")
 
     # Perform various quality assessments
-    brightness_status = assess_brightness(image)
-    glare_detected = detect_glare(image)
-    fog_detected = detect_fog(image)
-    birds_detected = detect_birds(image)
-    rotation_detected = detect_rotation(image)
-
     # Store the results in a dictionary with expected names for the quality index function
     quality_assessment_results = {
-        'flag_brightness': brightness_status,
+        'flag_brightness': assess_brightness(image),
         'flag_blur': detect_blur(image),  # Add blur detection
         'flag_snow': detect_snow(image),  # Add snow detection
         'flag_rain': detect_rain(image),  # Add rain detection
         'flag_water_drops': detect_water_drops(image),  # Add water drops detection
         'flag_dirt': detect_dirt(image),  # Add dirt detection
         'flag_obstructions': detect_obstructions(image),  # Add obstructions detection
-        'flag_glare': glare_detected,
-        'flag_fog': fog_detected,
-        'flag_rotation': rotation_detected,
-        'flag_birds': birds_detected,
+        'flag_glare': detect_glare(image),
+        'flag_fog': detect_fog(image),
+        'flag_rotation': detect_rotation(image),
+        'flag_birds': False,        
         'flag_other': False,
-        'is_quality_assessed': True  # Indicates that quality assessment has been done
+        'is_quality_confirmed': False  # Confirmed is done by visually checking the flags
     }
 
     return quality_assessment_results

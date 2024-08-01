@@ -741,49 +741,45 @@ class Station(DuckDBManager):
         except duckdb.Error as e:
             print(f"Error inserting record: {e}")
             return False
-            
     
-    def get_L1_records(self, table_name: str) -> Dict[int, Dict[str, Dict[str, Dict[str, Any]]]]:
+    def get_records_as_dictionary_by_day_L0_name(self, table_name: str, filters: Optional[Dict[str, Any]] = None) -> Dict[int, Dict[str, Dict[str, Any]]]:
         """
-        Returns all records where `is_L1` is True, structured in a nested dictionary format.
+        Retrieves records filtered by specified criteria, structured in a nested dictionary format by day_of_year and L0_name.
 
         The dictionary structure is as follows:
         {
-            year: {
-                day_of_year: {
-                    L0_name: {
-                        'catalog_guid': ...,
-                        'year': ...,
-                        'creation_date': ...,
-                        'day_of_year': ...,
-                        'station_acronym': ...,
-                        'location_id': ...,
-                        'platform_id': ...,
-                        'ecosystem_of_interest': ...,
-                        'platform_type': ...,
-                        'is_legacy': ...,
-                        'L0_name': ...,
-                        'is_L1': ...,
-                        'is_ready_for_products_use': ...,
-                        'catalog_filepath': ...,
-                        'source_filepath': ...,
-                        'normalized_quality_index': ...,
-                        'quality_index_weights_version': ...,
-                        'flag_brightness': ...,
-                        'flag_blur': ...,
-                        'flag_snow': ...,
-                        'flag_rain': ...,
-                        'flag_water_drops': ...,
-                        'flag_dirt': ...,
-                        'flag_obstructions': ...,
-                        'flag_glare': ...,
-                        'flag_fog': ...,
-                        'flag_rotation': ...,
-                        'flag_birds': ...,
-                        'flag_other': ...,
-                        'is_quality_assessed': ...,
-                    },
-                    ...
+            day_of_year: {
+                L0_name: {
+                    'catalog_guid': ...,
+                    'year': ...,
+                    'creation_date': ...,
+                    'day_of_year': ...,
+                    'station_acronym': ...,
+                    'location_id': ...,
+                    'platform_id': ...,
+                    'ecosystem_of_interest': ...,
+                    'platform_type': ...,
+                    'is_legacy': ...,
+                    'L0_name': ...,
+                    'is_L1': ...,
+                    'is_ready_for_products_use': ...,
+                    'catalog_filepath': ...,
+                    'source_filepath': ...,
+                    'normalized_quality_index': ...,
+                    'quality_index_weights_version': ...,
+                    'flag_brightness': ...,
+                    'flag_blur': ...,
+                    'flag_snow': ...,
+                    'flag_rain': ...,
+                    'flag_water_drops': ...,
+                    'flag_dirt': ...,
+                    'flag_obstructions': ...,
+                    'flag_glare': ...,
+                    'flag_fog': ...,
+                    'flag_rotation': ...,
+                    'flag_birds': ...,
+                    'flag_other': ...,
+                    'is_quality_confirmed': ...,
                 },
                 ...
             },
@@ -792,50 +788,57 @@ class Station(DuckDBManager):
 
         Parameters:
             table_name (str): The name of the table to query.
+            filters (Dict[str, Any], optional): Filters as a dictionary of field-value pairs. Defaults to None.
 
         Returns:
-            dict: A nested dictionary with the year as the first key, `day_of_year` as the second key, 
-                  `L0_name` as the third key, and all fields of the record as the values.
+            Dict[int, Dict[str, Dict[str, Any]]]: A nested dictionary with `day_of_year` as the first key, 
+                                                  `L0_name` as the second key, and all record fields as values.
 
         Raises:
             duckdb.Error: If there is an error executing the query or managing the connection.
         """
-        query = f"SELECT * FROM {table_name} WHERE is_L1 = TRUE"
-        
         try:
             if self.connection is None:
                 self.connect()
 
-            # Execute query and get the column names
-            result = self.connection.execute(query).fetchall()
-            columns = self.connection.execute(f"DESCRIBE {table_name}").fetchall()
+            # Build the WHERE clause based on the filters provided
+            where_clauses = []
+            params = []
 
+            if filters:
+                for field, value in filters.items():
+                    where_clauses.append(f"{field} = ?")
+                    params.append(value)
+
+            where_clause = " AND ".join(where_clauses) if where_clauses else "1=1"
+            query = f"SELECT * FROM {table_name} WHERE {where_clause}"
+            
+            # Execute query and get the column names
+            result = self.execute_query(query, tuple(params))
+            columns = self.connection.execute(f"DESCRIBE {table_name}").fetchall()
             column_names = [col[0] for col in columns]
             
-            records_by_year_day_L0_name = {}
+            records_by_day_L0_name = {}
             for row in result:
                 # Convert tuple to dictionary using column names
                 record_dict = dict(zip(column_names, row))
                 
-                year = record_dict['year']
                 day_of_year = record_dict['day_of_year']
                 L0_name = record_dict['L0_name']
 
-                if year not in records_by_year_day_L0_name:
-                    records_by_year_day_L0_name[year] = {}
-                if day_of_year not in records_by_year_day_L0_name[year]:
-                    records_by_year_day_L0_name[year][day_of_year] = {}
+                if day_of_year not in records_by_day_L0_name:
+                    records_by_day_L0_name[day_of_year] = {}
+                
+                records_by_day_L0_name[day_of_year][L0_name] = record_dict
 
-                records_by_year_day_L0_name[year][day_of_year][L0_name] = record_dict
-
-            return records_by_year_day_L0_name
+            return records_by_day_L0_name
         
         except duckdb.Error as e:
-            print(f"An error occurred while retrieving L1 records from table '{table_name}': {e}")
+            print(f"An error occurred while retrieving records from table '{table_name}': {e}")
             raise
         
         finally:
-            self.close_connection()
+            self.close_connection()        
             
     @staticmethod
     def normalize_string(name: str) -> str:
@@ -1034,8 +1037,39 @@ class Station(DuckDBManager):
             print(f"Updated `is_ready_for_products_use` for catalog_guid {catalog_guid} to {is_ready_for_products_use}")
 
         except duckdb.Error as e:
-            print(f"An error occurred while updating is_quality_assessed for catalog_guid {catalog_guid}: {e}")
+            print(f"An error occurred while updating is_quality_confirmed for catalog_guid {catalog_guid}: {e}")
             raise
 
+        finally:
+            self.close_connection()
+            
+    def get_unique_years(self, table_name: str) -> List[int]:
+        """
+        Retrieves all unique values from the 'year' field in the specified table.
+
+        Parameters:
+            table_name (str): The name of the table from which to retrieve unique years.
+
+        Returns:
+            List[int]: A list of unique years present in the table.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        query = f"SELECT DISTINCT year FROM {table_name} ORDER BY year"
+        
+        try:
+            if self.connection is None:
+                self.connect()
+
+            result = self.execute_query(query)
+            unique_years = [row[0] for row in result]
+
+            return unique_years
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving unique years from table '{table_name}': {e}")
+            raise
+        
         finally:
             self.close_connection()

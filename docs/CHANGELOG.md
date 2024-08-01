@@ -1,3 +1,9 @@
+## [v0.9.0]
+- refactored `is_quality_assessed` to `is_quality_confirmed`
+- added `Station.get_unique_years`
+- depeciated `Station.get_L1_records`
+- Added `Station.get_records_as_dictionary_by_day_L0_name`
+
 ## [v0.8.5]
 - Changed `flag_brightness` range to be 0 and 1.
 - `detect_birds` defaults to `False` instead of `None`
