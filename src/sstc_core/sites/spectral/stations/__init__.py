@@ -919,7 +919,7 @@ class Station(DuckDBManager):
             end_time=end_time
         )
         
-        quality_flags_dict = assess_image_quality(local_filepath, skip=skip)
+        quality_flags_dict = assess_image_quality(local_filepath, flag_other =False, flag_birds=False, skip=skip)
         weights = load_weights_from_yaml(self.phenocam_quality_weights_filepath)
         normalized_quality_index, quality_index_weights_version = calculate_normalized_quality_index(
             quality_flags_dict=quality_flags_dict,

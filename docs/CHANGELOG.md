@@ -1,3 +1,6 @@
+## [v0.9.2]
+- Fixed minor issue with optional variables not handled properly `assess_image_quality` function. 
+
 ## [v0.9.1]
 - Added `skip` variable to skip the auto-assessing of image quality and auto calculation quality index. Useful when populating databases for the first time.
 

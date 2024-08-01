@@ -392,7 +392,7 @@ def detect_rotation(image, angle_threshold=10):
     return False
 
 
-def assess_image_quality(image, flag_other:0, flag_birds:0, skip:bool = False):
+def assess_image_quality(image, flag_other:bool=False, flag_birds:bool = False, skip:bool = False):
     """
     Assess the quality of an image by evaluating brightness, glare, fog,  and rotation.
     Handles image inputs as PIL image, OpenCV image, or file path.
