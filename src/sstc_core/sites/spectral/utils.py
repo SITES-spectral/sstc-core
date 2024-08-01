@@ -337,3 +337,26 @@ def set_all_values_to_false(input_dict:dict)->dict:
         dict: The dictionary with all values set to False.
     """
     return {key: False for key, value in input_dict.items()}
+
+def have_values_changed(dict1, dict2):
+    """
+    Compares two dictionaries and checks if the value of at least one key has changed.
+
+    Args:
+        dict1 (dict): The first dictionary to compare.
+        dict2 (dict): The second dictionary to compare.
+
+    Returns:
+        bool: True if at least one value has changed, False otherwise.
+    """
+    # Check if keys in dict1 have changed values in dict2
+    for key in dict1:
+        if key in dict2 and dict1[key] != dict2[key]:
+            return True
+
+    # Check if keys in dict2 have changed values in dict1
+    for key in dict2:
+        if key in dict1 and dict2[key] != dict1[key]:
+            return True
+
+    return False

@@ -1,7 +1,8 @@
 ## [v0.8.5]
 - Changed `flag_brightness` range to be 0 and 1.
 - `detect_birds` defaults to `False` instead of `None`
-
+- Added `utils.have_values_changed` 
+  
 ## [v0.8.4]
 - Added `utils.day_of_year_to_month_day`
 - Added `utils.extract_keys_with_prefix`
