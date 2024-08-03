@@ -1,3 +1,12 @@
+## [v0.9.4]
+- Added `Station.add_new_fields_to_table`
+- Expanded `flags` to include haze, clouds, shadows and ice. 
+
+
+## [v0.9.3]
+- Added `Station.get_day_of_year_min_max`
+- Added `Station.get_records_by_year_and_day_of_year`
+
 ## [v0.9.2]
 - Fixed minor issue with optional variables not handled properly `assess_image_quality` function. 
 

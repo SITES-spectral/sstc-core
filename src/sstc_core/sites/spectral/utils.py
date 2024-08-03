@@ -348,7 +348,7 @@ def have_values_changed(dict1, dict2):
         dict2 (dict): The second dictionary representing the new state.
 
     Returns:
-        dict or None: A dictionary with changed keys and their new values, or None if no changes.
+        dict or empty dict: A dictionary with changed keys and their new values, or and empty dict if no changes.
     """
     changed_values = {}
 
@@ -358,4 +358,4 @@ def have_values_changed(dict1, dict2):
             changed_values[key] = dict2[key]
 
     # Return the dictionary with changed values if any, otherwise return None
-    return changed_values if changed_values else None
+    return changed_values if changed_values else {}  

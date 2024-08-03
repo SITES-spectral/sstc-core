@@ -1075,3 +1075,167 @@ class Station(DuckDBManager):
         
         finally:
             self.close_connection()
+            
+    def get_day_of_year_min_max(self, table_name: str, year: int) -> Dict[str, int]:
+        """
+        Retrieves the minimum and maximum values of the `day_of_year` field for the given year.
+
+        Parameters:
+            table_name (str): The name of the table to query.
+            year (int): The year to filter records by.
+
+        Returns:
+            Dict[str, int]: A dictionary containing the minimum and maximum values of the `day_of_year` field.
+                            The dictionary has keys 'min' and 'max'.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        query = f"SELECT day_of_year FROM {table_name} WHERE year = ?"
+        
+        try:
+            if self.connection is None:
+                self.connect()
+
+            result = self.execute_query(query, (year,))
+            
+            if not result:
+                return {'min': None, 'max': None}
+
+            # Convert the day_of_year strings to integers
+            day_of_year_ints = [int(row[0]) for row in result]
+            min_day_of_year = min(day_of_year_ints)
+            max_day_of_year = max(day_of_year_ints)
+
+            return {'min': min_day_of_year, 'max': max_day_of_year}
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving min and max day_of_year from table '{table_name}': {e}")
+            raise
+        
+        finally:
+            self.close_connection()
+    def get_records_by_year_and_day_of_year(self, table_name: str, year: int, day_of_year: str) -> Dict[str, Dict[str, Any]]:
+        """
+        Retrieves all records for a given year and day_of_year, structured in a dictionary by catalog_guid.
+
+        The dictionary structure is as follows:
+        {
+            catalog_guid: {
+                'catalog_guid': ...,
+                'year': ...,
+                'creation_date': ...,
+                'day_of_year': ...,
+                'station_acronym': ...,
+                'location_id': ...,
+                'platform_id': ...,
+                'ecosystem_of_interest': ...,
+                'platform_type': ...,
+                'is_legacy': ...,
+                'L0_name': ...,
+                'is_L1': ...,
+                'is_ready_for_products_use': ...,
+                'catalog_filepath': ...,
+                'source_filepath': ...,
+                'normalized_quality_index': ...,
+                'quality_index_weights_version': ...,
+                'flag_brightness': ...,
+                'flag_blur': ...,
+                'flag_snow': ...,
+                'flag_rain': ...,
+                'flag_water_drops': ...,
+                'flag_dirt': ...,
+                'flag_obstructions': ...,
+                'flag_glare': ...,
+                'flag_fog': ...,
+                'flag_rotation': ...,
+                'flag_birds': ...,
+                'flag_other': ...,
+                ...
+            },
+            ...
+        }
+
+        Parameters:
+            table_name (str): The name of the table to query.
+            year (int): The year to filter records by.
+            day_of_year (str): The day of year to filter records by (formatted as a 3-character string).
+
+        Returns:
+            Dict[str, Dict[str, Any]]: A dictionary with `catalog_guid` as the key and all record fields as values.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        query = f"SELECT * FROM {table_name} WHERE year = ? AND day_of_year = ?"
+        
+        try:
+            if self.connection is None:
+                self.connect()
+
+            result = self.execute_query(query, (year, day_of_year))
+            columns = self.connection.execute(f"DESCRIBE {table_name}").fetchall()
+            column_names = [col[0] for col in columns]
+            
+            records_by_catalog_guid = {}
+            for row in result:
+                # Convert tuple to dictionary using column names
+                record_dict = dict(zip(column_names, row))
+                
+                catalog_guid = record_dict['catalog_guid']
+                records_by_catalog_guid[catalog_guid] = record_dict
+
+            return records_by_catalog_guid
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving records from table '{table_name}' for year {year} and day_of_year {day_of_year}: {e}")
+            raise
+        
+        finally:
+            self.close_connection()
+    
+    def add_new_fields_to_table(self, table_name: str, new_fields: Dict[str, Any]) -> bool:
+        """
+        Adds new fields to an existing table and initializes them with default values for all records.
+
+        Parameters:
+            table_name (str): The name of the table to modify.
+            new_fields (Dict[str, Any]): A dictionary where keys are the new field names and values are the default values.
+
+        Returns:
+            bool: True if the operation was successful, False otherwise.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        try:
+            if self.connection is None:
+                self.connect()
+
+            for field_name, default_value in new_fields.items():
+                # Determine the data type of the default value
+                if isinstance(default_value, int):
+                    field_type = 'INTEGER'
+                elif isinstance(default_value, float):
+                    field_type = 'DOUBLE'
+                elif isinstance(default_value, bool):
+                    field_type = 'BOOLEAN'
+                else:
+                    field_type = 'VARCHAR'
+                
+                # Add the new field to the table schema
+                alter_query = f"ALTER TABLE {table_name} ADD COLUMN {field_name} {field_type}"
+                self.execute_query(alter_query)
+                
+                # Update the existing records to set the default value for the new field
+                update_query = f"UPDATE {table_name} SET {field_name} = ?"
+                self.execute_query(update_query, (default_value,))
+            
+            return True
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while adding new fields to table '{table_name}': {e}")
+            return False
+        
+        finally:
+            self.close_connection()

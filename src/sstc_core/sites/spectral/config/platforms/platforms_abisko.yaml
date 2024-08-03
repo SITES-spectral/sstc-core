@@ -27,7 +27,7 @@ PhenoCams:
       roi03: null
     platform_id: P_BTH_1
     platform_type: PhenoCam
-    records_count: 1367
+    records_count: 0
     sftp_dirpath: abisko/data/PhenoCam/ANS-FOR-P01/
     station_acronym: ANS
     station_name: Abisko

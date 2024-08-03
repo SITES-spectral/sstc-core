@@ -354,6 +354,79 @@ def detect_fog(image, threshold=0.5):
     return convert_to_bool(edge_ratio < threshold)
 
 
+def detect_haze(image_path, threshold=120):
+    """
+    Detects haze in an image based on a brightness threshold.
+
+    Args:
+        image_path (str): Path to the image file.
+        threshold (int): Threshold value to classify haze. Default is 120.
+
+    Returns:
+        bool: True if haze is detected, False otherwise.
+    """
+    image = cv2.imread(image_path)
+    if image is None:
+        raise ValueError("Image not found or path is incorrect")
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    avg_brightness = np.mean(gray_image)
+    return convert_to_bool( threshold < avg_brightness < 150 )  # Adjust range as needed
+
+def detect_clouds(image_path, threshold=200):
+    """
+    Detects clouds in an image based on a brightness threshold.
+
+    Args:
+        image_path (str): Path to the image file.
+        threshold (int): Threshold value to classify clouds. Default is 200.
+
+    Returns:
+        bool: True if clouds are detected, False otherwise.
+    """
+    image = cv2.imread(image_path)
+    if image is None:
+        raise ValueError("Image not found or path is incorrect")
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    avg_brightness = np.mean(gray_image)
+    return convert_to_bool( avg_brightness > threshold )
+
+def detect_shadows(image_path, threshold=50):
+    """
+    Detects shadows in an image based on a brightness threshold.
+
+    Args:
+        image_path (str): Path to the image file.
+        threshold (int): Threshold value to classify shadows. Default is 50.
+
+    Returns:
+        bool: True if shadows are detected, False otherwise.
+    """
+    image = cv2.imread(image_path)
+    if image is None:
+        raise ValueError("Image not found or path is incorrect")
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    avg_brightness = np.mean(gray_image)
+    return convert_to_bool( avg_brightness < threshold )
+
+def detect_ice(image_path, threshold=220):
+    """
+    Detects ice in an image based on a brightness threshold.
+
+    Args:
+        image_path (str): Path to the image file.
+        threshold (int): Threshold value to classify ice. Default is 220.
+
+    Returns:
+        bool: True if ice is detected, False otherwise.
+    """
+    image = cv2.imread(image_path)
+    if image is None:
+        raise ValueError("Image not found or path is incorrect")
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    avg_brightness = np.mean(gray_image)
+    return convert_to_bool( avg_brightness > threshold )
+
+
 def detect_rotation(image, angle_threshold=10):
     """
     Detect if an image has been rotated by analyzing the orientation of lines.
@@ -404,7 +477,7 @@ def assess_image_quality(image, flag_other:bool=False, flag_birds:bool = False, 
         dict: A dictionary containing the results of the quality assessment.
     """
     if skip:
-        
+        # TODO: load from config.phenocam_flags
         quality_assessment_results = {
             'flag_brightness': False,
             'flag_blur': False,
@@ -417,7 +490,11 @@ def assess_image_quality(image, flag_other:bool=False, flag_birds:bool = False, 
             'flag_fog': False,
             'flag_rotation': False,
             'flag_birds': False,       
-            'flag_other': False       
+            'flag_other': False,
+            'flag_haze': False,
+            'flag_ice': False,
+            'flag_shadows': False,
+            'flag_clouds': False       
         }
         
     else:
@@ -455,7 +532,12 @@ def assess_image_quality(image, flag_other:bool=False, flag_birds:bool = False, 
             'flag_fog': detect_fog(image),
             'flag_rotation': detect_rotation(image),
             'flag_birds': flag_birds,        
-            'flag_other': flag_other,        
+            'flag_other': flag_other,
+            'flag_haze': detect_haze(image),
+            'flag_shadows': detect_shadows(image),
+            'flag_ice': detect_ice(image),
+            'flag_clouds': detect_clouds(image)
+                   
         }
     
 
@@ -531,7 +613,7 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
         return normalized_quality_index, quality_index_weights_version
         
     else:
-            
+        #TODO: make it general and extract the fields and value from a dictionary    
         
         # Extract results from the quality assessment dictionary
         flag_brightness = quality_flags_dict.get('flag_brightness', False)
@@ -545,7 +627,12 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
         flag_fog = quality_flags_dict.get('flag_fog', False)
         flag_rotation = quality_flags_dict.get('flag_rotation', False)
         flag_birds = quality_flags_dict.get('flag_birds', False)
+        flag_haze = quality_flags_dict.get('flag_haze', False)
+        flag_clouds = quality_flags_dict.get('flag_clouds', False)
+        flag_shadows = quality_flags_dict.get('flag_shadows', False)
+        flag_ice = quality_flags_dict.get('flag_ice', False)
         flag_other = quality_flags_dict.get('flag_other', False)
+        
 
         # Extract weights from the dictionary
         weight_brightness = weights.get('flag_brightness_weight', 0)
@@ -560,6 +647,10 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
         weight_rotation = weights.get('flag_rotation_weight', 0)
         weight_birds = weights.get('flag_birds_weight', 0)
         weight_other = weights.get('flag_other_weight', 0)
+        weight_haze = weights.get('flag_haze_weight', 0)
+        weight_shadows = weights.get('flag_shadows_weight', 0)
+        weight_clouds = weights.get('flag_clouds_weight', 0)
+        weight_ice = weights.get('flag_ice_weight', 0)
         quality_index_weights_version = weights.get('quality_index_weights_version', "0.1")
         
 
@@ -576,7 +667,10 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
         rotation_score = 1 if not flag_rotation else 0
         birds_score = 1 if not flag_birds else 0
         other_score = 1 if not flag_other else 0
-
+        haze_score = 1 if not flag_haze else 0
+        clouds_score = 1 if not flag_clouds else 0
+        shadows_score = 1 if not flag_shadows else 0
+        ice_score = 1 if not flag_ice else 0
         # Combine the scores with weights
         raw_quality_index = (weight_brightness * brightness_score +
                             weight_blur * blur_score +
@@ -589,14 +683,19 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
                             weight_fog * fog_score +
                             weight_rotation * rotation_score +
                             weight_birds * birds_score +
-                            weight_other * other_score)
+                            weight_other * other_score +
+                            weight_haze * haze_score +
+                            weight_clouds * clouds_score + 
+                            weight_shadows * shadows_score +
+                            weight_ice * ice_score)
 
         # Normalize the quality index to be between 0 and 1
         # Assuming that the maximum possible value is the sum of all weights.
         max_possible_value = (weight_brightness + weight_blur + weight_snow +
                             weight_rain + weight_water_drops + weight_dirt +
                             weight_obstructions + weight_glare + weight_fog +
-                            weight_rotation + weight_birds + weight_other)
+                            weight_rotation + weight_birds + weight_other +
+                            weight_ice + weight_haze + weight_clouds + weight_shadows)
         
         normalized_quality_index = raw_quality_index / max_possible_value
 
