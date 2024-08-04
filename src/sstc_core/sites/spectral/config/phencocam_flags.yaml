@@ -13,4 +13,5 @@
 'flag_ice': False
 'flag_shadows': False
 'flag_clouds': False
-'flag_other': False 
+'flag_other': False
+'flag_high_quality': False 

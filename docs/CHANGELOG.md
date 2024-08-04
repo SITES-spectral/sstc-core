@@ -1,3 +1,6 @@
+## [v0.10.0]
+- Added `flag_high_quality` 
+
 ## [v0.9.6] 
 - Fixed issue with `Station.update_record_by_catalog_guid`
 

@@ -353,6 +353,22 @@ def detect_fog(image, threshold=0.5):
 
     return convert_to_bool(edge_ratio < threshold)
 
+def detect_high_quality(image_path):
+    """
+    Detects if image is high quality. Not yet implemented.
+
+    Args:
+        image_path (str): Path to the image file.
+
+    Returns:
+        bool: False..
+    """
+    image = cv2.imread(image_path)
+    if image is None:
+        raise ValueError("Image not found or path is incorrect")
+    
+    return False  # Adjust range as needed
+
 
 def detect_haze(image_path, threshold=120):
     """
@@ -494,7 +510,8 @@ def assess_image_quality(image, flag_other:bool=False, flag_birds:bool = False, 
             'flag_haze': False,
             'flag_ice': False,
             'flag_shadows': False,
-            'flag_clouds': False       
+            'flag_clouds': False,
+            'flag_high_quality': False,       
         }
         
     else:
@@ -536,7 +553,8 @@ def assess_image_quality(image, flag_other:bool=False, flag_birds:bool = False, 
             'flag_haze': detect_haze(image),
             'flag_shadows': detect_shadows(image),
             'flag_ice': detect_ice(image),
-            'flag_clouds': detect_clouds(image)
+            'flag_clouds': detect_clouds(image),
+            'flag_high_quality': detect_high_quality(image),
                    
         }
     
@@ -632,6 +650,7 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
         flag_shadows = quality_flags_dict.get('flag_shadows', False)
         flag_ice = quality_flags_dict.get('flag_ice', False)
         flag_other = quality_flags_dict.get('flag_other', False)
+        flag_high_quality =  flag_high_quality.get('flag_high_quality', False)
         
 
         # Extract weights from the dictionary
@@ -651,6 +670,7 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
         weight_shadows = weights.get('flag_shadows_weight', 0)
         weight_clouds = weights.get('flag_clouds_weight', 0)
         weight_ice = weights.get('flag_ice_weight', 0)
+        weight_high_quality = weights.get('flag_high_quality_weight', 0)
         quality_index_weights_version = weights.get('quality_index_weights_version', "0.1")
         
 
@@ -671,6 +691,7 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
         clouds_score = 1 if not flag_clouds else 0
         shadows_score = 1 if not flag_shadows else 0
         ice_score = 1 if not flag_ice else 0
+        flag_high_quality_score = 1 if not flag_high_quality else 0
         # Combine the scores with weights
         raw_quality_index = (weight_brightness * brightness_score +
                             weight_blur * blur_score +
@@ -695,8 +716,12 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
                             weight_rain + weight_water_drops + weight_dirt +
                             weight_obstructions + weight_glare + weight_fog +
                             weight_rotation + weight_birds + weight_other +
-                            weight_ice + weight_haze + weight_clouds + weight_shadows)
+                            weight_ice + weight_haze + weight_clouds + weight_shadows +
+                            weight_high_quality)
         
-        normalized_quality_index = raw_quality_index / max_possible_value
+        if flag_high_quality:
+            normalized_quality_index = 1.0
+        else:
+            normalized_quality_index = raw_quality_index / max_possible_value
 
     return normalized_quality_index, quality_index_weights_version

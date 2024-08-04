@@ -36,3 +36,4 @@ Abisko:
     flag_ice_weight: 1
     flag_shadows_weight: 1
     flag_clouds_weight: 1
+    flag_high_quality: 1
