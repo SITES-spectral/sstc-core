@@ -650,7 +650,7 @@ def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, sk
         flag_shadows = quality_flags_dict.get('flag_shadows', False)
         flag_ice = quality_flags_dict.get('flag_ice', False)
         flag_other = quality_flags_dict.get('flag_other', False)
-        flag_high_quality =  flag_high_quality.get('flag_high_quality', False)
+        flag_high_quality =  quality_flags_dict.get('flag_high_quality', False)
         
 
         # Extract weights from the dictionary

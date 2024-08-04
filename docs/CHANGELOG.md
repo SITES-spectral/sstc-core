@@ -1,3 +1,6 @@
+## [v0.10.1]
+- Fixed minor issue with wrongly assigned `flag_high_quality`
+
 ## [v0.10.0]
 - Added `flag_high_quality` 
 
