@@ -465,33 +465,6 @@ class DuckDBManager:
         Raises:
             ValueError: If the record with the specified catalog_guid does not exist.
             duckdb.Error: If there is an error executing the query or managing the connection.
-            
-        Example: 
-            ```python
-            # Assuming you have an instance of Station
-            station = Station(db_dirpath="/path/to/db/dir", station_name="StationName")
-
-            # Define the updates for the record
-            updates = {
-                "is_L1": False,  # Example field update
-                "is_ready_for_products_use": True,
-                "normalized_quality_index": 0.75,
-                "flag_brightness": 1,
-                "flag_blur": True
-            }
-
-            # Specify the table name and catalog_guid
-            table_name = "PhenoCams_BTH_FOR_P_BTH_1"
-            catalog_guid = "unique-guid-1234"
-
-            # Update the record using the method
-            update_successful = station.update_record_by_catalog_guid(table_name=table_name, catalog_guid=catalog_guid, updates=updates)
-
-            if update_successful:
-                print(f"Record with catalog_guid {catalog_guid} was successfully updated.")
-            else:
-                print(f"Failed to update the record with catalog_guid {catalog_guid}.")            
-            ```
         """
         try:
             # Check if the record exists
@@ -520,8 +493,7 @@ class DuckDBManager:
 
         finally:
             self.close_connection()
-
-
+            
 class Station(DuckDBManager):
     def __init__(self, db_dirpath: str, station_name: str):
         """

@@ -1,3 +1,6 @@
+## [v0.9.6] 
+- Fixed issue with `Station.update_record_by_catalog_guid`
+
 ## [v0.9.5]
 - Fixed on `confirmed_flags` missing saving `normalized_quality_index` 
 
