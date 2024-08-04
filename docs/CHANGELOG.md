@@ -1,3 +1,6 @@
+## [v0.9.5]
+- Fixed on `confirmed_flags` missing saving `normalized_quality_index` 
+
 ## [v0.9.4]
 - Added `Station.add_new_fields_to_table`
 - Expanded `flags` to include haze, clouds, shadows and ice. 
