@@ -1,3 +1,7 @@
+## [v0.10.2] 
+- Added `utils.get_month_day` as string.
+- Code prunning.
+
 ## [v0.10.1]
 - Fixed minor issue with wrongly assigned `flag_high_quality`
 

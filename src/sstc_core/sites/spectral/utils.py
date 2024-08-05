@@ -359,3 +359,21 @@ def have_values_changed(dict1, dict2):
 
     # Return the dictionary with changed values if any, otherwise return None
     return changed_values if changed_values else {}  
+
+
+def get_month_day(day_of_year: int) -> str:
+    """
+    Convert a day of the year to a month and day string.
+
+    Args:
+        day_of_year (int): The day of the year.
+
+    Returns:
+        str: The corresponding month and day.
+    """
+    if not (1 <= int(day_of_year) <= 366):
+        return "Invalid day of the year"
+
+    start_of_year = datetime(year=2020, month=1, day=1)
+    target_date = start_of_year + timedelta(days=int(day_of_year) - 1)
+    return target_date.strftime("%B %d")
