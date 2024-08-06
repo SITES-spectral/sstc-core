@@ -1,5 +1,6 @@
 ## [v0.10.3]
 - Added  `Station.get_records_ready_for_products_by_year`
+- Added `sites.spectral.data_products.phenocams.compute_RGB_daily_average` Note: here is defined the `product_name = f'SITES-{station_acronym}-{location_id}-{platform_id}-{datatype_acronym}-{year}-DOY_{day_of_year}_{product_processing_level}.JPG'`
 
 ## [v0.10.2] 
 - Added `utils.get_month_day` as string.
