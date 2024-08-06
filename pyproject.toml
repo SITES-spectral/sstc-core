@@ -6,7 +6,7 @@
 
 [tool.poetry]
 name = "sstc-core"
-version = "0.10.2"
+version = "0.10.3"
 description = ""
 authors = ["Jobelund <124563223+jobelund@users.noreply.github.com>"]
 readme = "README.md"
@@ -23,7 +23,7 @@ pillow = "^10.4.0"
 duckdb = "^1.0"
 paramiko = "^3.4"
 keyring = "^25.2.1"
-mkdocs_material = "^9.5.29"
+mkdocs_material = "^9.5.30"
 opencv-python = "^4.10.0.84"
 
 

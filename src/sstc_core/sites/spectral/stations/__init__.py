@@ -1211,3 +1211,89 @@ class Station(DuckDBManager):
         
         finally:
             self.close_connection()
+
+    def get_records_ready_for_products_by_year(self, table_name: str, year: int) -> Dict[int, List[Dict[str, Any]]]:
+        """
+        Retrieves records filtered by the specified year and is_ready_for_products_use = True,
+        structured in a dictionary with day_of_year as the key and a list of record dictionaries as the values.
+
+        The dictionary structure is as follows:
+        {
+            day_of_year: [
+                {
+                    'catalog_guid': ...,
+                    'year': ...,
+                    'creation_date': ...,
+                    'day_of_year': ...,
+                    'station_acronym': ...,
+                    'location_id': ...,
+                    'platform_id': ...,
+                    'ecosystem_of_interest': ...,
+                    'platform_type': ...,
+                    'is_legacy': ...,
+                    'L0_name': ...,
+                    'is_L1': ...,
+                    'is_ready_for_products_use': ...,
+                    'catalog_filepath': ...,
+                    'source_filepath': ...,
+                    'normalized_quality_index': ...,
+                    'quality_index_weights_version': ...,
+                    'flag_brightness': ...,
+                    'flag_blur': ...,
+                    'flag_snow': ...,
+                    'flag_rain': ...,
+                    'flag_water_drops': ...,
+                    'flag_dirt': ...,
+                    'flag_obstructions': ...,
+                    'flag_glare': ...,
+                    'flag_fog': ...,
+                    'flag_rotation': ...,
+                    'flag_birds': ...,
+                    'flag_other': ...,
+                    'is_quality_assessed': ...,
+                },
+                ...
+            ],
+            ...
+        }
+
+        Parameters:
+            table_name (str): The name of the table to query.
+            year (int): The year to filter records by.
+
+        Returns:
+            Dict[int, List[Dict[str, Any]]]: A dictionary with day_of_year as the key and a list of record dictionaries as the values.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        query = f"SELECT * FROM {table_name} WHERE year = ? AND is_ready_for_products_use = TRUE"
+        
+        try:
+            if self.connection is None:
+                self.connect()
+
+            result = self.execute_query(query, (year,))
+            columns = self.connection.execute(f"DESCRIBE {table_name}").fetchall()
+            column_names = [col[0] for col in columns]
+            
+            records_by_day_of_year = {}
+            for row in result:
+                # Convert tuple to dictionary using column names
+                record_dict = dict(zip(column_names, row))
+                
+                day_of_year = int(record_dict['day_of_year'])
+
+                if day_of_year not in records_by_day_of_year:
+                    records_by_day_of_year[day_of_year] = []
+                
+                records_by_day_of_year[day_of_year].append(record_dict)
+
+            return records_by_day_of_year
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving records from table '{table_name}' for year {year} and is_ready_for_products_use=True: {e}")
+            raise
+        
+        finally:
+            self.close_connection()

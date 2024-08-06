@@ -1,3 +1,6 @@
+## [v0.10.3]
+- Added  `Station.get_records_ready_for_products_by_year`
+
 ## [v0.10.2] 
 - Added `utils.get_month_day` as string.
 - Code prunning.
