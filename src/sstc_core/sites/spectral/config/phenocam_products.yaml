@@ -1,0 +1,30 @@
+L1_product_quality_filtered_image: {
+  'description': 'Quality-filtered phenocamera photos',
+  'legacy_datatype_acronym': 'P01-RGB',     
+  }
+
+L2_product_RGB_daily_composite: {
+  'description': 'Phenocam - RGB composites, daily',
+  'legacy_datatype_acronym': 'P01-RGB',     
+  }
+L2_product_GCC_daily_composite: {
+  'description': 'Phenocam - Green Chromatic Index composites, daily',
+  'legacy_datatype_acronym': 'P01-GCC', 
+  }
+
+L2_product_RCC_daily_composite: {
+  'description': 'Phenocam - Red Chromatic Index composites, daily',
+  'legacy_datatype_acronym': 'P01-GCC', 
+  }
+
+L3_product_GCC_ROI_01_daily_ts: {
+  'description': 'Phenocam - Green Chromatic Coordinates time series, daily',
+  'legacy_datatype_acronym': 'P01-GCC-RCC', 
+  }
+
+
+L3_product_RCC_ROI_01_daily_ts: {
+  'description': 'Phenocam - Red Chromatic Coordinates time series, daily',
+  'legacy_datatype_acronym': 'P01-GCC-RCC', 
+  }
+
