@@ -1,3 +1,6 @@
+## [v0.11.1]
+- Fixed minor import issue.
+
 ## [v0.11.0]
 - Updated `Station.create_record_dictionary` by adding as input the `processing_level_products_dict` that defaults to `None`
 - Added `sites.spectral.data_products.phenocams.overlay_polygons`
