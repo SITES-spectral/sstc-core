@@ -9,7 +9,7 @@ import duckdb
 import hashlib
 from typing import Dict, Any, List, Union
 from sstc_core.sites.spectral.image_quality import assess_image_quality, calculate_normalized_quality_index, load_weights_from_yaml
-
+from sstc_core.sites.spectral.data_products.qflags import get_solar_elevation_class, compute_qflag
 
 
 class DatabaseError(Exception):
@@ -836,22 +836,22 @@ class Station(DuckDBManager):
                                  platforms_type: str, 
                                  platform_id: str,
                                  processing_level_products_dict: dict = {'PhenoCams':{
-                                     'L2_product_RGB_daily_composite_name': None,
-                                     'L2_product_GCC_daily_composite_name': None,
-                                     'L2_product_RCC_daily_composite_name': None,
-                                     'L3_product_GCC_ROI_01_daily_value': None,
-                                     'L3_product_RCC_ROI_01_daily_value': None,
-                                     'L3_product_GCC_ROI_02_daily_value': None,
-                                     'L3_product_RCC_ROI_02_daily_value': None,
-                                     'L3_product_GCC_ROI_03_daily_value': None,
-                                     'L3_product_RCC_ROI_03_daily_value': None,
+                                     'L2_product_RGB_mean_daily_composite_name': None,
+                                     'L2_product_GCC_mean_daily_composite_name': None,
+                                     'L2_product_RCC_mean_daily_composite_name': None,
+                                     'L2_product_RGB_std_daily_composite_name': None,
+                                     'L2_product_GCC_std_daily_composite_name': None,
+                                     'L2_product_RCC_std_daily_composite_name': None,                                                                          
                                  }},
                                  is_legacy: bool = False, 
                                  backup_dirpath: str = 'aurora02_dirpath', 
                                  start_time: str = "10:00:00", 
                                  end_time: str = "14:30:00", 
                                  split_subdir: str = 'data', 
-                                 skip: bool = False) -> Dict[str, Any]:
+                                 skip: bool = False, 
+                                 timezone_str: str ='Europe/Stockholm',
+                                 has_snow_presence:bool = False,
+                                 ) -> Dict[str, Any]:
         """
         Creates a dictionary representing a record for a file, including metadata and derived attributes.
 
@@ -894,6 +894,16 @@ class Station(DuckDBManager):
         normalized_date = creation_date.strftime('%Y%m%d%H%M%S')
         year = creation_date.year
         day_of_year = utils.get_day_of_year(formatted_date)
+        
+        latitude_dd = self.platforms[platforms_type][platform_id]['geolocation']['point']['latitude_dd']
+        longitude_dd = self.platforms[platforms_type][platform_id]['geolocation']['point']['longitude_dd']
+        sun_elevation_angle, sun_azimuth_angle = utils.calculate_sun_position(
+                datetime_str= formatted_date, 
+                latitude_dd=latitude_dd, 
+                longitude_dd=longitude_dd, 
+                timezone_str=timezone_str)
+        solar_elevation_class = get_solar_elevation_class(sun_elevation=sun_elevation_angle)
+
 
         # Extract station and platform information
         station_acronym = self.meta['station_acronym']
@@ -940,12 +950,26 @@ class Station(DuckDBManager):
             'normalized_quality_index': normalized_quality_index,
             'quality_index_weights_version': quality_index_weights_version,
             'flags_confirmed': False,
-            'QFLAG': 100,
-            'sun_elevation': None,
+            'has_snow_presence': has_snow_presence,            
+            'sun_elevation_angle': sun_elevation_angle,
+            'sun_azimuth_angle': sun_azimuth_angle,
+            'solar_elevation_class': solar_elevation_class,            
         }
 
+        QFLAF = compute_qflag(
+            latitude_dd=latitude_dd,
+            longitude_dd=longitude_dd,
+            records_dict=record_dict, 
+            has_snow_presence=has_snow_presence,
+            timezone_str=timezone_str            
+            )
+        
         # Merge with quality flags and processing level product fields
-        record_dict = {**record_dict, **quality_flags_dict, **processing_level_products_dict[platforms_type]} 
+        record_dict = {
+            **record_dict,
+            **{'QFLAG': QFLAF},  
+            **quality_flags_dict, 
+            **processing_level_products_dict[platforms_type]} 
         
         # Generate a unique ID for the catalog
         record_dict['catalog_guid'] = utils.generate_unique_id(

@@ -3,28 +3,37 @@ L1_product_quality_filtered_image: {
   'legacy_datatype_acronym': 'P01-RGB',     
   }
 
-L2_product_RGB_daily_composite: {
+L2_product_RGB_mean_daily_composite: {
   'description': 'Phenocam - RGB composites, daily',
   'legacy_datatype_acronym': 'P01-RGB',     
   }
-L2_product_GCC_daily_composite: {
+L2_product_GCC_mean_daily_composite: {
   'description': 'Phenocam - Green Chromatic Index composites, daily',
   'legacy_datatype_acronym': 'P01-GCC', 
   }
 
-L2_product_RCC_daily_composite: {
+L2_product_RCC_mean_daily_composite: {
   'description': 'Phenocam - Red Chromatic Index composites, daily',
   'legacy_datatype_acronym': 'P01-GCC', 
   }
 
-L3_product_GCC_ROI_01_daily_value: {
-  'description': 'Phenocam - Green Chromatic Coordinates time series, daily',
+L2_product_RGB_std_daily_composite: {
+  'description': 'Phenocam - RGB composites, daily',
+  'legacy_datatype_acronym': null,     
+  }
+L2_product_GCC_std_daily_composite: {
+  'description': 'Phenocam - Green Chromatic Index composites, daily',
+  'legacy_datatype_acronym': null, 
+  }
+
+L2_product_RCC_std_daily_composite: {
+  'description': 'Phenocam - Red Chromatic Index composites, daily',
+  'legacy_datatype_acronym': null, 
+  }
+
+L3_product_daily_values_ROI_XX: {
+  'description': 'Phenocam - Green and Red Chromatic Coordinates time series, mean and standard deviations, daily with QFLAG.',
   'legacy_datatype_acronym': 'P01-GCC-RCC', 
   }
 
-
-L3_product_RCC_ROI_01_daily_value: {
-  'description': 'Phenocam - Red Chromatic Coordinates time series, daily',
-  'legacy_datatype_acronym': 'P01-GCC-RCC', 
-  }
 

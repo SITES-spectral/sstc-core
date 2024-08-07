@@ -35,10 +35,13 @@ def get_solar_elevation_class(sun_elevation: float) -> int:
     return solClass
 
 
-def compute_qflag(station:Station, platforms_type:str, platform_id:str, records_dict:dict, has_snow_presence:bool = False, timezone_str='Europe/Stockholm'):
+def compute_qflag(
+    latitude_dd: float,
+    longitude_dd: float, 
+    records_dict:dict,
+    has_snow_presence:bool = False,
+    timezone_str='Europe/Stockholm'):
     
-    latitude_dd = station.platforms[platforms_type][platform_id]['geolocation']['point']['latitude_dd']
-    longitude_dd = station.platforms[platforms_type][platform_id]['geolocation']['point']['longitude_dd']
     
     datetime_list = [v['creation_date'] for k, v in records_dict.items()]
     
@@ -48,38 +51,38 @@ def compute_qflag(station:Station, platforms_type:str, platform_id:str, records_
         latitude_dd=latitude_dd, 
         longitude_dd=longitude_dd, 
         timezone_str=timezone_str)
-    solar_class = get_solar_elevation_class(sun_elevation=sun_elevation_angle)
+    solar_elevation_class = get_solar_elevation_class(sun_elevation=sun_elevation_angle)
     
     n_records = len(records_dict)
     
     if has_snow_presence:
         QFLAG = 100
     
-    elif (n_records < 3) and (solar_class == 1):
+    elif (n_records < 3) and (solar_elevation_class == 1):
         QFLAG = 211
         
-    elif (n_records < 3) and (solar_class == 2):
+    elif (n_records < 3) and (solar_elevation_class == 2):
         QFLAG = 212
     
-    elif (n_records < 3) and (solar_class == 3):
+    elif (n_records < 3) and (solar_elevation_class == 3):
         QFLAG = 213
     
-    elif ((n_records >= 3) and (n_records < 6)) and (solar_class == 1):
+    elif ((n_records >= 3) and (n_records < 6)) and (solar_elevation_class == 1):
         QFLAG = 221
     
-    elif ((n_records >= 3) and (n_records < 6)) and (solar_class == 2):
+    elif ((n_records >= 3) and (n_records < 6)) and (solar_elevation_class == 2):
         QFLAG = 222
         
-    elif ((n_records >= 3) and (n_records < 6)) and (solar_class == 3):
+    elif ((n_records >= 3) and (n_records < 6)) and (solar_elevation_class == 3):
         QFLAG = 223
         
-    elif (n_records >= 6) and (solar_class == 1):
+    elif (n_records >= 6) and (solar_elevation_class == 1):
         QFLAG = 231
     
-    elif (n_records >= 6) and (solar_class == 2):
+    elif (n_records >= 6) and (solar_elevation_class == 2):
         QFLAG = 232     
     
-    elif (n_records >= 6) and (solar_class == 3):
+    elif (n_records >= 6) and (solar_elevation_class == 3):
         QFLAG = 233 
     
     return QFLAG
