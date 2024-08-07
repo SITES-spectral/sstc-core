@@ -7,12 +7,9 @@ PhenoCams:
     ecosystem_of_interest: FOR
     geolocation:
       point:
-        epsg:3006:
-          x_coord: null
-          y_coord: null
-        epsg:4326:
-          latitude_dd: null
-          longitude_dd: null
+          epsg: "epsg:4326"
+          latitude_dd: 68.353729
+          longitude_dd: 18.816522
     height_in_meters_above_ground: 4
     legacy_acronym: ANS-FOR-P01
     location_id: BTH_FOR
@@ -22,9 +19,15 @@ PhenoCams:
         event_type: null
       status: Active
     phenocam_rois:
-      roi01: null
-      roi02: null
-      roi03: null
+      ROI_01: {'points': [[100, 1800], [2700, 1550], [2500, 2700], [100, 2700]],
+        'color': [0, 255, 0],
+        'thickness': 7}
+      ROI_02: {'points': [[100, 930], [3700, 1050], [3700, 1200], [100, 1400]],
+        'color': [0, 0, 255],
+        'thickness': 7}
+      ROI_03: {'points': [[750, 600], [3700, 650], [3500, 950], [100, 830]],
+        'color': [255, 0, 0],
+        'thickness': 7}
     platform_id: P_BTH_1
     platform_type: PhenoCam
     records_count: 0
@@ -32,3 +35,16 @@ PhenoCams:
     station_acronym: ANS
     station_name: Abisko
     viewing_direction': West
+    processing_level_products:
+      L0:
+        - L0_raw_image   # 'catalog_filepath'
+      L1: 
+        - L1_product_quality_filtered_image   # 'is_ready_for_products_use'
+      L2: 
+        - L2_product_RGB_daily_composite
+        - L2_product_GCC_daily_composite
+        - L2_product_RCC_daily_composite
+      L3:
+        - L3_product_GCC_daily_value_{ROI} 
+        - L3_product_RCC_daily_value_{ROI} 
+

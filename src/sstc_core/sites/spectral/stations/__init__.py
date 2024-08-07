@@ -831,9 +831,27 @@ class Station(DuckDBManager):
         return utils.normalize_string(name)
     
     
-    def create_record_dictionary(self, remote_filepath: str, platforms_type: str, platform_id: str, 
-                                 is_legacy: bool = False, backup_dirpath: str = 'aurora02_dirpath', 
-                                 start_time: str = "10:00:00", end_time: str = "14:30:00", split_subdir: str = 'data', skip=False) -> Dict[str, Any]:
+    def create_record_dictionary(self, 
+                                 remote_filepath: str, 
+                                 platforms_type: str, 
+                                 platform_id: str,
+                                 processing_level_products_dict: dict = {'PhenoCams':{
+                                     'L2_product_RGB_daily_composite_name': None,
+                                     'L2_product_GCC_daily_composite_name': None,
+                                     'L2_product_RCC_daily_composite_name': None,
+                                     'L3_product_GCC_ROI_01_daily_value': None,
+                                     'L3_product_RCC_ROI_01_daily_value': None,
+                                     'L3_product_GCC_ROI_02_daily_value': None,
+                                     'L3_product_RCC_ROI_02_daily_value': None,
+                                     'L3_product_GCC_ROI_03_daily_value': None,
+                                     'L3_product_RCC_ROI_03_daily_value': None,
+                                 }},
+                                 is_legacy: bool = False, 
+                                 backup_dirpath: str = 'aurora02_dirpath', 
+                                 start_time: str = "10:00:00", 
+                                 end_time: str = "14:30:00", 
+                                 split_subdir: str = 'data', 
+                                 skip: bool = False) -> Dict[str, Any]:
         """
         Creates a dictionary representing a record for a file, including metadata and derived attributes.
 
@@ -846,14 +864,16 @@ class Station(DuckDBManager):
             remote_filepath (str): The path to the remote file on the SFTP server.
             platforms_type (str): The type of platform (e.g., 'PhenoCams', 'UAVs', 'FixedSensors', 'Satellites').
             platform_id (str): The identifier for the specific platform.
+            processing_level_products_dict (dict, optional): A dictionary containing processing level product fields. Defaults to {'PhenoCams': {...}}.
             is_legacy (bool, optional): Indicates whether the record is considered legacy data. Defaults to False.
             backup_dirpath (str, optional): The directory path used for backup storage in the local filesystem. Defaults to 'aurora02_dirpath'.
             start_time (str, optional): The start of the time window in 'HH:MM:SS' format. Defaults to "10:00:00".
             end_time (str, optional): The end of the time window in 'HH:MM:SS' format. Defaults to "14:30:00".
             split_subdir (str, optional): The subdirectory name used to organize local paths. Defaults to 'data'.
-            skip (bool, optional): If True do not auto-assess image quality, leaving default values.
+            skip (bool, optional): If True, do not auto-assess image quality, leaving default values. Defaults to False.
+
         Returns:
-            dict: A dictionary containing the record information, including metadata, derived attributes, and a unique ID.
+            Dict[str, Any]: A dictionary containing the record information, including metadata, derived attributes, and a unique ID.
 
         Raises:
             Exception: If there are issues retrieving or processing the file data.
@@ -891,14 +911,15 @@ class Station(DuckDBManager):
             end_time=end_time
         )
         
-        quality_flags_dict = assess_image_quality(local_filepath, flag_other =False, flag_birds=False, skip=skip)
+        # Assess image quality
+        quality_flags_dict = assess_image_quality(local_filepath, flag_other=False, flag_birds=False, skip=skip)
         weights = load_weights_from_yaml(self.phenocam_quality_weights_filepath)
         normalized_quality_index, quality_index_weights_version = calculate_normalized_quality_index(
             quality_flags_dict=quality_flags_dict,
             weights=weights, 
-            skip=skip)
+            skip=skip
+        )
         
-            
         # Create the record dictionary
         record_dict = {
             'catalog_guid': None,
@@ -919,9 +940,13 @@ class Station(DuckDBManager):
             'normalized_quality_index': normalized_quality_index,
             'quality_index_weights_version': quality_index_weights_version,
             'flags_confirmed': False,
-            }
+            'QFLAG': 100,
+            'sun_elevation': None,
+        }
 
-        record_dict = {**record_dict, **quality_flags_dict } 
+        # Merge with quality flags and processing level product fields
+        record_dict = {**record_dict, **quality_flags_dict, **processing_level_products_dict[platforms_type]} 
+        
         # Generate a unique ID for the catalog
         record_dict['catalog_guid'] = utils.generate_unique_id(
             record_dict, 
@@ -930,6 +955,7 @@ class Station(DuckDBManager):
 
         return record_dict
     
+        
     def populate_station_db(self, sftp_filepaths: list, platform_id: str, platforms_type: str = 'PhenoCams',
                             backup_dirpath: str = 'aurora02_dirpath', start_time: str = "10:00:00",
                             end_time: str = "14:30:00", split_subdir: str = 'data', skip:bool = False) -> bool:

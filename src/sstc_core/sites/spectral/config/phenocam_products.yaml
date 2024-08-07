@@ -17,13 +17,13 @@ L2_product_RCC_daily_composite: {
   'legacy_datatype_acronym': 'P01-GCC', 
   }
 
-L3_product_GCC_ROI_01_daily_ts: {
+L3_product_GCC_ROI_01_daily_value: {
   'description': 'Phenocam - Green Chromatic Coordinates time series, daily',
   'legacy_datatype_acronym': 'P01-GCC-RCC', 
   }
 
 
-L3_product_RCC_ROI_01_daily_ts: {
+L3_product_RCC_ROI_01_daily_value: {
   'description': 'Phenocam - Red Chromatic Coordinates time series, daily',
   'legacy_datatype_acronym': 'P01-GCC-RCC', 
   }

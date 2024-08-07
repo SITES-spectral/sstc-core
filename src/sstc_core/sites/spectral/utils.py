@@ -7,6 +7,8 @@ from typing import Dict, Any
 import unicodedata
 import hashlib
 import base64
+import pytz
+from pysolar.solar import get_altitude, get_azimuth
 
 
 def generate_unique_id(data: dict, variable_names: list = None) -> str:
@@ -377,3 +379,75 @@ def get_month_day(day_of_year: int) -> str:
     start_of_year = datetime(year=2020, month=1, day=1)
     target_date = start_of_year + timedelta(days=int(day_of_year) - 1)
     return target_date.strftime("%B %d")
+
+
+
+def calculate_sun_position(datetime_str:str, latitude_dd:float, longitude_dd:float, timezone_str='Europe/Stockholm')->Dict[str, float] :
+    """
+    Calculate the sun elevation and azimuth angles for a given datetime string, latitude, and longitude.
+
+    Args:
+        datetime_str (str): String representing the date and time in format 'YYYY-MM-DD HH:MM:SS'
+        latitude_dd (float): Latitude in decimal degrees
+        longitude_dd (float): Longitude in decimal degrees
+        timezone_str (str): Timezone string, default is 'Europe/Stockholm' if None is provided
+    Returns: 
+        dict: Dictionary containing sun elevation angle and azimuth angle in degrees
+    """
+    # Parse the datetime string
+    naive_datetime = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+    
+    # Use UTC if timezone_str is None
+    if timezone_str is None:
+        timezone_str = 'UTC'
+
+    # Convert to a timezone-aware datetime
+    local_tz = pytz.timezone(timezone_str)
+    aware_datetime = local_tz.localize(naive_datetime)
+
+    # Calculate the sun elevation angle
+    sun_elevation_angle = get_altitude(latitude_dd, longitude_dd, aware_datetime)
+
+    # Calculate the sun azimuth angle
+    sun_azimuth_angle = get_azimuth(latitude_dd, longitude_dd, aware_datetime)
+
+    return {'sun_elevation_angle': float(sun_elevation_angle), 'sun_azimuth_angle': float(sun_azimuth_angle)} 
+
+
+def mean_datetime_str(datetime_list)->str:
+    """
+    Calculate the mean datetime string from the max and min of the list.
+    If the list has a single item, return that item.
+    Handles errors for invalid datetime strings and empty lists.
+
+    Args:
+        datetime_list (list): List of datetime strings in format 'YYYY-MM-DD HH:MM:SS'
+    
+    Returns:
+        str: datetime string in format 'YYYY-MM-DD HH:MM:SS' or an error message
+    """
+    # Check if the list is empty
+    if not datetime_list:
+        return "Error: The datetime list is empty."
+
+    try:
+        # Convert the datetime strings to datetime objects
+        datetimes = [datetime.strptime(dt, '%Y-%m-%d %H:%M:%S') for dt in datetime_list]
+    except ValueError as e:
+        return f"Error: Invalid datetime string format. {e}"
+
+    # If the list has only one item, return that item
+    if len(datetimes) == 1:
+        return datetime_list[0]
+
+    # Find the minimum and maximum datetimes
+    min_datetime = min(datetimes)
+    max_datetime = max(datetimes)
+
+    # Calculate the mean datetime
+    mean_datetime = min_datetime + (max_datetime - min_datetime) / 2
+
+    # Convert the mean datetime back to string format
+    mean_datetime_str = mean_datetime.strftime('%Y-%m-%d %H:%M:%S')
+
+    return mean_datetime_str

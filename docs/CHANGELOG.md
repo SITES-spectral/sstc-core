@@ -1,3 +1,11 @@
+## [v0.11.0]
+- Updated `Station.create_record_dictionary` by adding as input the `processing_level_products_dict` that defaults to `None`
+- Added `sites.spectral.data_products.phenocams.overlay_polygons`
+- Added `utils.calculate_sun_position`
+- Added `sites.spectral.data_products.phenocams.get_solar_elevation_class`
+- Added `sites.spectral.data_products.qflags.get_solar_elevation_class`
+- Added `sites.spectral.data_products.qflags.compute_qflag`
+
 ## [v0.10.3]
 - Added  `Station.get_records_ready_for_products_by_year`
 - Added `sites.spectral.data_products.phenocams.compute_RGB_daily_average` Note: here is defined the `product_name = f'SITES-{station_acronym}-{location_id}-{platform_id}-{datatype_acronym}-{year}-DOY_{day_of_year}_{product_processing_level}.JPG'`

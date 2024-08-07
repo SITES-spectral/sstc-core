@@ -4,6 +4,79 @@ from typing import List, Dict, Any
 import numpy as np
 import cv2
 from PIL import Image
+from sstc_core.sites.spectral.utils import calculate_sun_position
+
+
+def serialize_polygons(phenocam_rois):
+    """
+    Converts a dictionary of polygons to be YAML-friendly by converting tuples to lists.
+    
+    Parameters:
+    - phenocam_rois (dict of dict): Dictionary where keys are ROI names and values are dictionaries representing polygons.
+    
+    Returns:
+    - yaml_friendly_rois (dict of dict): Dictionary with tuples converted to lists.
+    """
+    yaml_friendly_rois = {}
+    for roi, polygon in phenocam_rois.items():
+        yaml_friendly_polygon = {
+            'points': [list(point) for point in polygon['points']],
+            'color': list(polygon['color']),
+            'thickness': polygon['thickness']
+        }
+        yaml_friendly_rois[roi] = yaml_friendly_polygon
+    return yaml_friendly_rois
+
+def deserialize_polygons(yaml_friendly_rois):
+    """
+    Converts YAML-friendly polygons back to their original format with tuples.
+    
+    Parameters:
+    - yaml_friendly_rois (dict of dict): Dictionary where keys are ROI names and values are dictionaries representing polygons in YAML-friendly format.
+    
+    Returns:
+    - original_rois (dict of dict): Dictionary with points and color as tuples.
+    """
+    original_rois = {}
+    for roi, polygon in yaml_friendly_rois.items():
+        original_polygon = {
+            'points': [tuple(point) for point in polygon['points']],
+            'color': tuple(polygon['color']),
+            'thickness': polygon['thickness']
+        }
+        original_rois[roi] = original_polygon
+    return original_rois
+
+
+def overlay_polygons(image_path, phenocam_rois:dict):
+    """
+    Overlays polygons on an image.
+
+    Parameters:
+    - image_path (str): Path to the image file.
+    - polygons (list of dict): A list of dictionaries where each dictionary represents a polygon.
+      Each dictionary should have the following keys:
+        - 'points' (list of tuple): List of (x, y) tuples representing the vertices of the polygon.
+        - 'color' (tuple): (B, G, R) color of the polygon border.
+        - 'thickness' (int): Thickness of the polygon border.
+    """
+    # Read the image
+    img = cv2.imread(image_path)
+    
+    if img is None:
+        raise ValueError("Image not found or path is incorrect")
+    
+    for roi, polygon in phenocam_rois.items():
+        # Extract points, color, and thickness from the polygon dictionary
+        points = np.array(polygon['points'], dtype=np.int32)
+        color = polygon['color']
+        thickness = polygon['thickness']
+        
+        # Draw the polygon on the image
+        cv2.polylines(img, [points], isClosed=True, color=color, thickness=thickness)
+
+
+    return img
 
 
 def compute_RGB_daily_average(records_list: List[Dict[str, Any]], products_dirpath: str, datatype_acronym: str = 'RGB', product_processing_level: str = 'L2_daily') -> Path:
@@ -143,3 +216,7 @@ def compute_GCC_RCC(daily_rgb_filepath: str, products_dirpath: str, year: int) -
     except Exception as e:
         print(f"Unexpected error: {e}")
         return {}
+    
+    
+
+    
