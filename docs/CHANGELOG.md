@@ -1,3 +1,6 @@
+## [v0.11.2]
+- Updated `Station.add_new_fields_to_table` to take a list of dictionaries that have, field_type, field_name, and field_value`   
+
 ## [v0.11.1]
 - Fixed minor import issue.
 - added `utils.copy_file_with_new_name`

@@ -39,8 +39,9 @@ L2_product_RCC_stdev_daily_composite: {
   }
 
 L3_product_daily_values_ROI_XX: {
-  'description': 'Phenocam - Green and Red Chromatic Coordinates time series, mean and standard deviations, daily with QFLAG.',
-  'legacy_datatype_acronym': 'P01-GCC-RCC', 
+  'description': 'Phenocam - Green and Red Chromatic Coordinates time series, mean and standard deviations, daily values with QFLAG.',
+  'legacy_datatype_acronym': 'P01-GCC-RCC',
+  'product_acronym': L3_ROIs_DV,
   }
 
 

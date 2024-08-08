@@ -1216,52 +1216,72 @@ class Station(DuckDBManager):
         finally:
             self.close_connection()
     
-    def add_new_fields_to_table(self, table_name: str, new_fields: Dict[str, Any]) -> bool:
+    def add_new_fields_to_table(self, table_name: str, new_fields: List[Dict[str, Any]]) -> bool:
         """
         Adds new fields to an existing table and initializes them with default values for all records.
 
         Parameters:
             table_name (str): The name of the table to modify.
-            new_fields (Dict[str, Any]): A dictionary where keys are the new field names and values are the default values.
+            new_fields (List[Dict[str, Any]]): A list of dictionaries where each dictionary contains:
+                                               - 'field_name' (str): The name of the new field.
+                                               - 'field_type' (str): The type of the new field (e.g., 'INTEGER', 'DOUBLE', 'BOOLEAN', 'VARCHAR').
+                                               - 'field_default_value' (Any, optional): The default value for the new field. Defaults to None.
 
         Returns:
             bool: True if the operation was successful, False otherwise.
 
         Raises:
+            ValueError: If the default value cannot be cast to the specified field type.
             duckdb.Error: If there is an error executing the query or managing the connection.
         """
+        def cast_value(value, value_type):
+            try:
+                if value_type == 'INTEGER':
+                    return int(value)
+                elif value_type == 'DOUBLE':
+                    return float(value)
+                elif value_type == 'BOOLEAN':
+                    return bool(value)
+                elif value_type == 'VARCHAR':
+                    return str(value)
+                else:
+                    raise ValueError(f"Unsupported field type: {value_type}")
+            except ValueError as e:
+                raise ValueError(f"Cannot cast value {value} to {value_type}: {e}")
+
         try:
             if self.connection is None:
                 self.connect()
 
-            for field_name, default_value in new_fields.items():
-                # Determine the data type of the default value
-                if isinstance(default_value, int):
-                    field_type = 'INTEGER'
-                elif isinstance(default_value, float):
-                    field_type = 'DOUBLE'
-                elif isinstance(default_value, bool):
-                    field_type = 'BOOLEAN'
+            for field in new_fields:
+                field_name = field['field_name']
+                field_type = field['field_type']
+                field_default_value = field.get('field_default_value', None)
+
+                # Ensure the field_default_value can be cast to the field_type
+                if field_default_value is not None:
+                    cast_value(field_default_value, field_type)
                 else:
-                    field_type = 'VARCHAR'
-                
+                    field_default_value = None
+
                 # Add the new field to the table schema
                 alter_query = f"ALTER TABLE {table_name} ADD COLUMN {field_name} {field_type}"
                 self.execute_query(alter_query)
-                
+
                 # Update the existing records to set the default value for the new field
                 update_query = f"UPDATE {table_name} SET {field_name} = ?"
-                self.execute_query(update_query, (default_value,))
+                self.execute_query(update_query, (field_default_value,))
             
             return True
         
-        except duckdb.Error as e:
+        except (ValueError, duckdb.Error) as e:
             print(f"An error occurred while adding new fields to table '{table_name}': {e}")
             return False
         
         finally:
             self.close_connection()
-
+            
+            
     def get_records_ready_for_products_by_year(self, table_name: str, year: int) -> Dict[int, List[Dict[str, Any]]]:
         """
         Retrieves records filtered by the specified year and is_ready_for_products_use = True,
