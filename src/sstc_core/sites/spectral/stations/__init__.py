@@ -988,7 +988,7 @@ class Station(DuckDBManager):
         # Merge with quality flags and processing level product fields
         record_dict = {
             **record_dict,
-            **{'QFLAG': QFLAF},  
+            **{'QFLAG_image': QFLAF},  
             **quality_flags_dict, 
             **processing_level_products_dict[platforms_type]} 
         
@@ -1158,6 +1158,7 @@ class Station(DuckDBManager):
         
         finally:
             self.close_connection()
+            
     def get_records_by_year_and_day_of_year(self, table_name: str, year: int, day_of_year: str) -> Dict[str, Dict[str, Any]]:
         """
         Retrieves all records for a given year and day_of_year, structured in a dictionary by catalog_guid.
@@ -1454,6 +1455,55 @@ class Station(DuckDBManager):
         
         except (duckdb.Error, ValueError) as e:
             print(f"An error occurred while selecting a random record from table '{table_name}': {e}")
+            raise
+        
+        finally:
+            self.close_connection()
+            
+    def get_time_interval(self, table_name: str, year: int, is_ready_for_products_use: bool = True, **filters) -> str:
+        """
+        Retrieves the minimum and maximum dates of the `creation_date` field for a given year and other optional filters.
+
+        Parameters:
+            table_name (str): The name of the table to query.
+            year (int): The year to filter the records by.
+            is_ready_for_products_use (bool): Filter for records that are ready for product use. Defaults to True.
+            **filters: Additional filters as keyword arguments.
+
+        Returns:
+            str: A string representing the minimum and maximum dates in the format `YYYYMMDD-YYYYMMDD`.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+            ValueError: If no records are found for the given filters.
+        """
+        query = f"""
+        SELECT MIN(creation_date), MAX(creation_date)
+        FROM {table_name}
+        WHERE year = ? AND is_ready_for_products_use = ?
+        """
+        
+        params = [year, is_ready_for_products_use]
+        
+        for key, value in filters.items():
+            query += f" AND {key} = ?"
+            params.append(value)
+        
+        try:
+            if self.connection is None:
+                self.connect()
+
+            result = self.execute_query(query, tuple(params))
+            if not result or result[0][0] is None or result[0][1] is None:
+                raise ValueError(f"No records found for the given filters in table '{table_name}'.")
+
+            min_date = result[0][0].strftime('%Y%m%d')
+            max_date = result[0][1].strftime('%Y%m%d')
+
+            return f"{min_date}-{max_date}"
+        
+        except (duckdb.Error, ValueError) as e:
+            print(f"An error occurred while retrieving min and max dates from table '{table_name}': {e}")
             raise
         
         finally:

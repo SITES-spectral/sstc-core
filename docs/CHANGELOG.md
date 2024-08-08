@@ -1,7 +1,13 @@
+## [v0.11.8]
+- Added `Station.get_time_interval` 
+
+## [v0.11.7]
+- Refined product names for Phenocams
+  
 ## [v0.11.6]
 - Documentation updates
 - updated `compute_qflag` to handle default_temporal_resolution=True, i.e. every 30 min between images, else valid only for hourly/bi-hourly temporal resolution
-- Refined product names for Phenocams
+
 
 ## [v0.11.5]
 - Added `Station.select_random_record`
