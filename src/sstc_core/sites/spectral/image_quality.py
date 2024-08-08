@@ -357,11 +357,14 @@ def detect_high_quality(image_path):
     """
     Detects if image is high quality. Not yet implemented.
 
-    Args:
+    Parameters:
         image_path (str): Path to the image file.
 
     Returns:
-        bool: False..
+        bool: False.
+        
+    Raises:
+        ValueError: if Image not found or path is incorrect.
     """
     image = cv2.imread(image_path)
     if image is None:
@@ -374,12 +377,15 @@ def detect_haze(image_path, threshold=120):
     """
     Detects haze in an image based on a brightness threshold.
 
-    Args:
+    Parameters:
         image_path (str): Path to the image file.
         threshold (int): Threshold value to classify haze. Default is 120.
 
     Returns:
         bool: True if haze is detected, False otherwise.
+    
+    Raises:
+        ValueError: if Image not found or path is incorrect.
     """
     image = cv2.imread(image_path)
     if image is None:
@@ -392,12 +398,15 @@ def detect_clouds(image_path, threshold=200):
     """
     Detects clouds in an image based on a brightness threshold.
 
-    Args:
+    Parameters:
         image_path (str): Path to the image file.
         threshold (int): Threshold value to classify clouds. Default is 200.
 
     Returns:
         bool: True if clouds are detected, False otherwise.
+    
+    Raises:
+        ValueError: if Image not found or path is incorrect.
     """
     image = cv2.imread(image_path)
     if image is None:
@@ -410,12 +419,15 @@ def detect_shadows(image_path, threshold=50):
     """
     Detects shadows in an image based on a brightness threshold.
 
-    Args:
+    Parameters:
         image_path (str): Path to the image file.
         threshold (int): Threshold value to classify shadows. Default is 50.
 
     Returns:
         bool: True if shadows are detected, False otherwise.
+    
+    Raises:
+        ValueError: if Image not found or path is incorrect.
     """
     image = cv2.imread(image_path)
     if image is None:
@@ -428,12 +440,15 @@ def detect_ice(image_path, threshold=220):
     """
     Detects ice in an image based on a brightness threshold.
 
-    Args:
+    Parameters:
         image_path (str): Path to the image file.
         threshold (int): Threshold value to classify ice. Default is 220.
 
     Returns:
         bool: True if ice is detected, False otherwise.
+    
+    Raises:
+        ValueError: if Image not found or path is incorrect.
     """
     image = cv2.imread(image_path)
     if image is None:

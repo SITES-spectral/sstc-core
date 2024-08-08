@@ -1,4 +1,3 @@
-import os
 import yaml
 import requests
 from pathlib import Path

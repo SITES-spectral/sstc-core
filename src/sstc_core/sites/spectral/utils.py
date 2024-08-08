@@ -16,12 +16,12 @@ def copy_file_with_new_name(source_filepath, destination_directory, new_name):
     Copies a file from the source filepath to the destination directory with a new name while preserving the file format extension.
 
     Parameters:
-    - source_filepath (str): The path to the source file to be copied.
-    - destination_directory (str): The directory where the file should be copied to.
-    - new_name (str): The new name for the copied file (without extension).
+        source_filepath (str): The path to the source file to be copied.
+        destination_directory (str): The directory where the file should be copied to.
+        new_name (str): The new name for the copied file (without extension).
 
     Returns:
-    - str: The path to the newly copied file.
+        str: The path to the newly copied file.
     """
     # Extract the file extension from the source file
     file_extension = os.path.splitext(source_filepath)[1]
@@ -347,7 +347,7 @@ def extract_keys_with_prefix(input_dict, starts_with='flag_'):
     """
     Extracts keys from the input dictionary that start with the specified prefix.
 
-    Args:
+    Parameters:
         input_dict (dict): The dictionary to filter.
         starts_with (str): The prefix to filter keys by. Default is 'flag_'.
 
@@ -360,7 +360,7 @@ def set_all_values_to_false(input_dict:dict)->dict:
     """
     Sets all the values of the given dictionary to False.
 
-    Args:
+    Parameters:
         input_dict (dict): The dictionary whose values will be set to False.
 
     Returns:
@@ -373,7 +373,7 @@ def have_values_changed(dict1, dict2):
     Compares two dictionaries and returns a dictionary with the keys and new state
     values that have changed. Returns None if no values have changed.
 
-    Args:
+    Parameters:
         dict1 (dict): The first dictionary representing the original state.
         dict2 (dict): The second dictionary representing the new state.
 
@@ -395,7 +395,7 @@ def get_month_day(day_of_year: int) -> str:
     """
     Convert a day of the year to a month and day string.
 
-    Args:
+    Parameters:
         day_of_year (int): The day of the year.
 
     Returns:
@@ -414,7 +414,7 @@ def calculate_sun_position(datetime_str:str, latitude_dd:float, longitude_dd:flo
     """
     Calculate the sun elevation and azimuth angles for a given datetime string, latitude, and longitude.
 
-    Args:
+    Parameters:
         datetime_str (str): String representing the date and time in format 'YYYY-MM-DD HH:MM:SS'
         latitude_dd (float): Latitude in decimal degrees
         longitude_dd (float): Longitude in decimal degrees
@@ -448,7 +448,7 @@ def mean_datetime_str(datetime_list)->str:
     If the list has a single item, return that item.
     Handles errors for invalid datetime strings and empty lists.
 
-    Args:
+    Parameters:
         datetime_list (list): List of datetime strings in format 'YYYY-MM-DD HH:MM:SS'
     
     Returns:

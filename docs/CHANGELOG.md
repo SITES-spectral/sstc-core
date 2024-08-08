@@ -1,3 +1,16 @@
+## [v0.11.6]
+- Documentation updates
+- updated `compute_qflag` to handle default_temporal_resolution=True, i.e. every 30 min between images, else valid only for hourly/bi-hourly temporal resolution
+
+## [v0.11.5]
+- Added `Station.select_random_record`
+
+## [v0.11.4]
+- Updated `Station.create_table` to take a schema dictionary holding field names and data types, instead of implying the datatypes.
+
+## [v0.11.3]
+- Added `Station.delete_fields_from_table`
+  
 ## [v0.11.2]
 - Updated `Station.add_new_fields_to_table` to take a list of dictionaries that have, field_type, field_name, and field_value`   
 

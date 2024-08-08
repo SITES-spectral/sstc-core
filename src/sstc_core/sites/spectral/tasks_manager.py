@@ -9,10 +9,11 @@ class Task:
     def __init__(self, function: Optional[Callable] = None, params: Dict[str, Any] = None, import_path: Optional[str] = None):
         """
         Initializes a task with a function and its parameters or an import path.
-
-        :param function: The function to be executed (if already loaded).
-        :param params: The parameters for the function.
-        :param import_path: The import path to dynamically load the function (e.g., 'package.module.function').
+        
+        Parameters:
+            function (Callable): The function to be executed (if already loaded).
+            params (dict): The parameters for the function.
+            import_path (optional, str): The import path to dynamically load the function (e.g., 'package.module.function').
         """
         if function is None and import_path is None:
             raise ValueError("Either function or import_path must be provided.")
@@ -34,8 +35,11 @@ class Task:
         """
         Runs the task with the provided input data.
 
-        :param input_data: A dictionary containing results of previous tasks, if any.
-        :return: The result of the function execution.
+        Parameters:
+            input_data (dict): A dictionary containing results of previous tasks, if any.
+        
+        Return:
+            The result of the function execution.
         """
         if self.function is None:
             self._import_function()
@@ -49,10 +53,11 @@ class TaskManager:
         """
         Initializes the TaskManager with a dictionary of tasks and error handling options.
 
-        :param tasks: A dictionary where the key is the task order and the value is a Task object.
-        :param stop_on_error: Whether to stop execution if a task fails (default is True).
-        :param default_on_error: Default value to use if a task fails (used only if stop_on_error is False).
-        :param use_memory: Whether to use memory for storing results. If False or memory is insufficient, store on disk.
+        Parameters:
+            tasks (dict): A dictionary where the key is the task order and the value is a Task object.
+            stop_on_error (bool): Whether to stop execution if a task fails (default is True).
+            default_on_error (Any): Default value to use if a task fails (used only if stop_on_error is False).
+            use_memory (bool): Whether to use memory for storing results. If False or memory is insufficient, store on disk.
         
         Example:
         
@@ -113,7 +118,8 @@ class TaskManager:
         """
         Checks if there is enough available memory to store results in memory.
 
-        :return: True if enough memory is available, False otherwise.
+        Return: 
+            True if enough memory is available, False otherwise.
         """
         available_memory = psutil.virtual_memory().available
         # Here, we assume each result should ideally not exceed 100MB. Adjust as necessary.
@@ -123,8 +129,9 @@ class TaskManager:
         """
         Saves the result in memory or on disk based on available memory.
 
-        :param task_order: The task number.
-        :param result: The result to be saved.
+        Parameters:
+            task_order (int): The task number.
+            result (Any): The result to be saved.
         """
         if self.use_memory and self._memory_available():
             self.results[task_order] = result
@@ -137,9 +144,12 @@ class TaskManager:
     def _load_result(self, task_order: int) -> Any:
         """
         Loads the result from memory or disk.
-
-        :param task_order: The task number.
-        :return: The loaded result.
+        
+        Parameters:
+            task_order (int): The task number.
+        
+        Returns:
+            The loaded result.
         """
         if task_order in self.results:
             return self.results[task_order]
@@ -152,8 +162,11 @@ class TaskManager:
         """
         Runs all tasks in sequence, passing the output of one as the input to the next.
 
-        :param dependencies: A dictionary where the key is the task number and the value is a list of task numbers whose results are required as input.
-        :return: The final output after all tasks have been executed, or the last successful output if a task fails.
+        Parameters:
+            dependencies (dict): A dictionary where the key is the task number and the value is a list of task numbers whose results are required as input.
+        
+        Return:
+            The final output after all tasks have been executed, or the last successful output if a task fails.
         """
         dependencies = dependencies if dependencies is not None else {}
         result = None

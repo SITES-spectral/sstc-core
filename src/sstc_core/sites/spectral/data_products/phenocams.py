@@ -53,9 +53,9 @@ def overlay_polygons(image_path, phenocam_rois:dict):
     Overlays polygons on an image.
 
     Parameters:
-    - image_path (str): Path to the image file.
-    - polygons (list of dict): A list of dictionaries where each dictionary represents a polygon.
-      Each dictionary should have the following keys:
+        image_path (str): Path to the image file.
+        polygons (list of dict): A list of dictionaries where each dictionary represents a polygon.
+        Each dictionary should have the following keys:
         - 'points' (list of tuple): List of (x, y) tuples representing the vertices of the polygon.
         - 'color' (tuple): (B, G, R) color of the polygon border.
         - 'thickness' (int): Thickness of the polygon border.
@@ -83,14 +83,14 @@ def compute_RGB_daily_average(records_list: List[Dict[str, Any]], products_dirpa
     """
     Computes daily average RGB images from a list of records and saves them as .jpg files.
 
-    Args:
-    records_list (List[Dict[str, Any]]): List of dictionaries where each dictionary contains metadata and the image path.
-    products_dirpath (str): Path to the directory where the processed images will be saved.
-    datatype_acronym (str, optional): Acronym for the data type, default is 'RGB'.
-    product_processing_level (str, optional): Processing level for the product, default is 'L2_daily'.
+    Parameters:
+        records_list (List[Dict[str, Any]]): List of dictionaries where each dictionary contains metadata and the image path.
+        products_dirpath (str): Path to the directory where the processed images will be saved.
+        datatype_acronym (str, optional): Acronym for the data type, default is 'RGB'.
+        product_processing_level (str, optional): Processing level for the product, default is 'L2_daily'.
 
     Returns:
-    Path: Path to the directory where the daily averaged images are saved.
+        Path: Path to the directory where the daily averaged images are saved.
     """
     images = []
     daily_image_catalog_guids = []
@@ -150,7 +150,7 @@ def compute_GCC_RCC(daily_rgb_filepath: str, products_dirpath: str, year: int) -
     """
     Computes GCC and RCC images from a daily average RGB image and saves them as grayscale images.
 
-    Args:
+    Parameters:
         daily_rgb_filepath (str): File path to the daily average RGB image.
         products_dirpath (str): Path to the directory where the processed images will be saved.
         year (int): Year for which the GCC and RCC images are being processed.

@@ -193,7 +193,7 @@ def stations_names(yaml_filename: str = 'stations_names.yaml') -> Dict[str, Dict
     """
     Retrieve a dictionary of station names with their respective system names and acronyms.
 
-    Args:
+    Parameters:
         yaml_filename (str): The filename of the YAML file containing station information.
 
     Returns:
@@ -205,7 +205,8 @@ def stations_names(yaml_filename: str = 'stations_names.yaml') -> Dict[str, Dict
         yaml.YAMLError: If there is an error parsing the YAML file.
 
     Example:
-        >>> stations_names()
+        ```python
+        stations_names()
         {
             'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS', 'station_name': 'Abisko'}
             'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA', 'station_name': 'Asa'}
@@ -215,6 +216,7 @@ def stations_names(yaml_filename: str = 'stations_names.yaml') -> Dict[str, Dict
             'Skogaryd': {'normalized_station_name': 'skogaryd', 'station_acronym': 'SKC', 'station_name': 'Skogaryd'}
             'Svartberget': {'normalized_station_name': 'svartberget', 'station_acronym': 'SVB', 'station_name': 'Svartberget'}
         }
+        ```
     """
     # Get the parent directory of the current file
     parent_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -589,43 +591,62 @@ class Station(DuckDBManager):
         result = self.execute_query(query, (table_name,))
         return result[0][0] > 0
 
-    def create_table(self, table_name: str, data: Dict[str, Any]):
+    def create_table(self, table_name: str, schema: Dict[str, str]):
         """
-        Creates a new table in the station database with the schema based on the provided data.
+        Creates a new table in the station database with the schema based on the provided field names and types.
 
         Parameters:
             table_name (str): The name of the table to create.
-            data (Dict[str, Any]): A sample data dictionary to infer column types.
+            schema (Dict[str, str]): A dictionary where keys are field names and values are field types (e.g., 'INTEGER', 'DOUBLE', 'BOOLEAN', 'VARCHAR').
+
+        Raises:
+            ValueError: If a field type is not one of the supported types.
+            
+        Example:
+            ```python
+            # Assuming you have an instance of Station
+            station = Station(db_dirpath="/path/to/db/dir", station_name="StationName")
+
+            # Define the schema for the new table
+            schema = {
+                'catalog_guid': 'VARCHAR',
+                'year': 'INTEGER',
+                'creation_date': 'VARCHAR',
+                'day_of_year': 'VARCHAR',
+                'station_acronym': 'VARCHAR',
+                'location_id': 'VARCHAR',
+                'platform_id': 'VARCHAR',
+                'ecosystem_of_interest': 'VARCHAR',
+                'platform_type': 'VARCHAR',
+                'is_legacy': 'BOOLEAN',
+                'L0_name': 'VARCHAR',
+                'is_L1': 'BOOLEAN',
+                'is_ready_for_products_use': 'BOOLEAN',
+                'catalog_filepath': 'VARCHAR',
+                'source_filepath': 'VARCHAR',
+                'normalized_quality_index': 'DOUBLE',
+                'quality_index_weights_version': 'VARCHAR',
+                'flags_confirmed': 'BOOLEAN'
+            }
+
+            # Create the new table with the specified schema
+            table_name = "PhenoCams_BTH_FOR_P_BTH_1"
+            station.create_table(table_name=table_name, schema=schema)
+            ```        
         """
+        # Supported field types
+        valid_types = {'INTEGER', 'DOUBLE', 'BOOLEAN', 'VARCHAR'}
+        
         columns = []
-        for column_name, value in data.items():
-            column_type = self.infer_type(value)
+        for column_name, column_type in schema.items():
+            if column_type not in valid_types:
+                raise ValueError(f"Unsupported field type: {column_type}")
             columns.append(f"{column_name} {column_type}")
+        
         columns_def = ', '.join(columns)
         query = f"CREATE TABLE {table_name} ({columns_def})"
         self.execute_query(query)
 
-    @staticmethod
-    def infer_type(value: Any) -> str:
-        """
-        Infers the DuckDB column type from a Python value.
-
-        Parameters:
-            value (Any): The value to infer the type from.
-
-        Returns:
-            str: The DuckDB column type.
-        """
-        if isinstance(value, int):
-            return 'INTEGER'
-        elif isinstance(value, float):
-            return 'DOUBLE'
-        elif isinstance(value, str):
-            return 'VARCHAR'
-        elif isinstance(value, bool):
-            return 'BOOLEAN'
-        else:
-            return 'VARCHAR'  # Fallback type
 
     def list_tables(self) -> List[str]:
         """
@@ -1363,6 +1384,76 @@ class Station(DuckDBManager):
         
         except duckdb.Error as e:
             print(f"An error occurred while retrieving records from table '{table_name}' for year {year} and is_ready_for_products_use=True: {e}")
+            raise
+        
+        finally:
+            self.close_connection()
+            
+    def delete_fields_from_table(self, table_name: str, fields_to_delete: List[str]) -> bool:
+        """
+        Deletes fields from an existing table.
+
+        Parameters:
+            table_name (str): The name of the table to modify.
+            fields_to_delete (List[str]): A list of field names to be deleted from the table.
+
+        Returns:
+            bool: True if the operation was successful, False otherwise.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        try:
+            if self.connection is None:
+                self.connect()
+
+            for field_name in fields_to_delete:
+                # Drop the field from the table schema
+                alter_query = f"ALTER TABLE {table_name} DROP COLUMN {field_name}"
+                self.execute_query(alter_query)
+            
+            return True
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while deleting fields from table '{table_name}': {e}")
+            return False
+        
+        finally:
+            self.close_connection()
+            
+    def select_random_record(self, table_name: str) -> Dict[str, Any]:
+        """
+        Selects a random record from the specified table.
+
+        Parameters:
+            table_name (str): The name of the table to select a random record from.
+
+        Returns:
+            Dict[str, Any]: A dictionary representing the randomly selected record.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+            ValueError: If the table is empty.
+        """
+        query = f"SELECT * FROM {table_name} USING SAMPLE 1"
+        
+        try:
+            if self.connection is None:
+                self.connect()
+
+            result = self.execute_query(query)
+            if not result:
+                raise ValueError(f"The table '{table_name}' is empty.")
+
+            record = result[0]
+            columns_query = f"PRAGMA table_info({table_name})"
+            columns_result = self.execute_query(columns_query)
+            columns = [col[1] for col in columns_result]
+
+            return dict(zip(columns, record))
+        
+        except (duckdb.Error, ValueError) as e:
+            print(f"An error occurred while selecting a random record from table '{table_name}': {e}")
             raise
         
         finally:

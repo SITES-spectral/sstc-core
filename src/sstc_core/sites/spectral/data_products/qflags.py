@@ -14,7 +14,7 @@ def get_solar_elevation_class(sun_elevation: float) -> int:
     This scheme was adopted from the webcam network and image database for studying phenological changes in vegetation in Finland (Peltoniemi et al. 2018). The above class categories are coded as 1, 2, and 3 respectively. 
     Read more about this here: SITES Spectral - Data Quality Flagging (QFLAG) Documentation
 
-    Args:
+    Parameters:
         sun_elevation (float): The sun elevation angle in degrees.
 
     Returns:
@@ -39,7 +39,9 @@ def compute_qflag(
     longitude_dd: float, 
     records_dict:dict,
     has_snow_presence:bool = False,
-    timezone_str='Europe/Stockholm'):
+    timezone_str='Europe/Stockholm', 
+    default_temporal_resolution:bool= True,  # default_temporal resolution is 30 min, else 1 hr or more
+    ):
     
     
     datetime_list = [v['creation_date'] for k, v in records_dict.items()]
@@ -57,34 +59,72 @@ def compute_qflag(
     
     n_records = len(records_dict)
     
-    if has_snow_presence:
-        QFLAG = 100
-    
-    elif (n_records < 3) and (solar_elevation_class == 1):
-        QFLAG = 211
+    if default_temporal_resolution:
+            
+        if has_snow_presence:
+            QFLAG = 100
         
-    elif (n_records < 3) and (solar_elevation_class == 2):
-        QFLAG = 212
-    
-    elif (n_records < 3) and (solar_elevation_class == 3):
-        QFLAG = 213
-    
-    elif ((n_records >= 3) and (n_records < 6)) and (solar_elevation_class == 1):
-        QFLAG = 221
-    
-    elif ((n_records >= 3) and (n_records < 6)) and (solar_elevation_class == 2):
-        QFLAG = 222
+        elif (n_records < 3) and (solar_elevation_class == 1):
+            QFLAG = 211
+            
+        elif (n_records < 3) and (solar_elevation_class == 2):
+            QFLAG = 212
         
-    elif ((n_records >= 3) and (n_records < 6)) and (solar_elevation_class == 3):
-        QFLAG = 223
+        elif (n_records < 3) and (solar_elevation_class == 3):
+            QFLAG = 213
         
-    elif (n_records >= 6) and (solar_elevation_class == 1):
-        QFLAG = 231
+        elif ((n_records >= 3) and (n_records < 6)) and (solar_elevation_class == 1):
+            QFLAG = 221
+        
+        elif ((n_records >= 3) and (n_records < 6)) and (solar_elevation_class == 2):
+            QFLAG = 222
+            
+        elif ((n_records >= 3) and (n_records < 6)) and (solar_elevation_class == 3):
+            QFLAG = 223
+            
+        elif (n_records >= 6) and (solar_elevation_class == 1):
+            QFLAG = 231
+        
+        elif (n_records >= 6) and (solar_elevation_class == 2):
+            QFLAG = 232     
+        
+        elif (n_records >= 6) and (solar_elevation_class == 3):
+            QFLAG = 233 
+        
+        return QFLAG
     
-    elif (n_records >= 6) and (solar_elevation_class == 2):
-        QFLAG = 232     
-    
-    elif (n_records >= 6) and (solar_elevation_class == 3):
-        QFLAG = 233 
-    
-    return QFLAG
+    else:
+        # Valid only for hourly/bi-hourly temporal resolution
+        if has_snow_presence:
+            QFLAG = 100
+        
+        elif (n_records < 2) and (solar_elevation_class == 1):
+            QFLAG = 211
+            
+        elif (n_records < 2) and (solar_elevation_class == 2):
+            QFLAG = 212
+        
+        elif (n_records < 2) and (solar_elevation_class == 3):
+            QFLAG = 213
+        
+        elif ((n_records >= 2) and (n_records < 4)) and (solar_elevation_class == 1):
+            QFLAG = 221
+        
+        elif ((n_records >= 2) and (n_records < 4)) and (solar_elevation_class == 2):
+            QFLAG = 222
+            
+        elif ((n_records >= 2) and (n_records < 4)) and (solar_elevation_class == 3):
+            QFLAG = 223
+            
+        elif (n_records >= 4) and (solar_elevation_class == 1):
+            QFLAG = 231
+        
+        elif (n_records >= 4) and (solar_elevation_class == 2):
+            QFLAG = 232     
+        
+        elif (n_records >= 4) and (solar_elevation_class == 3):
+            QFLAG = 233 
+        
+        return QFLAG
+        
+        
