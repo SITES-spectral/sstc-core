@@ -45,11 +45,14 @@ def compute_qflag(
     datetime_list = [v['creation_date'] for k, v in records_dict.items()]
     
     mean_datetime_str =  utils.mean_datetime_str(datetime_list=datetime_list)
-    sun_elevation_angle, _ = utils.calculate_sun_position(
+    sun_position = utils.calculate_sun_position(
         datetime_str= mean_datetime_str, 
         latitude_dd=latitude_dd, 
         longitude_dd=longitude_dd, 
         timezone_str=timezone_str)
+    
+    sun_elevation_angle = sun_position['sun_elevation_angle']
+    
     solar_elevation_class = get_solar_elevation_class(sun_elevation=sun_elevation_angle)
     
     n_records = len(records_dict)

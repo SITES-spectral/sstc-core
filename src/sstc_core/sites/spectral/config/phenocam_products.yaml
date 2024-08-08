@@ -1,34 +1,41 @@
 L1_product_quality_filtered_image: {
   'description': 'Quality-filtered phenocamera photos',
-  'legacy_datatype_acronym': 'P01-RGB',     
+  'legacy_datatype_acronym': 'P01-RGB',
+  'product_acronym': 'L1_QFI'     
   }
 
 L2_product_RGB_mean_daily_composite: {
   'description': 'Phenocam - RGB composites, daily',
-  'legacy_datatype_acronym': 'P01-RGB',     
+  'legacy_datatype_acronym': 'P01-RGB',
+  'product_acronym': 'L2_RGB_mean'     
   }
 L2_product_GCC_mean_daily_composite: {
   'description': 'Phenocam - Green Chromatic Index composites, daily',
-  'legacy_datatype_acronym': 'P01-GCC', 
+  'legacy_datatype_acronym': 'P01-GCC',
+  'product_acronym': 'L2_GCC_mean'  
   }
 
 L2_product_RCC_mean_daily_composite: {
   'description': 'Phenocam - Red Chromatic Index composites, daily',
-  'legacy_datatype_acronym': 'P01-GCC', 
+  'legacy_datatype_acronym': 'P01-RCC', 
+  'product_acronym': 'L2_RCC_mean' 
   }
 
-L2_product_RGB_std_daily_composite: {
+L2_product_RGB_stdev_daily_composite: {
   'description': 'Phenocam - RGB composites, daily',
-  'legacy_datatype_acronym': null,     
+  'legacy_datatype_acronym': null,
+  'product_acronym': 'L2_RGB_stdev'      
   }
-L2_product_GCC_std_daily_composite: {
+L2_product_GCC_stdev_daily_composite: {
   'description': 'Phenocam - Green Chromatic Index composites, daily',
-  'legacy_datatype_acronym': null, 
+  'legacy_datatype_acronym': null,
+  'product_acronym': 'L2_GCC_stdev' 
   }
 
-L2_product_RCC_std_daily_composite: {
+L2_product_RCC_stdev_daily_composite: {
   'description': 'Phenocam - Red Chromatic Index composites, daily',
   'legacy_datatype_acronym': null, 
+  'product_acronym': 'L2_RCC_stdev'
   }
 
 L3_product_daily_values_ROI_XX: {

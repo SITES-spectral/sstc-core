@@ -11,6 +11,34 @@ import pytz
 from pysolar.solar import get_altitude, get_azimuth
 
 
+def copy_file_with_new_name(source_filepath, destination_directory, new_name):
+    """
+    Copies a file from the source filepath to the destination directory with a new name while preserving the file format extension.
+
+    Parameters:
+    - source_filepath (str): The path to the source file to be copied.
+    - destination_directory (str): The directory where the file should be copied to.
+    - new_name (str): The new name for the copied file (without extension).
+
+    Returns:
+    - str: The path to the newly copied file.
+    """
+    # Extract the file extension from the source file
+    file_extension = os.path.splitext(source_filepath)[1]
+
+    # Create the full new file path
+    new_file_path = os.path.join(destination_directory, f"{new_name}{file_extension}")
+
+    # Ensure the destination directory exists
+    os.makedirs(destination_directory, exist_ok=True)
+
+    # Copy the file to the new location with the new name
+    copy2(source_filepath, new_file_path)
+
+    return new_file_path
+
+
+
 def generate_unique_id(data: dict, variable_names: list = None) -> str:
     """
     Generates a unique global identifier based on the provided variable names from the data dictionary.
@@ -395,7 +423,7 @@ def calculate_sun_position(datetime_str:str, latitude_dd:float, longitude_dd:flo
         dict: Dictionary containing sun elevation angle and azimuth angle in degrees
     """
     # Parse the datetime string
-    naive_datetime = datetime.datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
+    naive_datetime = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
     
     # Use UTC if timezone_str is None
     if timezone_str is None:

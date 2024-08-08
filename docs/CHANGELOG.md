@@ -1,5 +1,7 @@
 ## [v0.11.1]
 - Fixed minor import issue.
+- added `utils.copy_file_with_new_name`
+- Updated `records` schema for phenocams
 
 ## [v0.11.0]
 - Updated `Station.create_record_dictionary` by adding as input the `processing_level_products_dict` that defaults to `None`

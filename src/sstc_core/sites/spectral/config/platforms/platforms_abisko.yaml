@@ -37,14 +37,17 @@ PhenoCams:
     viewing_direction': West
     processing_level_products:
       L0:
-        - L0_raw_image   # 'catalog_filepath'
+        - L0_raw: L0_raw_image   # 'catalog_filepath'
       L1: 
-        - L1_product_quality_filtered_image   # 'is_ready_for_products_use'
+        - L1_QFI: L1_product_quality_filtered_image   # 'is_ready_for_products_use'
       L2: 
-        - L2_product_RGB_daily_composite
-        - L2_product_GCC_daily_composite
-        - L2_product_RCC_daily_composite
+        - L2_RGB_mean: L2_product_RGB_mean_daily_composite
+        - L2_GCC_mean: L2_product_GCC_mean_daily_composite
+        - L2_RCC_mean: L2_product_RCC_mean_daily_composite
+        - L2_RGB_stdev: L2_product_RGB_stdev_daily_composite
+        - L2_GCC_stdev: L2_product_GCC_stdev_daily_composite
+        - L2_RCC_stdev: L2_product_RCC_stdev_daily_composite
       L3:
-        - L3_product_GCC_daily_value_{ROI} 
-        - L3_product_RCC_daily_value_{ROI} 
+        - L3_ROIs_DV: L3_product_daily_values_{ROI} 
+        
 

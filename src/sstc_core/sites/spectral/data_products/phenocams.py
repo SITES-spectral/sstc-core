@@ -105,7 +105,7 @@ def compute_RGB_daily_average(records_list: List[Dict[str, Any]], products_dirpa
             platform_id = record['platform_id']
             catalog_filepath = record['catalog_filepath']
 
-            output_dirpath = Path(products_dirpath) / datatype_acronym / str(year)
+            output_dirpath = Path(products_dirpath) / f'L2_{datatype_acronym}'  / str(year)
 
             if not os.path.exists(output_dirpath):
                 os.makedirs(output_dirpath)
@@ -160,8 +160,8 @@ def compute_GCC_RCC(daily_rgb_filepath: str, products_dirpath: str, year: int) -
     """
     try:
         # Define directories to save GCC and RCC images
-        gcc_dirpath = Path(products_dirpath) / 'GCC' / str(year)
-        rcc_dirpath = Path(products_dirpath) / 'RCC' / str(year)
+        gcc_dirpath = Path(products_dirpath) / 'L2_GCC'  / str(year)
+        rcc_dirpath = Path(products_dirpath) / 'L2_RCC' / str(year)
         
         # Ensure the directories exist
         gcc_dirpath.mkdir(parents=True, exist_ok=True)
