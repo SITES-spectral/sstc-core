@@ -7,6 +7,7 @@ from sstc_core.sites.spectral.io_tools import load_yaml
 from pathlib import Path
 import duckdb
 import hashlib
+from datetime import datetime
 from typing import Dict, Any, List, Union
 from sstc_core.sites.spectral.image_quality import assess_image_quality, calculate_normalized_quality_index, load_weights_from_yaml
 from sstc_core.sites.spectral.data_products.qflags import get_solar_elevation_class, compute_qflag
@@ -1497,8 +1498,11 @@ class Station(DuckDBManager):
             if not result or result[0][0] is None or result[0][1] is None:
                 raise ValueError(f"No records found for the given filters in table '{table_name}'.")
 
-            min_date = result[0][0].strftime('%Y%m%d')
-            max_date = result[0][1].strftime('%Y%m%d')
+            min_date_str = result[0][0]
+            max_date_str = result[0][1]
+
+            min_date = datetime.strptime(min_date_str, '%Y-%m-%d %H:%M:%S').strftime('%Y%m%d')
+            max_date = datetime.strptime(max_date_str, '%Y-%m-%d %H:%M:%S').strftime('%Y%m%d')
 
             return f"{min_date}-{max_date}"
         

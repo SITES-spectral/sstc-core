@@ -1,3 +1,7 @@
+## [v0.11.9]
+- Fixed issue `get_time_interval`  
+
+
 ## [v0.11.8]
 - Added `Station.get_time_interval` 
 
