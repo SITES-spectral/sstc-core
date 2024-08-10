@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Union
 from sstc_core.sites.spectral.image_quality import assess_image_quality, calculate_normalized_quality_index, load_weights_from_yaml
 from sstc_core.sites.spectral.data_products.qflags import get_solar_elevation_class, compute_qflag
+from sstc_core.sites.spectral.data_products import phenocams
 
 
 class DatabaseError(Exception):
@@ -190,7 +191,7 @@ def generate_unique_id(creation_date: str, station_acronym: str, location_id: st
     return unique_id
 
 
-def stations_names(yaml_filename: str = 'stations_names.yaml') -> Dict[str, Dict[str, str]]:
+def get_stations_names_dict(yaml_filename: str = 'stations_names.yaml') -> Dict[str, Dict[str, str]]:
     """
     Retrieve a dictionary of station names with their respective system names and acronyms.
 
@@ -207,7 +208,7 @@ def stations_names(yaml_filename: str = 'stations_names.yaml') -> Dict[str, Dict
 
     Example:
         ```python
-        stations_names()
+        get_stations_names_dict()
         {
             'Abisko': {'normalized_station_name': 'abisko', 'station_acronym': 'ANS', 'station_name': 'Abisko'}
             'Asa': {'normalized_station_name': 'asa', 'station_acronym': 'ASA', 'station_name': 'Asa'}
@@ -228,10 +229,12 @@ def stations_names(yaml_filename: str = 'stations_names.yaml') -> Dict[str, Dict
         raise FileNotFoundError(f"The file '{yaml_filepath}' does not exist.")
 
     try:
-        data = load_yaml(yaml_filepath)
-        return data
+        data = load_yaml(yaml_filepath)        
+        
     except Exception as e:
         raise ValueError(f"Error parsing YAML file: {e}")
+    
+    return data
     
 
 class DuckDBManager:
@@ -851,19 +854,95 @@ class Station(DuckDBManager):
         
         """
         return utils.normalize_string(name)
-    
+
+    def phenocam_rois(self, platform_id: str, platforms_type: str = 'PhenoCams') -> dict:
+        """
+        Retrieves the Region of Interest (ROI) polygons for a specified PhenoCam platform.
+
+        This method accesses the PhenoCam ROI polygons stored in a YAML-friendly format, deserializes them into a usable format,
+        and returns the deserialized polygons.
+
+        Parameters:
+            platform_id (str): The identifier for the specific platform (e.g., 'P_BTH_1').
+            platforms_type (str, optional): The type of platform. Defaults to 'PhenoCams'.
+
+        Returns:
+            dict: A dictionary containing the deserialized ROI polygons for the specified platform.
+
+        Example:
+            ```python
+            # Assuming you have an instance of Station
+            station = Station(db_dirpath="/path/to/db/dir", station_name="StationName")
+
+            # Retrieve the PhenoCam ROIs for a specific platform
+            platform_id = 'P_BTH_1'
+            rois = station.phenocam_rois(platform_id=platform_id)
+
+            print(rois)
+            # Output might be a dictionary of ROI polygons, e.g.:
+            # {'roi01': array([[100, 1800], [2700, 1550], [2500, 2700], [100, 2700]]), 
+            #  'roi02': array([[100, 930], [3700, 1050], [3700, 1200], [100, 1400]])}
+            ```
+
+        Raises:
+            KeyError: If the specified platform type or platform ID does not exist in the station's metadata, 
+                    or if the ROI information is missing.
+            ValueError: If the ROI data for the platform is empty or incorrectly formatted.
+
+        Notes:
+            - The method assumes that the ROIs are stored in a YAML-friendly format and requires deserialization using the `phenocams.deserialize_polygons` function.
+            - The function `phenocams.deserialize_polygons` is assumed to be defined elsewhere and is responsible for converting the YAML-friendly format into a usable format.
+
+        Dependencies:
+            - This method depends on the `phenocams.deserialize_polygons` function to handle the deserialization of ROI polygons.
+        """
+        try:
+            # Check if the platforms_type exists
+            if platforms_type not in self.platforms:
+                raise KeyError(f"The platform type '{platforms_type}' does not exist in the station's metadata.")
+
+            # Check if the platform_id exists for the given platforms_type
+            if platform_id not in self.platforms[platforms_type]:
+                raise KeyError(f"The platform ID '{platform_id}' does not exist under platform type '{platforms_type}'.")
+
+            # Retrieve the YAML-friendly ROI data
+            yaml_friendly_rois = self.platforms[platforms_type][platform_id].get('phenocam_rois')
+            
+            if not yaml_friendly_rois:
+                raise ValueError(f"No ROI data found for platform ID '{platform_id}' under platform type '{platforms_type}'.")
+
+            # Deserialize the ROI data into a usable format
+            phenocam_rois = phenocams.deserialize_polygons(
+                yaml_friendly_rois=yaml_friendly_rois
+            )   
+
+            return phenocam_rois
+
+        except KeyError as ke:
+            print(f"KeyError: {ke}")
+            raise
+
+        except ValueError as ve:
+            print(f"ValueError: {ve}")
+            raise
+
+        except Exception as e:
+            print(f"An unexpected error occurred while retrieving PhenoCam ROIs: {e}")
+            raise
+        
+
     
     def create_record_dictionary(self, 
                                  remote_filepath: str, 
                                  platforms_type: str, 
                                  platform_id: str,
                                  processing_level_products_dict: dict = {'PhenoCams':{
-                                     'L2_product_RGB_mean_daily_composite_name': None,
-                                     'L2_product_GCC_mean_daily_composite_name': None,
-                                     'L2_product_RCC_mean_daily_composite_name': None,
-                                     'L2_product_RGB_std_daily_composite_name': None,
-                                     'L2_product_GCC_std_daily_composite_name': None,
-                                     'L2_product_RCC_std_daily_composite_name': None,                                                                          
+                                     'L2_RGB_CIMV_filepath': None,
+                                     'L2_GCC_CIMV_filepath': None,
+                                     'L2_RCC_CIMV_filepath': None,
+                                     'L2_RGB_CISDV_filepath': None,
+                                     'L2_GCC_CISDV_filepath': None,
+                                     'L2_RCC_CISDV_filepath': None,                                                                          
                                  }},
                                  is_legacy: bool = False, 
                                  backup_dirpath: str = 'aurora02_dirpath', 
@@ -952,6 +1031,18 @@ class Station(DuckDBManager):
             skip=skip
         )
         
+        # 
+        phenocams_rois_dict = self.phenocam_rois(platform_id=platform_id)
+        rois_dict ={} 
+        if phenocams_rois_dict:
+            for r in phenocams_rois_dict.keys():
+                rois_dict[f'L3_{r}_has_snow_presence'] = None
+                rois_dict[f'L3_{r}_QFLAG'] = None
+                rois_dict[f'L3_{r}_mean_value'] = None
+                rois_dict[f'L3_{r}_standard_deviation_value'] = None
+                rois_dict[f'L3_{r}_number_quality_images'] = None 
+                  
+                
         # Create the record dictionary
         record_dict = {
             'catalog_guid': None,
@@ -991,7 +1082,8 @@ class Station(DuckDBManager):
             **record_dict,
             **{'QFLAG_image': QFLAF},  
             **quality_flags_dict, 
-            **processing_level_products_dict[platforms_type]} 
+            **processing_level_products_dict[platforms_type],
+            **rois_dict} 
         
         # Generate a unique ID for the catalog
         record_dict['catalog_guid'] = utils.generate_unique_id(
@@ -1512,3 +1604,42 @@ class Station(DuckDBManager):
         
         finally:
             self.close_connection()
+            
+
+def get_station_platform_geolocation_point(station: Station, platforms_type: str, platform_id: str) -> tuple:
+    """
+    Retrieves the geolocation (latitude and longitude) of a specific platform for a given station.
+
+    Parameters:
+        station (Station): An instance of the Station class that contains metadata about the station and its platforms.
+        platforms_type (str): The type of platform (e.g., 'PhenoCams', 'UAVs', 'FixedSensors', 'Satellites').
+        platform_id (str): The identifier for the specific platform.
+
+    Returns:
+        tuple: A tuple containing the latitude and longitude of the platform in decimal degrees, in the format (latitude_dd, longitude_dd).
+
+    Example:
+        ```python
+        # Assuming you have an instance of Station
+        station = Station(db_dirpath="/path/to/db/dir", station_name="StationName")
+
+        # Retrieve the geolocation for a specific platform
+        platforms_type = 'PhenoCams'
+        platform_id = 'P_BTH_1'
+        latitude_dd, longitude_dd = get_station_platform_geolocation_point(station, platforms_type, platform_id)
+
+        print(f"Latitude: {latitude_dd}, Longitude: {longitude_dd}")
+        ```
+
+    Raises:
+        KeyError: If the specified platform type or platform ID does not exist in the station's metadata, or if the geolocation information is incomplete.
+
+    Note:
+        This function assumes that the geolocation information is available in the station's metadata under the specified platform type and platform ID. 
+        The geolocation should be stored in the format:
+            station.platforms[platforms_type][platform_id]['geolocation']['point']['latitude_dd']
+            station.platforms[platforms_type][platform_id]['geolocation']['point']['longitude_dd']
+    """
+    latitude_dd = station.platforms[platforms_type][platform_id]['geolocation']['point']['latitude_dd']
+    longitude_dd = station.platforms[platforms_type][platform_id]['geolocation']['point']['longitude_dd']
+    return latitude_dd, longitude_dd

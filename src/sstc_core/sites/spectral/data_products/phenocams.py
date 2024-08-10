@@ -12,10 +12,10 @@ def serialize_polygons(phenocam_rois):
     Converts a dictionary of polygons to be YAML-friendly by converting tuples to lists.
     
     Parameters:
-    - phenocam_rois (dict of dict): Dictionary where keys are ROI names and values are dictionaries representing polygons.
+        phenocam_rois (dict of dict): Dictionary where keys are ROI names and values are dictionaries representing polygons.
     
     Returns:
-    - yaml_friendly_rois (dict of dict): Dictionary with tuples converted to lists.
+        yaml_friendly_rois (dict of dict): Dictionary with tuples converted to lists.
     """
     yaml_friendly_rois = {}
     for roi, polygon in phenocam_rois.items():
@@ -32,10 +32,10 @@ def deserialize_polygons(yaml_friendly_rois):
     Converts YAML-friendly polygons back to their original format with tuples.
     
     Parameters:
-    - yaml_friendly_rois (dict of dict): Dictionary where keys are ROI names and values are dictionaries representing polygons in YAML-friendly format.
+        yaml_friendly_rois (dict of dict): Dictionary where keys are ROI names and values are dictionaries representing polygons in YAML-friendly format.
     
     Returns:
-    - original_rois (dict of dict): Dictionary with points and color as tuples.
+        original_rois (dict of dict): Dictionary with points and color as tuples.
     """
     original_rois = {}
     for roi, polygon in yaml_friendly_rois.items():

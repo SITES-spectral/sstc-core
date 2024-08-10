@@ -9,6 +9,7 @@ import hashlib
 import base64
 import pytz
 from pysolar.solar import get_altitude, get_azimuth
+from sstc_core.sites.spectral.data_products.qflags import get_solar_elevation_class
 
 
 def copy_file_with_new_name(source_filepath, destination_directory, new_name):
@@ -479,3 +480,74 @@ def mean_datetime_str(datetime_list)->str:
     mean_datetime_str = mean_datetime.strftime('%Y-%m-%d %H:%M:%S')
 
     return mean_datetime_str
+
+def solar_illumination_conditions(
+    latitude_dd: float,
+    longitude_dd: float,
+    record: dict,
+    timezone_str: str = 'Europe/Stockholm'
+) -> dict:
+    """
+    Calculates the solar illumination conditions for a given geolocation and record.
+
+    This function calculates the sun's elevation and azimuth angles based on the creation date of a record, the latitude, 
+    and the longitude of the location. It also classifies the solar elevation into a descriptive category.
+
+    Parameters:
+        latitude_dd (float): The latitude of the location in decimal degrees.
+        longitude_dd (float): The longitude of the location in decimal degrees.
+        record (dict): A dictionary containing metadata about the record. It must include the 'creation_date' key with a datetime string value.
+        timezone_str (str, optional): The timezone string to use for the location (default is 'Europe/Stockholm').
+
+    Returns:
+        dict: A dictionary containing the following keys:
+            - 'sun_elevation_angle' (float): The sun's elevation angle in degrees.
+            - 'sun_azimuth_angle' (float): The sun's azimuth angle in degrees.
+            - 'solar_elevation_class' (str): A classification of the solar elevation (e.g., 'Low', 'Medium', 'High').
+
+    Example:
+        ```python
+        latitude_dd = 68.35
+        longitude_dd = 18.82
+        record = {
+            'creation_date': '2024-06-07 08:17:23'
+        }
+        
+        solar_conditions = solar_illumination_conditions(
+            latitude_dd=latitude_dd,
+            longitude_dd=longitude_dd,
+            record=record,
+            timezone_str='Europe/Stockholm'
+        )
+        
+        print(solar_conditions)
+        # Output might be: 
+        # {'sun_elevation_angle': 45.2, 'sun_azimuth_angle': 120.5, 'solar_elevation_class': 'High'}
+        ```
+
+    Raises:
+        KeyError: If the 'creation_date' key is missing from the record dictionary.
+        ValueError: If there is an issue with calculating the solar position or classifying the solar elevation.
+
+    Notes:
+        - The `utils.calculate_sun_position` function is used to calculate the sun's position based on the datetime and location.
+        - The `get_solar_elevation_class` function classifies the solar elevation angle into categories.
+
+    Dependencies:
+        - The function relies on the `utils.calculate_sun_position` and `get_solar_elevation_class` methods, which are assumed to be defined elsewhere in the codebase.
+    """
+    creation_date = record['creation_date'] 
+    sun_elevation_angle, sun_azimuth_angle = calculate_sun_position(
+        datetime_str=creation_date,
+        latitude_dd=latitude_dd, 
+        longitude_dd=longitude_dd, 
+        timezone_str=timezone_str
+    )
+    
+    solar_elevation_class = get_solar_elevation_class(sun_elevation=sun_elevation_angle)
+    
+    return {
+        'sun_elevation_angle': sun_elevation_angle,
+        'sun_azimuth_angle': sun_azimuth_angle,
+        'solar_elevation_class': solar_elevation_class
+    }

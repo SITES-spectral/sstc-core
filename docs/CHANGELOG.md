@@ -1,3 +1,15 @@
+## [v0.11.12]
+- Added `station.phenocam_rois`
+- Improved record schema to accomodate rois has snow presence
+- Renamed the `processing_level_products_dict` keys
+
+## [v0.11.11]
+- Added `station.get_station_platform_geolocation_point`
+- Added `utils.solar_illumination_conditions` 
+
+## [v0.11.10]
+- Renamed `station.stations_names()` to `station.get_stations_names_dict()`  
+
 ## [v0.11.9]
 - Fixed issue `get_time_interval`  
 
