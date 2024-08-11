@@ -24,9 +24,9 @@ def get_solar_elevation_class(sun_elevation: float) -> int:
             - 3 for sun elevation angles greater than 30°.
     """
     
-    if sun_elevation < 20:
+    if int(sun_elevation) < 20:
         solClass = 1
-    elif 20 <= sun_elevation <= 30:
+    elif 20 <= int(sun_elevation) <= 30:
         solClass = 2
     else:
         solClass = 3
@@ -53,7 +53,7 @@ def compute_qflag(
         longitude_dd=longitude_dd, 
         timezone_str=timezone_str)
     
-    sun_elevation_angle = sun_position['sun_elevation_angle']
+    sun_elevation_angle = float(sun_position['sun_elevation_angle'])
     
     solar_elevation_class = get_solar_elevation_class(sun_elevation=sun_elevation_angle)
     

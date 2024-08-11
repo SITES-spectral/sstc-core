@@ -1,3 +1,6 @@
+## [v0.11.13]
+- Ensured sun_elevation_angle
+
 ## [v0.11.12]
 - Added `station.phenocam_rois`
 - Improved record schema to accomodate rois has snow presence
