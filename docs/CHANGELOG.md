@@ -1,3 +1,13 @@
+## [v0.11.16]
+- Fixed issue with `utils.solar_illumination_conditions`
+
+## [v0.11.15]
+- refactored `get_solar_elevation_class` into `utils` instead of `qflags`.
+- Improved documentation for `compute_qflags`
+
+## [v0.11.14]
+- Fixed issue of wrongly assign results from `calculate_sun_position` as tuple instead of dictionary. 
+
 ## [v0.11.13]
 - Ensured sun_elevation_angle
 

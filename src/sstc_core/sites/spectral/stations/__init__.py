@@ -10,7 +10,7 @@ import hashlib
 from datetime import datetime
 from typing import Dict, Any, List, Union
 from sstc_core.sites.spectral.image_quality import assess_image_quality, calculate_normalized_quality_index, load_weights_from_yaml
-from sstc_core.sites.spectral.data_products.qflags import get_solar_elevation_class, compute_qflag
+from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 from sstc_core.sites.spectral.data_products import phenocams
 
 
@@ -998,12 +998,18 @@ class Station(DuckDBManager):
         
         latitude_dd = self.platforms[platforms_type][platform_id]['geolocation']['point']['latitude_dd']
         longitude_dd = self.platforms[platforms_type][platform_id]['geolocation']['point']['longitude_dd']
-        sun_elevation_angle, sun_azimuth_angle = utils.calculate_sun_position(
+        
+        # TODO: refactor to `utils.sun_illumination_conditions`
+        sun_position = utils.calculate_sun_position(
                 datetime_str= formatted_date, 
                 latitude_dd=latitude_dd, 
                 longitude_dd=longitude_dd, 
                 timezone_str=timezone_str)
-        solar_elevation_class = get_solar_elevation_class(sun_elevation=sun_elevation_angle)
+        
+        sun_elevation_angle = sun_position['sun_elevation_angle']
+        sun_azimuth_angle = sun_position['sun_azimuth_angle'] 
+               
+        solar_elevation_class = utils.get_solar_elevation_class(sun_elevation=sun_elevation_angle)
 
 
         # Extract station and platform information
