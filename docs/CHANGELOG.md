@@ -1,3 +1,6 @@
+## [v0.11.17]
+- Fixed `get_solar_elevation_class` issue not showing in `utils`
+
 ## [v0.11.16]
 - Fixed issue with `utils.solar_illumination_conditions`
 
