@@ -4,7 +4,6 @@ from typing import List, Dict, Any
 import numpy as np
 import cv2
 from PIL import Image
-from sstc_core.sites.spectral.utils import calculate_sun_position
 
 
 def serialize_polygons(phenocam_rois):

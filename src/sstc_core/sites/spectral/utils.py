@@ -481,6 +481,39 @@ def mean_datetime_str(datetime_list)->str:
 
     return mean_datetime_str
 
+
+def get_solar_elevation_class(sun_elevation: float) -> int:
+    """ 
+    Categorize the solar elevation angles into 3 classes based on their values.
+    The phenocam images are classified into three classes based on sun elevation angles:
+    
+    - Class 1: 0° - 20°
+    - Class 2: 20° - 30°
+    - Class 3: > 30°
+
+    This scheme was adopted from the webcam network and image database for studying phenological changes in vegetation in Finland (Peltoniemi et al. 2018). The above class categories are coded as 1, 2, and 3 respectively. 
+    Read more about this here: SITES Spectral - Data Quality Flagging (QFLAG) Documentation
+
+    Parameters:
+        sun_elevation (float): The sun elevation angle in degrees.
+
+    Returns:
+        int: The class category based on the sun elevation angle.
+            - 1 for sun elevation angles between 0° and 20°.
+            - 2 for sun elevation angles between 20° and 30°.
+            - 3 for sun elevation angles greater than 30°.
+    """
+    
+    if int(sun_elevation) < 20:
+        solClass = 1
+    elif 20 <= int(sun_elevation) <= 30:
+        solClass = 2
+    else:
+        solClass = 3
+        
+    return solClass
+
+
 def solar_illumination_conditions(
     latitude_dd: float,
     longitude_dd: float,
@@ -536,13 +569,17 @@ def solar_illumination_conditions(
     Dependencies:
         - The function relies on the `utils.calculate_sun_position` and `get_solar_elevation_class` methods, which are assumed to be defined elsewhere in the codebase.
     """
-    creation_date = record['creation_date'] 
-    sun_elevation_angle, sun_azimuth_angle = calculate_sun_position(
+    creation_date = record['creation_date']
+     
+    sun_position = calculate_sun_position(
         datetime_str=creation_date,
         latitude_dd=latitude_dd, 
         longitude_dd=longitude_dd, 
         timezone_str=timezone_str
     )
+    
+    sun_elevation_angle = sun_position.get('sun_elevation_angle', None)
+    sun_azimuth_angle =  sun_position.get('sun_azimuth_angle', None)
     
     solar_elevation_class = get_solar_elevation_class(sun_elevation=sun_elevation_angle)
     
