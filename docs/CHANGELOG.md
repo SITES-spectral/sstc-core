@@ -1,5 +1,5 @@
 ## [v0.11.19] 
-- WIP
+- Improved `phenocams.overlay_polygons` to show the roi names at the centroid of the ROI polygon
   
 ## [v0.11.18]
 - Chasing a Heisenbug

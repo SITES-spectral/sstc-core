@@ -47,17 +47,18 @@ def deserialize_polygons(yaml_friendly_rois):
     return original_rois
 
 
-def overlay_polygons(image_path, phenocam_rois:dict):
+def overlay_polygons(image_path, phenocam_rois: dict, show_names: bool = True):
     """
-    Overlays polygons on an image.
+    Overlays polygons on an image and optionally labels them with their respective ROI names.
 
     Parameters:
         image_path (str): Path to the image file.
-        polygons (list of dict): A list of dictionaries where each dictionary represents a polygon.
+        phenocam_rois (dict): Dictionary where keys are ROI names and values are dictionaries representing polygons.
         Each dictionary should have the following keys:
         - 'points' (list of tuple): List of (x, y) tuples representing the vertices of the polygon.
         - 'color' (tuple): (B, G, R) color of the polygon border.
         - 'thickness' (int): Thickness of the polygon border.
+        show_names (bool): Whether to display the ROI names on the image. Default is True.
     """
     # Read the image
     img = cv2.imread(image_path)
@@ -73,7 +74,19 @@ def overlay_polygons(image_path, phenocam_rois:dict):
         
         # Draw the polygon on the image
         cv2.polylines(img, [points], isClosed=True, color=color, thickness=thickness)
-
+        
+        if show_names:
+            # Calculate the centroid of the polygon for labeling
+            M = cv2.moments(points)
+            if M['m00'] != 0:
+                cX = int(M['m10'] / M['m00'])
+                cY = int(M['m01'] / M['m00'])
+            else:
+                # In case of a degenerate polygon where area is zero
+                cX, cY = points[0][0], points[0][1]
+            
+            # Overlay the ROI name at the centroid of the polygon
+            cv2.putText(img, roi, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA)
 
     return img
 
