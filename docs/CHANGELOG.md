@@ -1,3 +1,6 @@
+## [v0.11.18]
+- Chasing a Heisenbug
+
 ## [v0.11.17]
 - Fixed `get_solar_elevation_class` issue not showing in `utils`
 
