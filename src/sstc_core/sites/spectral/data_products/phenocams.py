@@ -47,7 +47,7 @@ def deserialize_polygons(yaml_friendly_rois):
     return original_rois
 
 
-def overlay_polygons(image_path, phenocam_rois: dict, show_names: bool = True):
+def overlay_polygons(image_path, phenocam_rois: dict, show_names: bool = True, font_scale: float = 1.0):
     """
     Overlays polygons on an image and optionally labels them with their respective ROI names.
 
@@ -59,6 +59,7 @@ def overlay_polygons(image_path, phenocam_rois: dict, show_names: bool = True):
         - 'color' (tuple): (B, G, R) color of the polygon border.
         - 'thickness' (int): Thickness of the polygon border.
         show_names (bool): Whether to display the ROI names on the image. Default is True.
+        font_scale (float): Scale factor for the font size of the ROI names. Default is 1.0.
     """
     # Read the image
     img = cv2.imread(image_path)
@@ -86,7 +87,7 @@ def overlay_polygons(image_path, phenocam_rois: dict, show_names: bool = True):
                 cX, cY = points[0][0], points[0][1]
             
             # Overlay the ROI name at the centroid of the polygon
-            cv2.putText(img, roi, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA)
+            cv2.putText(img, roi, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, 2, cv2.LINE_AA)
 
     return img
 
@@ -229,6 +230,52 @@ def compute_GCC_RCC(daily_rgb_filepath: str, products_dirpath: str, year: int) -
         print(f"Unexpected error: {e}")
         return {}
     
+def rois_mask_and_sum(image_path, phenocam_rois):
+    """
+    Masks an image based on the provided ROIs, calculates the sum of pixel values inside each ROI,
+    and returns a dictionary with the ROI name, sum of pixel values, and the number of summed pixels.
+
+    Parameters:
+        image_path (str): Path to the image file.
+        phenocam_rois (dict): Dictionary where keys are ROI names and values are dictionaries representing polygons.
+        Each dictionary should have the following keys:
+        - 'points' (list of tuple): List of (x, y) tuples representing the vertices of the polygon.
+        - 'color' (tuple): (B, G, R) color of the polygon border.
+        - 'thickness' (int): Thickness of the polygon border.
+
+    Returns:
+        dict: A dictionary where each key is an ROI name, and the value is another dictionary containing:
+              - 'sum': The sum of all pixel values inside the ROI mask.
+              - 'num_pixels': The number of pixels that were summed inside the ROI.
+    """
+    # Read the image
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)  # Assuming a grayscale image for pixel value summation
+    
+    if img is None:
+        raise ValueError("Image not found or path is incorrect")
+    
+    roi_sums = {}
+
+    for roi, polygon in phenocam_rois.items():
+        # Create a mask for the ROI
+        mask = np.zeros_like(img, dtype=np.uint8)
+        points = np.array(polygon['points'], dtype=np.int32)
+        cv2.fillPoly(mask, [points], 255)
+        
+        # Apply the mask to the image
+        masked_img = cv2.bitwise_and(img, img, mask=mask)
+        
+        # Sum the pixel values within the ROI
+        total_sum = np.sum(masked_img[mask == 255])
+        num_pixels = np.sum(mask == 255)
+        
+        # Store the results in the dictionary
+        roi_sums[roi] = {
+            'sum': int(total_sum),
+            'num_pixels': int(num_pixels)
+        }
+
+    return roi_sums
     
 
     
