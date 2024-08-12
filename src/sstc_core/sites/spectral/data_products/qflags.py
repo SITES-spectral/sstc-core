@@ -1,7 +1,6 @@
 from sstc_core.sites.spectral import utils
 
 
-
 def compute_qflag(
     latitude_dd: float,
     longitude_dd: float, 

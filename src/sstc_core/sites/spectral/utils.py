@@ -9,7 +9,6 @@ import hashlib
 import base64
 import pytz
 from pysolar.solar import get_altitude, get_azimuth
-from sstc_core.sites.spectral.data_products.qflags import get_solar_elevation_class
 
 
 def copy_file_with_new_name(source_filepath, destination_directory, new_name):
