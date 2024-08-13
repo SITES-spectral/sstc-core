@@ -1,6 +1,7 @@
 ## [v0.12.0]
 - Refactored output director of L2 composite images products 
 - Added `phenocams.group_records_by_unique_filepath`
+- Added `station.get_filtered_fields_as_dict` useful for retriving the L2 & L3 products that are not empty.
   
 ## [v0.11.20]
 - Improved `phenocams.rois_mask_and_sum` to return the sum of pixel values for each channel and not treated as a single channel input image.

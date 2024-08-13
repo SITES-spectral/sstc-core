@@ -1611,6 +1611,77 @@ class Station(DuckDBManager):
         finally:
             self.close_connection()
             
+            
+    def get_filtered_fields_as_dict(self, table_name: str, field_names: list, filters: dict = None) -> dict:
+        """
+        Retrieves a dictionary of records where the specified fields are not None. The dictionary is structured 
+        with the catalog_guid as the first key and the specified fields as nested keys.
+
+        Parameters:
+            table_name (str): The name of the table to query.
+            field_names (list): A list of field names to retrieve.
+            filters (dict, optional): A dictionary of filters to apply to the query, where the keys are field names 
+                                    and the values are the filter values. Default is None.
+
+        Returns:
+            dict: A dictionary where the keys are catalog_guids and the values are dictionaries containing the 
+                specified fields and their corresponding values.
+
+        Example:
+            ```python
+            result = station.get_filtered_fields_as_dict(
+                table_name='phenocam_records',
+                field_names=['L2_RGB_CIMV_filepath', 'year', 'is_ready_for_products_use'],
+                filters={'year': 2024, 'is_ready_for_products_use': True}
+            )
+            # Example output:
+            # {
+            #   'cV_HhjIV0vpTmqh0': {'L2_RGB_CIMV_filepath': '/path/to/file1.jpg', 'year': 2024, 'is_ready_for_products_use': True},
+            #   'd4kTg4oRZdSk9kbV': {'L2_RGB_CIMV_filepath': '/path/to/file2.jpg', 'year': 2024, 'is_ready_for_products_use': True}
+            # }
+            ```
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        try:
+            if self.connection is None:
+                self.connect()
+
+            # Join the field names into a single string for the SQL query
+            fields_str = ', '.join(field_names)
+            
+            # Base query
+            query = f"SELECT catalog_guid, {fields_str} FROM {table_name} WHERE 1=1"
+            params = []
+
+            # Apply filters
+            if filters:
+                filter_clauses = []
+                for key, value in filters.items():
+                    filter_clauses.append(f"{key} = ?")
+                    params.append(value)
+                query += " AND " + " AND ".join(filter_clauses)
+
+            result = self.execute_query(query, tuple(params))
+
+            # Prepare the output dictionary
+            records_dict = {}
+            for row in result:
+                catalog_guid = row[0]
+                record_data = {field: row[i+1] for i, field in enumerate(field_names)}
+                records_dict[catalog_guid] = record_data
+
+            return records_dict
+
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving the filtered fields from table '{table_name}': {e}")
+            return {}
+
+        finally:
+            self.close_connection()
+
+            
 
 def get_station_platform_geolocation_point(station: Station, platforms_type: str, platform_id: str) -> tuple:
     """
@@ -1649,3 +1720,4 @@ def get_station_platform_geolocation_point(station: Station, platforms_type: str
     latitude_dd = station.platforms[platforms_type][platform_id]['geolocation']['point']['latitude_dd']
     longitude_dd = station.platforms[platforms_type][platform_id]['geolocation']['point']['longitude_dd']
     return latitude_dd, longitude_dd
+
