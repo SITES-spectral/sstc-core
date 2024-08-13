@@ -1,5 +1,6 @@
 ## [v0.12.1]
-- WIP 
+- Added `station.get_records_by_day_and_roi`
+- Added `metadata_templates` module
 
 ## [v0.12.0]
 - Refactored output director of L2 composite images products 

@@ -1538,9 +1538,93 @@ class Station(DuckDBManager):
 
         finally:
             self.close_connection()
+            
+    def get_records_by_day_and_roi(
+        self, 
+        table_name: str, 
+        filters: dict = None
+    ) -> dict:
+        """
+        Retrieves a dictionary of records grouped by day_of_year where the subdictionary contains 
+        catalog_guid as the key and a dictionary of fields starting with 'L2_ROI' and the 'creation_date' as values.
+
+        Parameters:
+            table_name (str): The name of the table to query.
+            filters (dict, optional): A dictionary of filters to apply to the query, where the keys are field names 
+                                    and the values are the filter values. Default is None.
+
+        Returns:
+            dict: A dictionary where the first key is `day_of_year`, and the subdictionary has `catalog_guid` as 
+                the key and a dictionary containing fields starting with 'L2_ROI' and 'creation_date' as values.
+
+        Example:
+            ```python
+            result = station.get_records_by_day_and_roi(
+                table_name='phenocam_records',
+                filters={'year': 2024, 'is_ready_for_products_use': True}
+            )
+            # Example output:
+            # {
+            #   '159': {
+            #       'cV_HhjIV0vpTmqh0': {
+            #           'L2_ROI_01_has_snow_presence': False, 
+            #           'L2_ROI_02_has_snow_presence': True, 
+            #           'creation_date': '2024-06-07 08:17:23'
+            #       },
+            #       ...
+            #   },
+            #   ...
+            # }
+            ```
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        try:
+            if self.connection is None:
+                self.connect()
+
+            # Build the SQL query
+            query = f"SELECT * FROM {table_name}"
+            conditions = []
+            params = []
+
+            if filters:
+                for field, value in filters.items():
+                    conditions.append(f"{field} = ?")
+                    params.append(value)
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+
+            result = self.execute_query(query, tuple(params))
+
+            # Organize the results
+            records_by_day = {}
+            for row in result:
+                day_of_year = row['day_of_year']
+                catalog_guid = row['catalog_guid']
+                creation_date = row['creation_date']
+
+                if day_of_year not in records_by_day:
+                    records_by_day[day_of_year] = {}
+
+                roi_fields = {k: v for k, v in row.items() if k.startswith('L2_ROI')}
+                roi_fields['creation_date'] = creation_date
+
+                records_by_day[day_of_year][catalog_guid] = roi_fields
+
+            return records_by_day
+
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving records from table '{table_name}': {e}")
+            raise
+
+        finally:
+            self.close_connection()
+
 
             
-
 def get_station_platform_geolocation_point(station: Station, platforms_type: str, platform_id: str) -> tuple:
     """
     Retrieves the geolocation (latitude and longitude) of a specific platform for a given station.
