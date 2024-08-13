@@ -1,3 +1,6 @@
+## [v0.12.0]
+- Refactored output director of L2 composite images products 
+
 ## [v0.11.20]
 - Improved `phenocams.rois_mask_and_sum` to return the sum of pixel values for each channel and not treated as a single channel input image.
 - Minor improvements
