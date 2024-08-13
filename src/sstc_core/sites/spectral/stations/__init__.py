@@ -1539,78 +1539,78 @@ class Station(DuckDBManager):
         finally:
             self.close_connection()
      
-def get_records_by_day_and_roi(
-    self, 
-    table_name: str, 
-    filters: dict = None
-) -> dict:
-    """
-    Retrieves a dictionary of records grouped by day_of_year where the subdictionary contains 
-    catalog_guid as the key and a dictionary of fields starting with 'L2_ROI' and the 'creation_date' as values.
+    def get_records_by_day_and_roi(
+        self, 
+        table_name: str, 
+        filters: dict = None
+    ) -> dict:
+        """
+        Retrieves a dictionary of records grouped by day_of_year where the subdictionary contains 
+        catalog_guid as the key and a dictionary of fields starting with 'L2_ROI' and the 'creation_date' as values.
 
-    Parameters:
-        table_name (str): The name of the table to query.
-        filters (dict, optional): A dictionary of filters to apply to the query, where the keys are field names 
-                                  and the values are the filter values. Default is None.
+        Parameters:
+            table_name (str): The name of the table to query.
+            filters (dict, optional): A dictionary of filters to apply to the query, where the keys are field names 
+                                    and the values are the filter values. Default is None.
 
-    Returns:
-        dict: A dictionary where the first key is `day_of_year`, and the subdictionary has `catalog_guid` as 
-              the key and a dictionary containing fields starting with 'L2_ROI' and 'creation_date' as values.
+        Returns:
+            dict: A dictionary where the first key is `day_of_year`, and the subdictionary has `catalog_guid` as 
+                the key and a dictionary containing fields starting with 'L2_ROI' and 'creation_date' as values.
 
-    Raises:
-        duckdb.Error: If there is an error executing the query or managing the connection.
-    """
-    try:
-        if self.connection is None:
-            self.connect()
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        try:
+            if self.connection is None:
+                self.connect()
 
-        # Get the table schema
-        columns_query = f"PRAGMA table_info({table_name})"
-        columns_result = self.execute_query(columns_query)
-        columns = [col[1] for col in columns_result]
+            # Get the table schema
+            columns_query = f"PRAGMA table_info({table_name})"
+            columns_result = self.execute_query(columns_query)
+            columns = [col[1] for col in columns_result]
 
-        # Build the SQL query
-        fields_to_select = "day_of_year, catalog_guid, creation_date"
-        roi_fields = [f for f in columns if f.startswith('L2_ROI')]
-        fields_to_select += ", " + ", ".join(roi_fields)
+            # Build the SQL query
+            fields_to_select = "day_of_year, catalog_guid, creation_date"
+            roi_fields = [f for f in columns if f.startswith('L2_ROI')]
+            fields_to_select += ", " + ", ".join(roi_fields)
 
-        query = f"SELECT {fields_to_select} FROM {table_name}"
-        conditions = []
-        params = []
+            query = f"SELECT {fields_to_select} FROM {table_name}"
+            conditions = []
+            params = []
 
-        if filters:
-            for field, value in filters.items():
-                conditions.append(f"{field} = ?")
-                params.append(value)
+            if filters:
+                for field, value in filters.items():
+                    conditions.append(f"{field} = ?")
+                    params.append(value)
 
-        if conditions:
-            query += " WHERE " + " AND ".join(conditions)
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
 
-        result = self.execute_query(query, tuple(params))
-        if not result:
-            raise ValueError(f"No records found for the given filters in table '{table_name}'.")
+            result = self.execute_query(query, tuple(params))
+            if not result:
+                raise ValueError(f"No records found for the given filters in table '{table_name}'.")
 
-        # Organize the results
-        records_by_day = {}
-        for row in result:
-            record_dict = dict(zip(fields_to_select.split(", "), row))
-            day_of_year = record_dict['day_of_year']
-            catalog_guid = record_dict['catalog_guid']
+            # Organize the results
+            records_by_day = {}
+            for row in result:
+                record_dict = dict(zip(fields_to_select.split(", "), row))
+                day_of_year = record_dict['day_of_year']
+                catalog_guid = record_dict['catalog_guid']
 
-            if day_of_year not in records_by_day:
-                records_by_day[day_of_year] = {}
+                if day_of_year not in records_by_day:
+                    records_by_day[day_of_year] = {}
 
-            roi_fields_dict = {key: record_dict[key] for key in ['creation_date'] + roi_fields}
-            records_by_day[day_of_year][catalog_guid] = roi_fields_dict
+                roi_fields_dict = {key: record_dict[key] for key in ['creation_date'] + roi_fields}
+                records_by_day[day_of_year][catalog_guid] = roi_fields_dict
 
-        return records_by_day
+            return records_by_day
 
-    except (duckdb.Error, ValueError) as e:
-        print(f"An error occurred while retrieving records from table '{table_name}': {e}")
-        raise
+        except (duckdb.Error, ValueError) as e:
+            print(f"An error occurred while retrieving records from table '{table_name}': {e}")
+            raise
 
-    finally:
-        self.close_connection()
+        finally:
+            self.close_connection()
 
             
 def get_station_platform_geolocation_point(station: Station, platforms_type: str, platform_id: str) -> tuple:
