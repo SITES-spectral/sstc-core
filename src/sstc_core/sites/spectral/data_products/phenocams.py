@@ -330,9 +330,9 @@ def rois_mask_and_sum(image_path: str, phenocam_rois: dict) -> dict:
         
         # Store the results in the dictionary
         roi_sums[roi] = {
-            'sum_r': int(sum_r),
-            'sum_g': int(sum_g),
-            'sum_b': int(sum_b),
+            'SUM_Red': int(sum_r),
+            'SUM_Green': int(sum_g),
+            'SUM_Blue': int(sum_b),
             'num_pixels': int(num_pixels)
         }
 

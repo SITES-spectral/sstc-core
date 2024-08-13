@@ -1,6 +1,7 @@
 ## [v0.11.20]
 - Improved `phenocams.rois_mask_and_sum` to return the sum of pixel values for each channel and not treated as a single channel input image.
-  
+- Minor improvements
+- record schema changed.  
 
 ## [v0.11.19] 
 - Improved `phenocams.overlay_polygons` to show the roi names at the centroid of the ROI polygon
