@@ -1566,7 +1566,8 @@ class Station(DuckDBManager):
 
             # Build the SQL query
             fields_to_select = "day_of_year, catalog_guid, creation_date"
-            roi_fields = [f for f in self.get_table_schema(table_name) if f.startswith('L2_ROI')]
+            schema = self.get_table_schema(table_name)
+            roi_fields = [f for f in schema.keys() if f.startswith('L2_ROI')]
             fields_to_select += ", " + ", ".join(roi_fields)
             
             query = f"SELECT {fields_to_select} FROM {table_name}"
