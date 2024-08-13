@@ -60,6 +60,9 @@ def overlay_polygons(image_path, phenocam_rois: dict, show_names: bool = True, f
         - 'thickness' (int): Thickness of the polygon border.
         show_names (bool): Whether to display the ROI names on the image. Default is True.
         font_scale (float): Scale factor for the font size of the ROI names. Default is 1.0.
+
+    Returns:
+        numpy.ndarray: The image with polygons overlaid, in RGB format.
     """
     # Read the image
     img = cv2.imread(image_path)
@@ -89,8 +92,10 @@ def overlay_polygons(image_path, phenocam_rois: dict, show_names: bool = True, f
             # Overlay the ROI name at the centroid of the polygon
             cv2.putText(img, roi, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, 2, cv2.LINE_AA)
 
-    return img
+    # Convert the image from BGR to RGB before returning
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+    return img_rgb
 
 def compute_RGB_daily_average(records_list: List[Dict[str, Any]], products_dirpath: str, datatype_acronym: str = 'RGB', product_processing_level: str = 'L2_daily') -> Path:
     """
@@ -230,10 +235,10 @@ def compute_GCC_RCC(daily_rgb_filepath: str, products_dirpath: str, year: int) -
         print(f"Unexpected error: {e}")
         return {}
     
-def rois_mask_and_sum(image_path, phenocam_rois):
+def rois_mask_and_sum(image_path: str, phenocam_rois: dict) -> dict:
     """
-    Masks an image based on the provided ROIs, calculates the sum of pixel values inside each ROI,
-    and returns a dictionary with the ROI name, sum of pixel values, and the number of summed pixels.
+    Masks an image based on the provided ROIs, calculates the sum of pixel values inside each ROI for R, G, and B channels,
+    and returns a dictionary with the ROI name, sum of pixel values for each channel, and the number of summed pixels.
 
     Parameters:
         image_path (str): Path to the image file.
@@ -245,11 +250,63 @@ def rois_mask_and_sum(image_path, phenocam_rois):
 
     Returns:
         dict: A dictionary where each key is an ROI name, and the value is another dictionary containing:
-              - 'sum': The sum of all pixel values inside the ROI mask.
+              - 'sum_r': The sum of all pixel values inside the ROI mask for the red channel.
+              - 'sum_g': The sum of all pixel values inside the ROI mask for the green channel.
+              - 'sum_b': The sum of all pixel values inside the ROI mask for the blue channel.
               - 'num_pixels': The number of pixels that were summed inside the ROI.
+              
+    Example:
+        ```python
+        # Example usage
+        if __name__ == "__main__":
+            # Define the phenocam ROIs
+            phenocam_rois = {
+                'ROI_01': {
+                    'points': [(100, 1800), (2700, 1550), (2500, 2700), (100, 2700)],
+                    'color': (0, 255, 0),
+                    'thickness': 7
+                },
+                'ROI_02': {
+                    'points': [(100, 930), (3700, 1050), (3700, 1200), (100, 1400)],
+                    'color': (0, 0, 255),
+                    'thickness': 7
+                },
+                'ROI_03': {
+                    'points': [(750, 600), (3700, 650), (3500, 950), (100, 830)],
+                    'color': (255, 0, 0),
+                    'thickness': 7
+                }
+            }
+            
+            # Apply the function to an image
+            image_path = "path/to/your/image.jpg"
+            roi_sums = rois_mask_and_sum(image_path, phenocam_rois)
+        
+        # >>>
+                {
+            'ROI_01': {
+                'sum_r': 123456789,
+                'sum_g': 987654321,
+                'sum_b': 567890123,
+                'num_pixels': 2553501
+            },
+            'ROI_02': {
+                'sum_r': 112233445,
+                'sum_g': 556677889,
+                'sum_b': 223344556,
+                'num_pixels': 1120071
+            },
+            'ROI_03': {
+                'sum_r': 998877665,
+                'sum_g': 554433221,
+                'sum_b': 776655443,
+                'num_pixels': 881151
+            }
+        }        
+        ```
     """
-    # Read the image
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)  # Assuming a grayscale image for pixel value summation
+    # Read the image as a color image (BGR format)
+    img = cv2.imread(image_path)
     
     if img is None:
         raise ValueError("Image not found or path is incorrect")
@@ -258,24 +315,103 @@ def rois_mask_and_sum(image_path, phenocam_rois):
 
     for roi, polygon in phenocam_rois.items():
         # Create a mask for the ROI
-        mask = np.zeros_like(img, dtype=np.uint8)
+        mask = np.zeros(img.shape[:2], dtype=np.uint8)  # Mask with the same height and width as the image
         points = np.array(polygon['points'], dtype=np.int32)
         cv2.fillPoly(mask, [points], 255)
         
-        # Apply the mask to the image
+        # Apply the mask to each channel
         masked_img = cv2.bitwise_and(img, img, mask=mask)
         
-        # Sum the pixel values within the ROI
-        total_sum = np.sum(masked_img[mask == 255])
+        # Calculate the sum of pixel values within the ROI for each channel
+        sum_b = np.sum(masked_img[:, :, 0][mask == 255])
+        sum_g = np.sum(masked_img[:, :, 1][mask == 255])
+        sum_r = np.sum(masked_img[:, :, 2][mask == 255])
         num_pixels = np.sum(mask == 255)
         
         # Store the results in the dictionary
         roi_sums[roi] = {
-            'sum': int(total_sum),
+            'sum_r': int(sum_r),
+            'sum_g': int(sum_g),
+            'sum_b': int(sum_b),
             'num_pixels': int(num_pixels)
         }
 
-    return roi_sums
-    
+    return roi_sums    
 
-    
+def convert_rois_sums_to_single_dict(rois_sums_dict):
+    """
+    Converts the rois_sums_dict into a single dictionary with keys in the format 'L2_<ROI_NAME>_<suffix>'.
+
+    The `rois_sums_dict` is expected to contain sums of pixel values for each color channel (R, G, B) and the number of pixels
+    within each ROI, as calculated by the `rois_mask_and_sum` function.
+
+    Parameters:
+        rois_sums_dict (dict): A dictionary where keys are ROI names and values are dictionaries containing:
+                               - 'sum_r': The sum of all pixel values inside the ROI mask for the red channel.
+                               - 'sum_g': The sum of all pixel values inside the ROI mask for the green channel.
+                               - 'sum_b': The sum of all pixel values inside the ROI mask for the blue channel.
+                               - 'num_pixels': The number of pixels that were summed inside the ROI.
+
+    Returns:
+        dict: A single dictionary containing the combined key-value pairs in the format:
+              - 'L2_<ROI_NAME>_sum_r': Sum of pixel values for the red channel in the ROI.
+              - 'L2_<ROI_NAME>_sum_g': Sum of pixel values for the green channel in the ROI.
+              - 'L2_<ROI_NAME>_sum_b': Sum of pixel values for the blue channel in the ROI.
+              - 'L2_<ROI_NAME>_num_pixels': Number of pixels summed in the ROI.
+              
+    Example:
+        ```python
+        
+        rois_sums_dict = {
+            'ROI_01': {
+                'sum_r': 123456789,
+                'sum_g': 987654321,
+                'sum_b': 567890123,
+                'num_pixels': 2553501
+            },
+            'ROI_02': {
+                'sum_r': 112233445,
+                'sum_g': 556677889,
+                'sum_b': 223344556,
+                'num_pixels': 1120071
+            },
+            'ROI_03': {
+                'sum_r': 998877665,
+                'sum_g': 554433221,
+                'sum_b': 776655443,
+                'num_pixels': 881151
+            }
+        }
+
+        # Create a single dictionary
+        single_dict = convert_rois_sums_to_single_dict(rois_sums_dict)
+
+        print(single_dict)
+                
+        # Output:
+        
+            {
+            'L2_ROI_01_sum_r': 123456789,
+            'L2_ROI_01_sum_g': 987654321,
+            'L2_ROI_01_sum_b': 567890123,
+            'L2_ROI_01_num_pixels': 2553501,
+            'L2_ROI_02_sum_r': 112233445,
+            'L2_ROI_02_sum_g': 556677889,
+            'L2_ROI_02_sum_b': 223344556,
+            'L2_ROI_02_num_pixels': 1120071,
+            'L2_ROI_03_sum_r': 998877665,
+            'L2_ROI_03_sum_g': 554433221,
+            'L2_ROI_03_sum_b': 776655443,
+            'L2_ROI_03_num_pixels': 881151
+        }
+        ```
+    """
+    # Initialize an empty dictionary
+    combined_dict = {}
+
+    # Iterate over the rois_sums_dict to create the single dictionary
+    for roi_name, metrics in rois_sums_dict.items():
+        for suffix, value in metrics.items():
+            combined_dict[f'L2_{roi_name}_{suffix}'] = value
+
+    return combined_dict
