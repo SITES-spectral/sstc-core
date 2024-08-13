@@ -161,7 +161,7 @@ def compute_RGB_daily_average(records_list: List[Dict[str, Any]], products_dirpa
     else:
         print("No images were processed. No output file created.")
 
-    return output_filepath
+    return str(output_filepath)
 
 
 def compute_GCC_RCC(daily_rgb_filepath: str, products_dirpath: str, year: int) -> dict:
@@ -225,7 +225,7 @@ def compute_GCC_RCC(daily_rgb_filepath: str, products_dirpath: str, year: int) -
         cv2.imwrite(gcc_filepath, cv_img_gcc)
         cv2.imwrite(rcc_filepath, cv_img_rcc)
         
-        return {'gcc_filepath': gcc_filepath, 'rcc_filepath': rcc_filepath}
+        return {'gcc_filepath': str(gcc_filepath), 'rcc_filepath': str(rcc_filepath)}
 
     except FileNotFoundError as e:
         print(f"Error: {e}")
@@ -415,3 +415,54 @@ def convert_rois_sums_to_single_dict(rois_sums_dict):
             combined_dict[f'L2_{roi_name}_{suffix}'] = value
 
     return combined_dict
+
+
+def group_records_by_unique_filepath(input_dict: dict, filepath_key: str) -> dict:
+    """
+    Groups records by unique file paths specified by a given key.
+
+    This function iterates over a dictionary of records, identifies unique values based on the specified 
+    file path key, and groups the record identifiers (keys) that share the same file path.
+
+    Parameters:
+        input_dict (dict): A dictionary where each key is a unique identifier and each value is a dictionary 
+                           containing various fields, including the specified file path.
+        filepath_key (str): The key used to access the file path in the nested dictionaries.
+
+    Returns:
+        dict: A dictionary where the keys are unique file paths, and the values are lists of record identifiers 
+              (keys from the input dictionary) that share the same file path.
+
+    Example:
+        ```python
+        input_dict = {
+            'cV_HhjIV0vpTmqh0': {'L2_RGB_CIMV_filepath': '/path/to/file1.jpg'},
+            'd4kTg4oRZdSk9kbV': {'L2_RGB_CIMV_filepath': '/path/to/file1.jpg'},
+            'zpl4JHxP79ef-Az6': {'L2_RGB_CIMV_filepath': '/path/to/file2.jpg'}
+        }
+        unique_values = group_records_by_unique_filepath(input_dict, 'L2_RGB_CIMV_filepath')
+        # Result:
+        # {
+        #   '/path/to/file1.jpg': ['cV_HhjIV0vpTmqh0', 'd4kTg4oRZdSk9kbV'],
+        #   '/path/to/file2.jpg': ['zpl4JHxP79ef-Az6']
+        # }
+        ```
+
+    Raises:
+        KeyError: If the filepath_key is not found in one of the dictionaries in input_dict.
+    """
+
+    unique_values = {}
+
+    for record_id, value_dict in input_dict.items():
+        try:
+            value = value_dict[filepath_key]
+        except KeyError:
+            raise KeyError(f"The key '{filepath_key}' was not found in the record with ID '{record_id}'.")
+
+        if value not in unique_values:
+            unique_values[value] = []
+
+        unique_values[value].append(record_id)
+
+    return unique_values
