@@ -1538,7 +1538,7 @@ class Station(DuckDBManager):
 
         finally:
             self.close_connection()
-            
+     
     def get_records_by_day_and_roi(
         self, 
         table_name: str, 
@@ -1567,7 +1567,7 @@ class Station(DuckDBManager):
             # Build the SQL query
             fields_to_select = "day_of_year, catalog_guid, creation_date"
             schema = self.get_table_schema(table_name)
-            roi_fields = [f for f in schema.keys() if f.startswith('L2_ROI')]
+            roi_fields = [f for f in schema if f.startswith('L2_ROI')]
             fields_to_select += ", " + ", ".join(roi_fields)
             
             query = f"SELECT {fields_to_select} FROM {table_name}"
