@@ -1565,7 +1565,11 @@ class Station(DuckDBManager):
                 self.connect()
 
             # Build the SQL query
-            query = f"SELECT * FROM {table_name}"
+            fields_to_select = "day_of_year, catalog_guid, creation_date"
+            roi_fields = [f for f in self.get_table_schema(table_name) if f.startswith('L2_ROI')]
+            fields_to_select += ", " + ", ".join(roi_fields)
+            
+            query = f"SELECT {fields_to_select} FROM {table_name}"
             conditions = []
             params = []
 
@@ -1579,26 +1583,23 @@ class Station(DuckDBManager):
 
             result = self.execute_query(query, tuple(params))
 
-            # Retrieve column names to access the result tuples correctly
-            column_names = [desc[0] for desc in self.connection.execute(f"PRAGMA table_info('{table_name}')").fetchall()]
-
             # Organize the results
             records_by_day = {}
             for row in result:
-                # Map tuple values to their respective column names
-                row_dict = dict(zip(column_names, row))
-
-                day_of_year = row_dict['day_of_year']
-                catalog_guid = row_dict['catalog_guid']
-                creation_date = row_dict['creation_date']
+                day_of_year = row[0]  # day_of_year
+                catalog_guid = row[1]  # catalog_guid
+                creation_date = row[2]  # creation_date
 
                 if day_of_year not in records_by_day:
                     records_by_day[day_of_year] = {}
 
-                roi_fields = {k: v for k, v in row_dict.items() if k.startswith('L2_ROI')}
-                roi_fields['creation_date'] = creation_date
+                roi_fields_dict = {
+                    'creation_date': creation_date,
+                }
+                for i, roi_field in enumerate(roi_fields):
+                    roi_fields_dict[roi_field] = row[3 + i]
 
-                records_by_day[day_of_year][catalog_guid] = roi_fields
+                records_by_day[day_of_year][catalog_guid] = roi_fields_dict
 
             return records_by_day
 
@@ -1608,7 +1609,6 @@ class Station(DuckDBManager):
 
         finally:
             self.close_connection()
-
 
             
 def get_station_platform_geolocation_point(station: Station, platforms_type: str, platform_id: str) -> tuple:
