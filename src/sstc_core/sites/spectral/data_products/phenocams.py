@@ -122,8 +122,10 @@ def compute_RGB_daily_average(records_list: List[Dict[str, Any]], products_dirpa
             location_id = record['location_id']
             platform_id = record['platform_id']
             catalog_filepath = record['catalog_filepath']
+            
+            product_id = f'L2_{datatype_acronym}_CIMV'
 
-            output_dirpath = Path(products_dirpath) / f'L2_{datatype_acronym}_CIMV'  / str(year)
+            output_dirpath = Path(products_dirpath) / product_id / str(year)
 
             if not os.path.exists(output_dirpath):
                 os.makedirs(output_dirpath)
@@ -150,7 +152,7 @@ def compute_RGB_daily_average(records_list: List[Dict[str, Any]], products_dirpa
             # Saving the daily average as image
             im = Image.fromarray(intImage)
             
-            product_name = f'SITES-{station_acronym}-{location_id}-{platform_id}-{datatype_acronym}-{year}-DOY_{day_of_year}_{product_processing_level}.JPG'
+            product_name = f'SITES-{product_id}-{station_acronym}-{location_id}-{platform_id}-{year}-DOY_{day_of_year}_{product_processing_level}.JPG'
             output_filepath = output_dirpath / product_name
 
             # Save image in the defined path

@@ -11,7 +11,7 @@ import pytz
 from pysolar.solar import get_altitude, get_azimuth
 
 
-def copy_file_with_new_name(source_filepath, destination_directory, new_name):
+def copy_file_with_new_name(source_filepath, destination_directory, new_name)->str:
     """
     Copies a file from the source filepath to the destination directory with a new name while preserving the file format extension.
 
@@ -35,7 +35,7 @@ def copy_file_with_new_name(source_filepath, destination_directory, new_name):
     # Copy the file to the new location with the new name
     copy2(source_filepath, new_file_path)
 
-    return new_file_path
+    return str(new_file_path)
 
 
 
@@ -319,14 +319,14 @@ def normalize_string(input_string: str) -> str:
     return lower_string
 
 
-def is_within_time_window(formatted_date: str, start_time: str = "10:00:00", end_time: str = "14:00:00") -> bool:
+def is_within_time_window(formatted_date: str, start_time: str = "10:00:00", end_time: str = "14:30:00") -> bool:
     """
     Checks if the given date and time fall within the specified time window.
 
     Parameters:
         formatted_date (str): The date and time in the format '%Y-%m-%d %H:%M:%S'.
         start_time (str): The start of the time window in 'HH:MM:SS' format. Default is "10:00:00".
-        end_time (str): The end of the time window in 'HH:MM:SS' format. Default is "14:00:00".
+        end_time (str): The end of the time window in 'HH:MM:SS' format. Default is "14:30:00".
 
     Returns:
         bool: True if the time part of the formatted_date is within the time window, False otherwise.
