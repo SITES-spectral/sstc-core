@@ -1638,6 +1638,55 @@ class Station(DuckDBManager):
 
         finally:
             self.close_connection()
+    
+    def count_records_by_year_with_filters(
+        self, 
+        table_name: str, 
+        year: int, 
+        filters: Dict[str, Any] = None
+    ) -> int:
+        """
+        Returns the count of records for a given year, filtered by the specified conditions.
+
+        Parameters:
+            table_name (str): The name of the table to query.
+            year (int): The year to filter records by.
+            filters (Dict[str, Any], optional): Additional filters to apply to the query. The keys are the field names
+                                                and the values are the filter values.
+
+        Returns:
+            int: The count of records that match the specified year and filters.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        try:
+            if self.connection is None:
+                self.connect()
+
+            # Start with the basic query to count records
+            query = f"SELECT COUNT(*) FROM {table_name} WHERE year = ?"
+            params = [year]
+
+            # Add any additional filters
+            if filters:
+                for field, value in filters.items():
+                    query += f" AND {field} = ?"
+                    params.append(value)
+
+            # Execute the query and fetch the count
+            result = self.execute_query(query, tuple(params))
+            record_count = result[0][0]  # Fetch the count from the result
+
+            return record_count
+
+        except duckdb.Error as e:
+            print(f"An error occurred while counting records in table '{table_name}' for year {year} with filters {filters}: {e}")
+            raise
+
+        finally:
+            self.close_connection()
+
 
             
 def get_station_platform_geolocation_point(station: Station, platforms_type: str, platform_id: str) -> tuple:
