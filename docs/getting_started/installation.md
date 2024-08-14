@@ -2,9 +2,11 @@
 
 Install dependencies
 
-`conda create -n JB-core python=3.11 streamlit pandas gdal duckdb pyyaml pysolar keyring poetry paramiko numpy jupyterlab mkdocs mkdocs-material`
+`conda create -n JB-core python=3.11 streamlit pandas gdal duckdb pyyaml pysolar keyring poetry paramiko numpy jupyterlab mkdocs mkdocs-material mkdocstrings`
 
 `pip install opencv-python`
+`pip install mkdocstrings mkdocstrings-python`
+
 
 To install **sstc-core**, use pip:
 ```bash
