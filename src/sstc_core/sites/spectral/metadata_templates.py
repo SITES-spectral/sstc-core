@@ -83,6 +83,9 @@ def update_metadata_from_dict(metadata_dict, new_filename, destination_dir):
             f"DATA ACQUISITION: {metadata_dict.get('DATA ACQUISITION', 'The original photos were acquired with phenology camera mounted on the rooftop of the observation house, at a height of 4.5 m above ground, looking west (270 degrees) and an off-nadir angle of 59 degrees. The phenocamera acquired images from 10 a.m. to 2 p.m. every two hours. The phenocamera operates between April and November. The area surveyed by the phenocamera projects a footprint on the ground, the centroid of which is approximately defined by the following coordinate (latitude, longitude in GCS WGS84, decimal degrees): 68.353921, 18.789888.')}\n"
             f"\n"
             f"PROCESSING METHODS: {metadata_dict.get('PROCESSING METHODS', 'No image processing applied at this stage. However, low quality images were filtered out manually from the original image collection. Low quality refers to images that contain sun glare, rain droplets, fog, or shadows, or represent low-light or blurry conditions.')}\n"
+            f"DATA PRODUCT TYPE: {metadata_dict.get('DATA PRODUCT TYPE', 'L1_QFI')}\n"
+            f"DATA PRODUCT DESCRIPTION: {metadata_dict.get('DATA PRODUCT DESCRIPTION', 'Data Processing Level 1 Quality Filtered Images')}\n"
+            
         )
 
         # Define the full path for the new metadata file in the destination directory
