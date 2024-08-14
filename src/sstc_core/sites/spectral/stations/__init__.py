@@ -1115,8 +1115,14 @@ class Station(DuckDBManager):
         
         finally:
             self.close_connection()
-            
-    def get_records_by_year_and_day_of_year(self, table_name: str, year: int, day_of_year: str) -> Dict[str, Dict[str, Any]]:
+                
+    def get_records_by_year_and_day_of_year(
+        self, 
+        table_name: str, 
+        year: int, 
+        day_of_year: str, 
+        filters: Dict[str, Any] = None
+    ) -> Dict[str, Dict[str, Any]]:
         """
         Retrieves all records for a given year and day_of_year, structured in a dictionary by catalog_guid.
 
@@ -1161,40 +1167,61 @@ class Station(DuckDBManager):
             table_name (str): The name of the table to query.
             year (int): The year to filter records by.
             day_of_year (str): The day of year to filter records by (formatted as a 3-character string).
+            filters (Dict[str, Any], optional): Additional filters to apply to the query. The keys are the field names
+                                                and the values are the filter values.
 
         Returns:
             Dict[str, Dict[str, Any]]: A dictionary with `catalog_guid` as the key and all record fields as values.
 
         Raises:
             duckdb.Error: If there is an error executing the query or managing the connection.
-        """
-        query = f"SELECT * FROM {table_name} WHERE year = ? AND day_of_year = ?"
+            
+        Example:
+            ```python
+            records = station.get_records_by_year_and_day_of_year(
+                table_name='your_table_name', 
+                year=2024, 
+                day_of_year='001', 
+                filters={"is_L1": True}
+            )
+
+            ```
         
+        """
         try:
             if self.connection is None:
                 self.connect()
 
-            result = self.execute_query(query, (year, day_of_year))
+            # Start with the basic query
+            query = f"SELECT * FROM {table_name} WHERE year = ? AND day_of_year = ?"
+            params = [year, day_of_year]
+
+            # Add any additional filters
+            if filters:
+                for field, value in filters.items():
+                    query += f" AND {field} = ?"
+                    params.append(value)
+
+            # Execute the query
+            result = self.execute_query(query, tuple(params))
             columns = self.connection.execute(f"DESCRIBE {table_name}").fetchall()
             column_names = [col[0] for col in columns]
-            
+
             records_by_catalog_guid = {}
             for row in result:
                 # Convert tuple to dictionary using column names
                 record_dict = dict(zip(column_names, row))
-                
                 catalog_guid = record_dict['catalog_guid']
                 records_by_catalog_guid[catalog_guid] = record_dict
 
             return records_by_catalog_guid
-        
+
         except duckdb.Error as e:
             print(f"An error occurred while retrieving records from table '{table_name}' for year {year} and day_of_year {day_of_year}: {e}")
             raise
-        
+
         finally:
-            self.close_connection()
-    
+            self.close_connection()    
     def add_new_fields_to_table(self, table_name: str, new_fields: List[Dict[str, Any]]) -> bool:
         """
         Adds new fields to an existing table and initializes them with default values for all records.

@@ -1,3 +1,6 @@
+## [v0.12.2]
+-  Expanded functionality of `station.get_records_by_year_and_day_of_year` by adding optional filters like `filters={"is_L1": True}`
+
 ## [v0.12.1]
 - Added `station.get_records_by_day_and_roi`
 - Added `metadata_templates` module
