@@ -35,19 +35,24 @@ PhenoCams:
     station_acronym: ANS
     station_name: Abisko
     viewing_direction': West
-    processing_level_products:
-      L0:
-        - L0_raw: L0_raw_image   # 'catalog_filepath'
-      L1: 
-        - L1_QFI: L1_product_quality_filtered_image   # 'is_ready_for_products_use'
-      L2: 
-        - L2_RGB_mean: L2_product_RGB_mean_daily_composite
-        - L2_GCC_mean: L2_product_GCC_mean_daily_composite
-        - L2_RCC_mean: L2_product_RCC_mean_daily_composite
-        - L2_RGB_stdev: L2_product_RGB_stdev_daily_composite
-        - L2_GCC_stdev: L2_product_GCC_stdev_daily_composite
-        - L2_RCC_stdev: L2_product_RCC_stdev_daily_composite
-      L3:
-        - L3_ROIs_DV: L3_product_daily_values_{ROI} 
-        
+    metadata:
+      'TITLE': 'Phenocamera RGB image collection from Abisko Observatory, north-western Sweden.'
+      'SITES STATION': 'Abisko Scientific Research Station'
+      'TIME PERIOD': null
+      'TIME RESOLUTION': 'HALF-HOURLY'
+      'TIME ZONE': 'Central European Time (CET) / Central European Summer Time (CEST)'
+      'SAMPLING POINT': 'Abisko Scientific Research Station, on rooftop of Building H at 4.5m, Phenocam 01 :  platform_id=P_BTH_1'
+      'LATITUDE': '68.353729'
+      'LONGITUDE': '18.816522'
+      'ALTITUDE': '381 m asl'
+      'FILE RETRIEVED FROM': 'https://data.fieldsites.se Link to metadata landing page is available in separate file in the downloaded zip.'
+      'DATA POLICY': 'SITES data is licensed under a Creative Commons Attribution 4.0 international license (http://creativecommons.org/licenses/by/4.0/).'
+      'PARAMETERS & UNITS': 'Digital Numbers (DN)'
+      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every 2 hours from 10 a.m. to 2 p.m. The phenocamera pointed to Mount Nuolja. The ecosystems in the images are subalpine birch forest (Betula pubescens var. czerepan) and alpine shrubland (mainly Salix spp., Empetrum nigrum, and Vaccinium vitis–idaea) in the upper slope of Mount Nuolja.'
+      'SENSOR DESCRIPTION': 'Data acquired with Nikon D300s RGB phenology camera, with wide field of view (FOV) angle of 60 degrees. Images stored in JPG format.'
+      'DATA ACQUISITION': "The original photos were acquired with phenology camera mounted on the rooftop of the observation house, at a height of 4.5 m above ground, looking west (270 degrees) and an off-nadir angle of 59 degrees. The phenocamera acquired images from 10 a.m. to 2 p.m. every half an hour. The phenocamera operates between April and November. The area surveyed by the phenocamera projects a footprint on the ground, the centroid of which is approximately defined by the following coordinate (latitude, longitude in GCS WGS84, decimal degrees): 68.353729, 18.816522'      'PROCESSING METHODS': 'No image processing applied at this stage. However, low quality images were filtered out manually from the original image collection. Low quality refers to images that contain sun glare, rain droplets, fog, or shadows, or represent low-light or blurry conditions."
+      'PROCESSING METHODS': 
+        L1_QFI: 'processing Level 1 Quality Filtered Images (QFI) were selected by filtered out manually from the original image collection. Low quality refers to images that contain sun glare, rain droplets, fog, or shadows, or represent low-light or blurry conditions.'
+
+
 
