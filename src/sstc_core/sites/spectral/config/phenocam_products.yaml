@@ -24,24 +24,24 @@ L2_product_RCC_CIMV_daily: {
 L2_product_RGB_CISDV_daily: {
   'description': 'Phenocam - RGB Composite Image of Standard Deviation Values, daily',
   'legacy_datatype_acronym': null,
-  'product_acronym': 'L2_RGB_CISDV'      
+  'product_acronym': 'L2_RGB_CISD'      
   }
 L2_product_GCC_CISDV_daily: {
   'description': 'Phenocam - Green Chromatic Index Composite Image of Standard Deviation Values, daily',
   'legacy_datatype_acronym': null,
-  'product_acronym': 'L2_GCC_CISDV' 
+  'product_acronym': 'L2_GCC_CISD' 
   }
 
 L2_product_RCC_CISDV_daily: {
   'description': 'Phenocam - Red Chromatic Index Composite Image of Standard Deviation Values daily',
   'legacy_datatype_acronym': null, 
-  'product_acronym': 'L2_RCC_CISDV'
+  'product_acronym': 'L2_RCC_CISD'
   }
 
-L3_product_CIMV-ROIMS_daily: {
-  'description': 'Phenocam - Green and Red Chromatic Coordinates time series of the Composite Image of Mean Values - Region of Interest Mean and Standard Deviation, daily values with QFLAG.',
+L3_product_ROI_time_series_daily: {
+  'description': 'Phenocam - Green and Red Chromatic Coordinates time series of the RGB Composite Image of Mean Values - Region of Interest Mean and Standard Deviation, daily values with QFLAG.',
   'legacy_datatype_acronym': 'P01-GCC-RCC',
-  'product_acronym': L3_CIMV-ROIMS,
+  'product_acronym': L3_ROI_TS,
   }
 
 

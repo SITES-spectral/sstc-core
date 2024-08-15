@@ -8,11 +8,11 @@ from pathlib import Path
 import duckdb
 import hashlib
 from datetime import datetime
-from typing import Dict, Any, List, Union
-from sstc_core.sites.spectral.image_quality import assess_image_quality, calculate_normalized_quality_index, load_weights_from_yaml
+from typing import Dict, Any, List
+from sstc_core.sites.spectral.image_quality import get_default_phenocam_flags
 from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 from sstc_core.sites.spectral.data_products import phenocams
-
+from sstc_core import version
 
 class DatabaseError(Exception):
     """Base class for other exceptions"""
@@ -887,24 +887,34 @@ class Station(DuckDBManager):
         )
         
         # Assess image quality
-        quality_flags_dict = assess_image_quality(local_filepath, flag_other=False, flag_birds=False, skip=skip)
-        weights = load_weights_from_yaml(self.phenocam_quality_weights_filepath)
-        normalized_quality_index, quality_index_weights_version = calculate_normalized_quality_index(
-            quality_flags_dict=quality_flags_dict,
-            weights=weights, 
-            skip=skip
-        )
-        
+        quality_flags_dict = get_default_phenocam_flags()
+                
         # 
         phenocams_rois_dict = self.phenocam_rois(platform_id=platform_id)
         rois_dict ={} 
         if phenocams_rois_dict:
             for r in phenocams_rois_dict.keys():
+                rois_dict[f'L2_{r}_num_pixels'] = None
+                rois_dict[f'L2_{r}_SUM_Red'] = None
+                rois_dict[f'L2_{r}_SUM_Green'] = None
+                rois_dict[f'L2_{r}_SUM_Blue'] = None
                 rois_dict[f'L3_{r}_has_snow_presence'] = None
+                rois_dict[f'L3_{r}_is_data_processing_disabled'] = False  
                 rois_dict[f'L3_{r}_QFLAG'] = None
-                rois_dict[f'L3_{r}_mean_value'] = None
-                rois_dict[f'L3_{r}_standard_deviation_value'] = None
-                rois_dict[f'L3_{r}_number_quality_images'] = None 
+                rois_dict[f'L3_{r}_num_pixels'] = None
+                rois_dict[f'L3_{r}_SUM_Red'] = None
+                rois_dict[f'L3_{r}_SUM_Green'] = None
+                rois_dict[f'L3_{r}_SUM_Blue'] = None
+                rois_dict[f'L3_{r}_MEAN_Red'] = None
+                rois_dict[f'L3_{r}_MEAN_Green'] = None
+                rois_dict[f'L3_{r}_MEAN_Blue'] = None
+                rois_dict[f'L3_{r}_SD_Red'] = None
+                rois_dict[f'L3_{r}_SD_Green'] = None
+                rois_dict[f'L3_{r}_SD_Blue'] = None
+                rois_dict[f'L3_{r}_MEANS_RGB_SUM'] = None
+                rois_dict[f'L3_{r}_GCC_daily_value'] = None
+                rois_dict[f'L3_{r}_RCC_daily_value'] = None
+                
                   
                 
         # Create the record dictionary
@@ -921,16 +931,27 @@ class Station(DuckDBManager):
             'is_legacy': is_legacy,
             'L0_name': L0_name,
             'is_L1': is_L1,            
-            'is_ready_for_products_use': False,          
+            'is_ready_for_products_use': False,  # Allows for ROIs processing, even that regions on the image may be bad but not on some ROIs
+            'is_data_processing_disabled': False, # Allows for CIMV processing, it may be only a region on the image that is bad for CIMV          
             'catalog_filepath': local_filepath,
-            'source_filepath': remote_filepath,
-            'normalized_quality_index': normalized_quality_index,
-            'quality_index_weights_version': quality_index_weights_version,
+            'source_filepath': remote_filepath,            
+            'version_data_processing': version.__version__,
             'flags_confirmed': False,
             'has_snow_presence': has_snow_presence,            
             'sun_elevation_angle': sun_elevation_angle,
             'sun_azimuth_angle': sun_azimuth_angle,
-            'solar_elevation_class': solar_elevation_class,            
+            'solar_elevation_class': solar_elevation_class,
+            "is_in_dataportal": False,
+            "fieldsites_filename": None,
+            "fieldsites_PID": None,
+            "L1_QFI_filepath": None, 
+            'L2_RGB_CIMV_filepath': None,
+            "L2_GCC_CIMV_filepath": None,
+            "L2_RCC_CIMV_filepath": None,
+            'L2_RGB_CIMSDV_filepath': None,
+            "L2_GCC_CIMSDV_filepath": None,
+            "L2_RCC_CIMSDV_filepath": None,
+            "L3_ROI_TS_filepath": None,                       
         }
 
         QFLAF = compute_qflag(

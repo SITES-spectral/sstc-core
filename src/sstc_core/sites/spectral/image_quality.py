@@ -2,6 +2,12 @@ import cv2
 import numpy as np
 from PIL import Image as PILImage
 from sstc_core.sites.spectral.io_tools import load_yaml
+import os
+from sstc_core import version
+
+# Get the absolute path of the current script
+__script_parent_path = os.path.dirname(os.path.abspath(__file__))
+
 
 
 def convert_to_bool(value):
@@ -496,247 +502,100 @@ def detect_rotation(image, angle_threshold=10):
     return False
 
 
-def assess_image_quality(image, flag_other:bool=False, flag_birds:bool = False, skip:bool = False):
+def get_default_phenocam_flags(flags_yaml_filepath: str ) -> dict:
     """
-    Assess the quality of an image by evaluating brightness, glare, fog,  and rotation.
-    Handles image inputs as PIL image, OpenCV image, or file path.
+    Load and return the default PhenoCam flags from a YAML configuration file.
 
-    Parameters:
-        image (Union[str, PILImage.Image, np.ndarray]): The input image as a file path, PIL image, or OpenCV image.
+    This function reads a YAML file containing default flag settings for PhenoCam data processing and returns the contents as a dictionary. These flags are typically used to control various aspects of image quality assessment, such as detecting snow, glare, or other artifacts.
 
-    Returns:
-        dict: A dictionary containing the results of the quality assessment.
+    Parameters
+    ----------
+    flags_yaml_filepath : str, optional
+        The file path to the YAML configuration file containing the PhenoCam flags. 
+        Expected config file:  '/config/phenocam_flags.yaml'.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the default PhenoCam flags as specified in the YAML configuration file.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the YAML file specified by `flags_yaml_filepath` does not exist.
+    yaml.YAMLError
+        If there is an error parsing the YAML file.
+
+    Examples
+    --------
+    >>> flags = get_default_phenocam_flags()
+    >>> print(flags)
+    {
+        'flag_brightness': False,
+        'flag_blur': False,
+        'flag_snow': True,
+        ...
+    }
+
+    Notes
+    -----
+    The function relies on a YAML file for configuration. Ensure that the file path is correct and that the YAML file is properly formatted.
+
+    Dependencies
+    ------------
+    - yaml (PyYAML library): For loading YAML files.
+    - load_yaml (function): A utility function used to load the YAML file into a dictionary.
     """
-    if skip:
-        # TODO: load from config.phenocam_flags
-        quality_assessment_results = {
-            'flag_brightness': False,
-            'flag_blur': False,
-            'flag_snow': False,
-            'flag_rain': False,
-            'flag_water_drops': False,
-            'flag_dirt': False,
-            'flag_obstructions': False,
-            'flag_glare': False,
-            'flag_fog': False,
-            'flag_rotation': False,
-            'flag_birds': False,       
-            'flag_other': False,
-            'flag_haze': False,
-            'flag_ice': False,
-            'flag_shadows': False,
-            'flag_clouds': False,
-            'flag_high_quality': False,       
-        }
-        
-    else:
-        
-        # Determine the type of input and process accordingly
-        if isinstance(image, str):
-            # If input is a file path, load the image using OpenCV
-            image = cv2.imread(image)
-            if image is None:
-                raise ValueError(f"Image file at {image} could not be loaded.")
-        elif isinstance(image, PILImage.Image):
-            # If input is a PIL image, convert it to OpenCV format
-            image = np.array(image)
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        elif isinstance(image, np.ndarray):
-            # If input is already an OpenCV image, ensure it's in BGR format
-            if len(image.shape) == 3 and image.shape[2] == 3:
-                image = image
-            else:
-                raise ValueError("OpenCV image must be a 3-channel BGR image.")
-        else:
-            raise TypeError("Input must be a file path, PIL image, or OpenCV image.")
-
-        # Perform various quality assessments
-        # Store the results in a dictionary with expected names for the quality index function
-        quality_assessment_results = {
-            'flag_brightness': assess_brightness(image),
-            'flag_blur': detect_blur(image),  # Add blur detection
-            'flag_snow': detect_snow(image),  # Add snow detection
-            'flag_rain': detect_rain(image),  # Add rain detection
-            'flag_water_drops': detect_water_drops(image),  # Add water drops detection
-            'flag_dirt': detect_dirt(image),  # Add dirt detection
-            'flag_obstructions': detect_obstructions(image),  # Add obstructions detection
-            'flag_glare': detect_glare(image),
-            'flag_fog': detect_fog(image),
-            'flag_rotation': detect_rotation(image),
-            'flag_birds': flag_birds,        
-            'flag_other': flag_other,
-            'flag_haze': detect_haze(image),
-            'flag_shadows': detect_shadows(image),
-            'flag_ice': detect_ice(image),
-            'flag_clouds': detect_clouds(image),
-            'flag_high_quality': detect_high_quality(image),
-                   
-        }
+    flags_dict = load_yaml(filepath=flags_yaml_filepath)
     
+    return flags_dict
 
 
-
-    return quality_assessment_results
-
-
-def load_weights_from_yaml(yaml_file=str, station_name='default', platform_id='default'):
+def load_flags_weights(flags_yaml_filepath: str) -> dict:
     """
-    Load weights from a YAML file for a specific station and platform.
+    Load weights for PhenoCam flags from a YAML configuration file.
 
-    Parameters:
-        yaml_file (str): Path to the YAML file.
-        station_name (str): Station name to select the weights set (default is 'default').
-        platform_id (str): Platform ID to select the weights set (default is 'default').
+    This function retrieves the default PhenoCam flags using the `get_default_phenocam_flags` function and then extracts the associated weights for each flag. If a weight is not specified for a flag, it defaults to 1.
 
-    Returns:
-        dict: Dictionary containing weights for each quality factor.
+    Parameters
+    ----------
+    flags_yaml_filepath : str, optional
+        The file path to the YAML configuration file containing the PhenoCam flags. 
+        Expected config file:  '/config/phenocam_flags.yaml'.
+
+
+    Returns
+    -------
+    dict
+        A dictionary where the keys are the flag names and the values are the weights associated with each flag. 
+        If a weight is not provided for a flag in the YAML configuration, a default weight of 1 is assigned.
+
+    Examples
+    --------
+    >>> weights = load_weights_from_yaml()
+    >>> print(weights)
+    {
+        'flag_brightness': 0.8,
+        'flag_blur': 0.9,
+        'flag_snow': 1.0,
+        ...
+    }
+
+    Notes
+    -----
+    The function assumes that the weights for the PhenoCam flags are defined in the YAML configuration file loaded by 
+    the `get_default_phenocam_flags` function. If no weight is defined for a particular flag, a default weight of 1 is used.
+
+    Dependencies
+    ------------
+    - `get_default_phenocam_flags` (function): This function is used to load the default PhenoCam flags from a YAML file.
+    - yaml (PyYAML library): Used for loading YAML files if needed by the `get_default_phenocam_flags` function.
     """
-    
-    weights = load_yaml(yaml_file)
+    flags = get_default_phenocam_flags(flags_yaml_filepath = flags_yaml_filepath)
+    weights_dict ={} 
+    for flag in flags:
+        weights_dict[flag] = flags[flag].get('weight', 1)  
+  
+    return weights_dict
 
-    # Load weights based on station and platform, fallback to default if not found
-    station_weights = weights.get(station_name, weights['default'])
-    return station_weights.get(platform_id, station_weights)
 
-
-def calculate_normalized_quality_index(quality_flags_dict:dict, weights:dict, skip:bool = False):
-    """
-    Calculate a composite quality index based on various image assessments with weights from a YAML file.
-
-    Parameters:
-        weights (dict): Dictionary containing weights for each quality factor.
-        quality_flags_dict (dict): Dictionary containing results from the image quality assessment.
-        skip (bool): Skips the calculation returning default value as 1. 
-    Returns:
-        tuple:
-            float: The normalized quality index (0 to 1 scale).
-            str: weights version used.
-        
-    Example:
-        ```python
-        # Load weights from the YAML file for a specific station and platform
-        station_name = 'Abisko'
-        platform_id = 'platform_1'
-        weights = load_weights_from_yaml('weights.yaml', station_name, platform_id)
-
-        # Example quality assessment results
-        quality_assessment_results = {
-            'flag_brightness': 0,  # Example value
-            'flag_blur': True,
-            'flag_snow': True,
-            'flag_rain': False,
-            'flag_water_drops': False,
-            'flag_dirt': False,
-            'flag_obstructions': False,
-            'flag_glare': False,
-            'flag_fog': False,
-            'flag_rotation': False,
-            'flag_birds': False,
-            'flag_other': False,
-        }
-
-        # Calculate the normalized quality index
-        quality_index = calculate_quality_index(weights, quality_assessment_results)
-        print(f"Normalized Quality Index: {quality_index:.2f}")
-        ```
-    """
-    if skip:
-        quality_index_weights_version = weights.get('quality_index_weights_version', "0.1")
-        normalized_quality_index = 1.0
-        return normalized_quality_index, quality_index_weights_version
-        
-    else:
-        #TODO: make it general and extract the fields and value from a dictionary    
-        
-        # Extract results from the quality assessment dictionary
-        flag_brightness = quality_flags_dict.get('flag_brightness', False)
-        flag_blur = quality_flags_dict.get('flag_blur', False)
-        flag_snow = quality_flags_dict.get('flag_snow', False)
-        flag_rain = quality_flags_dict.get('flag_rain', False)
-        flag_water_drops = quality_flags_dict.get('flag_water_drops', False)
-        flag_dirt = quality_flags_dict.get('flag_dirt', False)
-        flag_obstructions = quality_flags_dict.get('flag_obstructions', False)
-        flag_glare = quality_flags_dict.get('flag_glare', False)
-        flag_fog = quality_flags_dict.get('flag_fog', False)
-        flag_rotation = quality_flags_dict.get('flag_rotation', False)
-        flag_birds = quality_flags_dict.get('flag_birds', False)
-        flag_haze = quality_flags_dict.get('flag_haze', False)
-        flag_clouds = quality_flags_dict.get('flag_clouds', False)
-        flag_shadows = quality_flags_dict.get('flag_shadows', False)
-        flag_ice = quality_flags_dict.get('flag_ice', False)
-        flag_other = quality_flags_dict.get('flag_other', False)
-        flag_high_quality =  quality_flags_dict.get('flag_high_quality', False)
-        
-
-        # Extract weights from the dictionary
-        weight_brightness = weights.get('flag_brightness_weight', 0)
-        weight_blur = weights.get('flag_blur_weight', 0)
-        weight_snow = weights.get('flag_snow_weight', 0)
-        weight_rain = weights.get('flag_rain_weight', 0)
-        weight_water_drops = weights.get('flag_water_drops_weight', 0)
-        weight_dirt = weights.get('flag_dirt_weight', 0)
-        weight_obstructions = weights.get('flag_obstructions_weight', 0)
-        weight_glare = weights.get('flag_glare_weight', 0)
-        weight_fog = weights.get('flag_fog_weight', 0)
-        weight_rotation = weights.get('flag_rotation_weight', 0)
-        weight_birds = weights.get('flag_birds_weight', 0)
-        weight_other = weights.get('flag_other_weight', 0)
-        weight_haze = weights.get('flag_haze_weight', 0)
-        weight_shadows = weights.get('flag_shadows_weight', 0)
-        weight_clouds = weights.get('flag_clouds_weight', 0)
-        weight_ice = weights.get('flag_ice_weight', 0)
-        weight_high_quality = weights.get('flag_high_quality_weight', 0)
-        quality_index_weights_version = weights.get('quality_index_weights_version', "0.1")
-        
-
-        # Convert boolean flags to numeric scores
-        brightness_score = 1 if not flag_brightness else 0
-        blur_score = 1 if not flag_blur else 0
-        snow_score = 1 if not flag_snow else 0  # Moderate impact if snow is detected
-        rain_score = 1 if not flag_rain else 0
-        water_drops_score = 1 if not flag_water_drops else 0
-        dirt_score = 1 if not flag_dirt else 0
-        obstructions_score = 1 if not flag_obstructions else 0
-        glare_score = 1 if not flag_glare else 0
-        fog_score = 1 if not flag_fog else 0
-        rotation_score = 1 if not flag_rotation else 0
-        birds_score = 1 if not flag_birds else 0
-        other_score = 1 if not flag_other else 0
-        haze_score = 1 if not flag_haze else 0
-        clouds_score = 1 if not flag_clouds else 0
-        shadows_score = 1 if not flag_shadows else 0
-        ice_score = 1 if not flag_ice else 0
-        flag_high_quality_score = 1 if not flag_high_quality else 0
-        # Combine the scores with weights
-        raw_quality_index = (weight_brightness * brightness_score +
-                            weight_blur * blur_score +
-                            weight_snow * snow_score +
-                            weight_rain * rain_score +
-                            weight_water_drops * water_drops_score +
-                            weight_dirt * dirt_score +
-                            weight_obstructions * obstructions_score +
-                            weight_glare * glare_score +
-                            weight_fog * fog_score +
-                            weight_rotation * rotation_score +
-                            weight_birds * birds_score +
-                            weight_other * other_score +
-                            weight_haze * haze_score +
-                            weight_clouds * clouds_score + 
-                            weight_shadows * shadows_score +
-                            weight_ice * ice_score)
-
-        # Normalize the quality index to be between 0 and 1
-        # Assuming that the maximum possible value is the sum of all weights.
-        max_possible_value = (weight_brightness + weight_blur + weight_snow +
-                            weight_rain + weight_water_drops + weight_dirt +
-                            weight_obstructions + weight_glare + weight_fog +
-                            weight_rotation + weight_birds + weight_other +
-                            weight_ice + weight_haze + weight_clouds + weight_shadows +
-                            weight_high_quality)
-        
-        if flag_high_quality:
-            normalized_quality_index = 1.0
-        else:
-            normalized_quality_index = raw_quality_index / max_possible_value
-
-    return normalized_quality_index, quality_index_weights_version

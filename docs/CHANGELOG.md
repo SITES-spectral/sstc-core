@@ -1,3 +1,14 @@
+## [v0.13.0]
+- Implemented data processing V2.0 with new phencam QFLAGs and L2 and L3 derived products with weights. 
+- improved `config.phenocam_flags.yaml` to include `weight` field that follows V2.0 data processing 
+- renamed and code prune of `image_quality.assess_image_quality` to `image_quality.get_default_phenocam_flags`
+- removed `auto_flags` from `image_quality.get_default_phenocam_flags`
+- load_weights_from_yaml now loads the weights from the `flags_dict` available at `config.phenocam_flags.yaml` 
+- depreciated `config.phenocams_quality_weights.yaml`
+- depreciated `image_quality.calculate_normalized_quality_index`
+- Added `image_quality.load_flags_weights`
+- Improved `compute_qflag` returns a dictionary with a 2 digit QFLAG value and weight, removed `has_snow_presence` from the QFLAG as discussed with LE 2024-08-14
+
 ## [v0.12.2]
 -  Expanded functionality of `station.get_records_by_year_and_day_of_year` by adding optional filters like `filters={"is_L1": True}`
 -  Added `station.count_records_by_year_with_filters`
