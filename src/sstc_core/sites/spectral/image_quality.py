@@ -1,14 +1,16 @@
 import cv2
 import numpy as np
-from PIL import Image as PILImage
 from sstc_core.sites.spectral.io_tools import load_yaml
 import os
-from sstc_core import version
+
 
 # Get the absolute path of the current script
 __script_parent_path = os.path.dirname(os.path.abspath(__file__))
 
+config_flags_yaml_filepath = os.path.join(__script_parent_path, 'config', 'phenocam_flags.yaml')
 
+if not os.path.exists(config_flags_yaml_filepath):
+    raise FileExistsError(f'{config_flags_yaml_filepath}')
 
 def convert_to_bool(value):
     """
