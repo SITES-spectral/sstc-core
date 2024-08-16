@@ -9,6 +9,7 @@
 - Added `image_quality.load_flags_weights`
 - Improved `compute_qflag` returns a dictionary with a 2 digit QFLAG value and weight, removed `has_snow_presence` from the QFLAG as discussed with LE 2024-08-14
 - added `config.db_schemas.platforms_schemas.PhenoCams` 
+- updated `station.create_table` to build table based on the config schemas.
 
 ## [v0.12.2]
 -  Expanded functionality of `station.get_records_by_year_and_day_of_year` by adding optional filters like `filters={"is_L1": True}`

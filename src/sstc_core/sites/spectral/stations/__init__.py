@@ -453,61 +453,65 @@ class Station(DuckDBManager):
         result = self.execute_query(query, (table_name,))
         return result[0][0] > 0
 
-    def create_table(self, table_name: str, schema: Dict[str, str]):
+    def create_table(self, table_name: str, schema: List[Dict[str, Any]]) -> bool:
         """
-        Creates a new table in the station database with the schema based on the provided field names and types.
+        Creates a new table in the station database with the schema based on the provided schema dictionary.
 
-        Parameters:
-            table_name (str): The name of the table to create.
-            schema (Dict[str, str]): A dictionary where keys are field names and values are field types (e.g., 'INTEGER', 'DOUBLE', 'BOOLEAN', 'VARCHAR').
+        Parameters
+        ----------
+        table_name : str
+            The name of the table to create.
+        schema : List[Dict[str, Any]]
+            A list of dictionaries representing the schema. Each dictionary should have keys:
+            - 'field_name': Name of the field (column).
+            - 'field_type': Data type of the field (e.g., 'INTEGER', 'VARCHAR', 'BOOLEAN').
+            - 'field_default_value': Default value for the field. If not provided, defaults to None.
 
-        Raises:
-            ValueError: If a field type is not one of the supported types.
-            
-        Example:
-            ```python
-            # Assuming you have an instance of Station
-            station = Station(db_dirpath="/path/to/db/dir", station_name="StationName")
+        Returns
+        -------
+        bool
+            True if the table was created successfully, False otherwise.
 
-            # Define the schema for the new table
-            schema = {
-                'catalog_guid': 'VARCHAR',
-                'year': 'INTEGER',
-                'creation_date': 'VARCHAR',
-                'day_of_year': 'VARCHAR',
-                'station_acronym': 'VARCHAR',
-                'location_id': 'VARCHAR',
-                'platform_id': 'VARCHAR',
-                'ecosystem_of_interest': 'VARCHAR',
-                'platform_type': 'VARCHAR',
-                'is_legacy': 'BOOLEAN',
-                'L0_name': 'VARCHAR',
-                'is_L1': 'BOOLEAN',
-                'is_ready_for_products_use': 'BOOLEAN',
-                'catalog_filepath': 'VARCHAR',
-                'source_filepath': 'VARCHAR',
-                'normalized_quality_index': 'DOUBLE',
-                'quality_index_weights_version': 'VARCHAR',
-                'flags_confirmed': 'BOOLEAN'
-            }
-
-            # Create the new table with the specified schema
-            table_name = "PhenoCams_BTH_FOR_P_BTH_1"
-            station.create_table(table_name=table_name, schema=schema)
-            ```        
+        Raises
+        ------
+        duckdb.Error
+            If there is an error executing the query or managing the connection.
         """
-        # Supported field types
-        valid_types = {'INTEGER', 'DOUBLE', 'BOOLEAN', 'VARCHAR'}
-        
         columns = []
-        for column_name, column_type in schema.items():
-            if column_type not in valid_types:
-                raise ValueError(f"Unsupported field type: {column_type}")
-            columns.append(f"{column_name} {column_type}")
-        
+        for field in schema:
+            field_name = field.get('field_name')
+            field_type = field.get('field_type')
+            field_default_value = field.get('field_default_value', None)
+
+            if field_default_value is not None:
+                if isinstance(field_default_value, int):
+                    field_type = 'INTEGER'
+                elif isinstance(field_default_value, float):
+                    field_type = 'DOUBLE'
+                elif isinstance(field_default_value, bool):
+                    field_type = 'BOOLEAN'
+                else:
+                    field_type = 'VARCHAR'
+
+            columns.append(f"{field_name} {field_type}")
+
         columns_def = ', '.join(columns)
         query = f"CREATE TABLE {table_name} ({columns_def})"
-        self.execute_query(query)
+
+        try:
+            if self.connection is None:
+                self.connect()
+
+            self.execute_query(query)
+            return True
+
+        except duckdb.Error as e:
+            print(f"An error occurred while creating the table '{table_name}': {e}")
+            return False
+
+        finally:
+            self.close_connection()
+
 
 
     def list_tables(self) -> List[str]:
