@@ -530,7 +530,7 @@ def get_default_phenocam_flags(flags_yaml_filepath: str ) -> dict:
 
     Examples
     --------
-    >>> flags = get_default_phenocam_flags()
+    >>> flags = get_default_phenocam_flags(flags_yaml_filepath)
     >>> print(flags)
     {
         'flag_brightness': False,

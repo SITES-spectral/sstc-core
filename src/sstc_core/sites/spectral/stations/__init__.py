@@ -9,7 +9,7 @@ import duckdb
 import hashlib
 from datetime import datetime
 from typing import Dict, Any, List
-from sstc_core.sites.spectral.image_quality import get_default_phenocam_flags
+from sstc_core.sites.spectral.image_quality import get_default_phenocam_flags, config_flags_yaml_filepath
 from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 from sstc_core.sites.spectral.data_products import phenocams
 from sstc_core import version
@@ -814,6 +814,7 @@ class Station(DuckDBManager):
                                  skip: bool = False, 
                                  timezone_str: str ='Europe/Stockholm',
                                  has_snow_presence:bool = False,
+                                 config_flags_yaml_filepath:str = config_flags_yaml_filepath
                                  ) -> Dict[str, Any]:
         """
         Creates a dictionary representing a record for a file, including metadata and derived attributes.
@@ -891,7 +892,7 @@ class Station(DuckDBManager):
         )
         
         # Assess image quality
-        quality_flags_dict = get_default_phenocam_flags()
+        quality_flags_dict = get_default_phenocam_flags(flags_yaml_filepath=config_flags_yaml_filepath)
                 
         # 
         phenocams_rois_dict = self.phenocam_rois(platform_id=platform_id)
