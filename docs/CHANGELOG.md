@@ -1,3 +1,7 @@
+## [v0.13.1]
+- `qflags` code prunning matching processing v2.
+- added `config.db_schemas.platforms_schemas.get_schema_as_dict`
+
 ## [v0.13.0]
 - Implemented data processing V2.0 with new phencam QFLAGs and L2 and L3 derived products with weights. 
 - improved `config.phenocam_flags.yaml` to include `weight` field that follows V2.0 data processing 

@@ -12,6 +12,7 @@ from typing import Dict, Any, List
 from sstc_core.sites.spectral.image_quality import get_default_phenocam_flags, config_flags_yaml_filepath
 from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 from sstc_core.sites.spectral.data_products import phenocams
+from sstc_core.sites.spectral.config.db_schemas.platforms_schemas import phenocams_schema, get_schema_as_dict
 from sstc_core import version
 
 class DatabaseError(Exception):
@@ -380,7 +381,8 @@ class Station(DuckDBManager):
         self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_catalog.db"
         self.phenocam_quality_weights_filepath = self.meta.get("phenocam_quality_weights_filepath", None)
         self.sftp_dirpath = f'/{self.normalized_station_name}/data/'
-        
+        self.phenocams_default_flags_weights = get_default_phenocam_flags(flags_yaml_filepath=config_flags_yaml_filepath)
+
         # Ensure the database file is created before calling the parent constructor
         if not self.db_filepath.exists():
             self.create_new_database()
@@ -798,15 +800,9 @@ class Station(DuckDBManager):
                                  remote_filepath: str, 
                                  platforms_type: str, 
                                  platform_id: str,
-                                 processing_level_products_dict: dict = {'PhenoCams':{
-                                     'L2_RGB_CIMV_filepath': None,
-                                     'L2_GCC_CIMV_filepath': None,
-                                     'L2_RCC_CIMV_filepath': None,
-                                     'L2_RGB_CISDV_filepath': None,
-                                     'L2_GCC_CISDV_filepath': None,
-                                     'L2_RCC_CISDV_filepath': None,                                                                          
-                                 }},
                                  is_legacy: bool = False, 
+                                 schema_dict: dict = get_schema_as_dict(
+                                     platform_schema=phenocams_schema),
                                  backup_dirpath: str = 'aurora02_dirpath', 
                                  start_time: str = "10:00:00", 
                                  end_time: str = "14:30:00", 
@@ -828,7 +824,6 @@ class Station(DuckDBManager):
             remote_filepath (str): The path to the remote file on the SFTP server.
             platforms_type (str): The type of platform (e.g., 'PhenoCams', 'UAVs', 'FixedSensors', 'Satellites').
             platform_id (str): The identifier for the specific platform.
-            processing_level_products_dict (dict, optional): A dictionary containing processing level product fields. Defaults to {'PhenoCams': {...}}.
             is_legacy (bool, optional): Indicates whether the record is considered legacy data. Defaults to False.
             backup_dirpath (str, optional): The directory path used for backup storage in the local filesystem. Defaults to 'aurora02_dirpath'.
             start_time (str, optional): The start of the time window in 'HH:MM:SS' format. Defaults to "10:00:00".
@@ -842,6 +837,10 @@ class Station(DuckDBManager):
         Raises:
             Exception: If there are issues retrieving or processing the file data.
         """
+        if schema_dict:
+            record_dict = record_dict
+        
+        
         # Retrieve local directory path from the station's platform data
         local_dirpath = self.platforms[platforms_type][platform_id]['backups'][backup_dirpath]
 
@@ -891,95 +890,65 @@ class Station(DuckDBManager):
             end_time=end_time
         )
         
-        # Assess image quality
-        quality_flags_dict = get_default_phenocam_flags(flags_yaml_filepath=config_flags_yaml_filepath)
-                
-        # 
-        phenocams_rois_dict = self.phenocam_rois(platform_id=platform_id)
-        rois_dict ={} 
-        if phenocams_rois_dict:
-            for r in phenocams_rois_dict.keys():
-                rois_dict[f'L2_{r}_num_pixels'] = None
-                rois_dict[f'L2_{r}_SUM_Red'] = None
-                rois_dict[f'L2_{r}_SUM_Green'] = None
-                rois_dict[f'L2_{r}_SUM_Blue'] = None
-                rois_dict[f'L3_{r}_has_snow_presence'] = None
-                rois_dict[f'L3_{r}_is_data_processing_disabled'] = False  
-                rois_dict[f'L3_{r}_QFLAG'] = None
-                rois_dict[f'L3_{r}_num_pixels'] = None
-                rois_dict[f'L3_{r}_SUM_Red'] = None
-                rois_dict[f'L3_{r}_SUM_Green'] = None
-                rois_dict[f'L3_{r}_SUM_Blue'] = None
-                rois_dict[f'L3_{r}_MEAN_Red'] = None
-                rois_dict[f'L3_{r}_MEAN_Green'] = None
-                rois_dict[f'L3_{r}_MEAN_Blue'] = None
-                rois_dict[f'L3_{r}_SD_Red'] = None
-                rois_dict[f'L3_{r}_SD_Green'] = None
-                rois_dict[f'L3_{r}_SD_Blue'] = None
-                rois_dict[f'L3_{r}_MEANS_RGB_SUM'] = None
-                rois_dict[f'L3_{r}_GCC_daily_value'] = None
-                rois_dict[f'L3_{r}_RCC_daily_value'] = None
-                
-                  
-                
-        # Create the record dictionary
-        record_dict = {
-            'catalog_guid': None,
-            'year': year,
-            'creation_date': formatted_date,
-            'day_of_year': day_of_year,
-            'station_acronym': station_acronym,
-            'location_id': location_id,
-            'platform_id': platform_id,
-            'ecosystem_of_interest': ecosystem_of_interest,
-            'platform_type': platform_type,
-            'is_legacy': is_legacy,
-            'L0_name': L0_name,
-            'is_L1': is_L1,            
-            'is_ready_for_products_use': False,  # Allows for ROIs processing, even that regions on the image may be bad but not on some ROIs
-            'is_data_processing_disabled': False, # Allows for CIMV processing, it may be only a region on the image that is bad for CIMV          
-            'catalog_filepath': local_filepath,
-            'source_filepath': remote_filepath,            
-            'version_data_processing': version.__version__,
-            'flags_confirmed': False,
-            'has_snow_presence': has_snow_presence,            
-            'sun_elevation_angle': sun_elevation_angle,
-            'sun_azimuth_angle': sun_azimuth_angle,
-            'solar_elevation_class': solar_elevation_class,
-            "is_in_dataportal": False,
-            "fieldsites_filename": None,
-            "fieldsites_PID": None,
-            "L1_QFI_filepath": None, 
-            'L2_RGB_CIMV_filepath': None,
-            "L2_GCC_CIMV_filepath": None,
-            "L2_RCC_CIMV_filepath": None,
-            'L2_RGB_CIMSDV_filepath': None,
-            "L2_GCC_CIMSDV_filepath": None,
-            "L2_RCC_CIMSDV_filepath": None,
-            "L3_ROI_TS_filepath": None,                       
-        }
+        # Generate a unique ID for the catalog
+        catalog_guid = utils.generate_unique_id(
+            {
+                'catalog_guid': None,
+                'creation_data': creation_date,
+                'station_acronym': station_acronym,
+                'location_id': location_id,
+                'platform_id': platform_id                
+             }, 
+            variable_names=['creation_date', 'station_acronym', 'location_id', 'platform_id']
+        )
+       
+      
+        # Get the default platform flag values
+        default_platform_flags ={k: flag[k]  for k, flag in self.phenocams_default_flags_weights.items()} 
+        
+        
+        # update record dictionary
+        record_dict['catalog_guid'] = catalog_guid
+        record_dict['year'] = year
+        record_dict['creation_date'] = creation_date
+        record_dict['day_of_year'] = day_of_year
+        record_dict['station_acronym' ] = station_acronym
+        record_dict['location_id' ] = location_id
+        record_dict['platform_id'] = platform_id
+        record_dict['ecosystem_of_interest' ] = ecosystem_of_interest
+        record_dict['platform_type'] = platform_type
+        record_dict['is_legacy'] = is_legacy
+        record_dict['L0_name' ] = L0_name
+        record_dict['is_L1'] = is_L1
+        record_dict['catalog_filepath'] = local_dirpath
+        record_dict['source_filepath' ] = remote_filepath
+        record_dict['version_data_processing'] = version.version_data_processing
+        record_dict['version_code_sstc_core'] = version.version_code_sstc_core
+        record_dict['version_platform_flags'] = version.version_platform_flags
+        record_dict['version_qflag'] = version.version_qflag
+        record_dict['version_schema_platform_phenocams'] = version.version_schema_platform_phenocams 
+        record_dict['has_snow_presence'] = has_snow_presence
+        record_dict['sun_elevation_angle'] = sun_elevation_angle
+        record_dict['sun_azimuth_angle'] = sun_azimuth_angle
+        record_dict['solar_elevation_class'] = solar_elevation_class
+           
 
         QFLAF = compute_qflag(
             latitude_dd=latitude_dd,
             longitude_dd=longitude_dd,
-            records_dict=record_dict, 
+            records_dict={catalog_guid: record_dict}, 
             has_snow_presence=has_snow_presence,
-            timezone_str=timezone_str            
+            timezone_str=timezone_str,
+            is_per_image=True,            
             )
         
         # Merge with quality flags and processing level product fields
         record_dict = {
             **record_dict,
             **{'QFLAG_image': QFLAF},  
-            **quality_flags_dict, 
-            **processing_level_products_dict[platforms_type],
-            **rois_dict} 
-        
-        # Generate a unique ID for the catalog
-        record_dict['catalog_guid'] = utils.generate_unique_id(
-            record_dict, 
-            variable_names=['creation_date', 'station_acronym', 'location_id', 'platform_id']
-        )
+            **default_platform_flags 
+            } 
+       
 
         return record_dict
     
