@@ -931,7 +931,6 @@ class Station(DuckDBManager):
         record_dict['sun_elevation_angle'] = sun_elevation_angle
         record_dict['sun_azimuth_angle'] = sun_azimuth_angle
         record_dict['solar_elevation_class'] = solar_elevation_class
-           
 
         QFLAF = compute_qflag(
             latitude_dd=latitude_dd,
@@ -948,7 +947,6 @@ class Station(DuckDBManager):
             **{'QFLAG_image': QFLAF},  
             **default_platform_flags 
             } 
-       
 
         return record_dict
     
