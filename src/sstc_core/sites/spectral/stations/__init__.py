@@ -808,28 +808,26 @@ class Station(DuckDBManager):
                                  backup_dirpath: str = 'aurora02_dirpath', 
                                  start_time: str = "10:00:00", 
                                  end_time: str = "14:30:00",
-                                  
-                                 split_subdir: str = 'data', 
                                  timezone_str: str ='Europe/Stockholm',
                                  has_snow_presence:bool = False,                                 
                                  ) -> Dict[str, Any]:
         """
         Creates a dictionary representing a record for a file, including metadata and derived attributes.
 
-        This method constructs a record dictionary for a given file located at `remote_filepath` on an SFTP server. 
+        This method constructs a record dictionary for a given file located at `origin_filepath` on an SFTP server. 
         The record includes various metadata such as creation date, station acronym, location ID, platform type, 
         platform ID, whether the data is legacy, and a generated unique ID. The function also checks if the creation 
         time of the file falls within a specified time window and generates an L0 name for the file.
 
         Parameters:
-            remote_filepath (str): The path to the remote file on the SFTP server.
+            origin_filepath (str): The path to the remote file on the SFTP server.
             platforms_type (str): The type of platform (e.g., 'PhenoCams', 'UAVs', 'FixedSensors', 'Satellites').
             platform_id (str): The identifier for the specific platform.
             is_legacy (bool, optional): Indicates whether the record is considered legacy data. Defaults to False.
             backup_dirpath (str, optional): The directory path used for backup storage in the local filesystem. Defaults to 'aurora02_dirpath'.
             start_time (str, optional): The start of the time window in 'HH:MM:SS' format. Defaults to "10:00:00".
             end_time (str, optional): The end of the time window in 'HH:MM:SS' format. Defaults to "14:30:00".
-            split_subdir (str, optional): The subdirectory name used to organize local paths. Defaults to 'data'.
+            
             
 
         Returns:
@@ -841,10 +839,6 @@ class Station(DuckDBManager):
         if schema_dict:
             record_dict = schema_dict
         
-        
-        # Retrieve local directory path from the station's platform data
-        local_dirpath = self.platforms[platforms_type][platform_id]['backups'][backup_dirpath]
-
         # Extract creation date and format it
         creation_date = utils.get_image_dates(catalog_filepath)
         formatted_date = creation_date.strftime('%Y-%m-%d %H:%M:%S')
@@ -968,10 +962,10 @@ class Station(DuckDBManager):
             bool: True if the operation was successful, False otherwise.
         """
         try:
-            for remote_filepath in sftp_filepaths:
+            for origin_filepath in sftp_filepaths:
                 # Create record dictionary for the given file
                 record = self.create_record_dictionary(
-                    origin_filepath=remote_filepath,
+                    origin_filepath=origin_filepath,
                     platforms_type=platforms_type,
                     platform_id=platform_id,
                     is_legacy=False,
@@ -985,7 +979,7 @@ class Station(DuckDBManager):
                 catalog_guid = record.get('catalog_guid')
                 platform_type = record.get('platform_type')
                 if not catalog_guid:
-                    print(f"Failed to generate catalog_guid for file: {remote_filepath}")
+                    print(f"Failed to generate catalog_guid for file: {origin_filepath}")
                     continue
 
                 # Define table name based on platform details

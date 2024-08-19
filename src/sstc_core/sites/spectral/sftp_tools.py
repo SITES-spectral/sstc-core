@@ -149,7 +149,7 @@ def list_files_sftp(credentials: Dict[str, Any], sftp_directory: str, extensions
         raise Exception(f"An error occurred while listing files from the SFTP server: {e}")
 
 
-def get_remote_file_size(remote_filepath: str, credentials: dict) -> int:
+def get_remote_file_size(origin_filepath: str, credentials: dict) -> int:
     """
     Retrieves the size of a remote file on an SFTP server using Paramiko.
 
@@ -157,7 +157,7 @@ def get_remote_file_size(remote_filepath: str, credentials: dict) -> int:
     remote file. The size is returned in bytes. It ensures the proper closing of both SFTP and SSH connections.
 
     Parameters:
-        remote_filepath (str): The path to the remote file on the SFTP server.
+        origin_filepath (str): The path to the remote file on the SFTP server.
         credentials (dict): A dictionary containing the SFTP server credentials with the following keys:
             - 'hostname': The SFTP server's hostname or IP address.
             - 'port': The port number of the SFTP server.
@@ -178,8 +178,8 @@ def get_remote_file_size(remote_filepath: str, credentials: dict) -> int:
             'username': 'your_username',
             'password': 'your_password'
         }
-        remote_filepath = '/remote/path/to/file.txt'
-        file_size = get_remote_file_size(remote_filepath, credentials)
+        origin_filepath = '/remote/path/to/file.txt'
+        file_size = get_remote_file_size(origin_filepath, credentials)
         print(f"The size of the remote file is: {file_size} bytes")
         ```
     """
@@ -198,7 +198,7 @@ def get_remote_file_size(remote_filepath: str, credentials: dict) -> int:
         sftp = ssh.open_sftp()
 
         # Get the file attributes and retrieve the file size
-        file_attributes = sftp.stat(remote_filepath)
+        file_attributes = sftp.stat(origin_filepath)
         file_size = file_attributes.st_size
 
         # Close the SFTP connection
@@ -210,51 +210,51 @@ def get_remote_file_size(remote_filepath: str, credentials: dict) -> int:
         ssh.close()
 
     
-def get_local_filepath(local_dirpath: str, remote_filepath: str, split_subdir: str = 'data') -> str:
+def get_catalog_filepath(catalog_dirpath: str, origin_filepath: str, split_subdir: str = 'data') -> str:
     """
     Constructs the local file path for a file from a remote SFTP server based on a specific directory structure.
 
     This function takes a remote file path and reconstructs the corresponding local file path using the base
-    local directory (`local_dirpath`). It uses a specified subdirectory name (`split_subdir`) to determine the
+    local directory (`catalog_dirpath`). It uses a specified subdirectory name (`split_subdir`) to determine the
     starting point for constructing the local path from the remote file path structure.
 
     Parameters:
-        local_dirpath (str): The base directory path where the files are stored locally.
-        remote_filepath (str): The full path of the file on the remote SFTP server.
+        catalog_dirpath (str): The base directory path where the files are stored locally.
+        origin_filepath (str): The full path of the file on the remote SFTP server.
         split_subdir (str, optional): The subdirectory in the remote path from which to start building the local path.
                                       Default is 'data'.
 
     Returns:
-        str: The constructed `local_filepath`.
+        str: The constructed `catalog_filepath`.
     """
     # Split the remote file path into components
-    parts = remote_filepath.split('/')
+    parts = origin_filepath.split('/')
     # filename = parts[-1]
 
     # Find the index of the split_subdir in the parts
     if split_subdir in parts:
         split_index = parts.index(split_subdir)
-        remote_subdir = os.path.join(*parts[split_index:])
+        origin_subdir = os.path.join(*parts[split_index:])
     else:
-        remote_subdir = ""
+        origin_subdir = ""
         
     # Construct the local file path using the structure from the split_subdir to the filename
-    local_filepath = os.path.join(local_dirpath, remote_subdir)
-    return local_filepath
+    catalog_filepath = os.path.join(catalog_dirpath, origin_subdir)
+    return catalog_filepath
 
 
-def is_file_downloaded_locally(local_dirpath: str, remote_filepath: str, split_subdir: str = 'data') -> bool:
+def is_file_downloaded_locally(catalog_dirpath: str, origin_filepath: str, split_subdir: str = 'data') -> bool:
     """
     Checks if a file from a remote SFTP server is downloaded locally, based on a specific directory structure.
 
     This function determines if a file specified by a remote filepath is present in the local directory.
     It uses a specified subdirectory name (`split_subdir`) to construct the local path relative to the base
-    local directory (`local_dirpath`). The check is performed by comparing the reconstructed local path
+    local directory (`catalog_dirpath`). The check is performed by comparing the reconstructed local path
     with the actual file system.
 
     Parameters:
-        local_dirpath (str): The base directory path where the files are expected to be downloaded locally.
-        remote_filepath (str): The full path of the file on the remote SFTP server.
+        catalog_dirpath (str): The base directory path where the files are expected to be downloaded locally.
+        origin_filepath (str): The full path of the file on the remote SFTP server.
         split_subdir (str, optional): The subdirectory in the remote path to start building the local path from.
                                       Default is 'data'.
 
@@ -262,14 +262,14 @@ def is_file_downloaded_locally(local_dirpath: str, remote_filepath: str, split_s
         bool: True if the file exists locally, False otherwise.
     """
     
-    local_filepath = get_local_filepath(local_dirpath=local_dirpath,remote_filepath=remote_filepath,split_subdir=split_subdir)
-    if os.path.exists(local_filepath):
+    catalog_filepath = get_catalog_filepath(catalog_dirpath=catalog_dirpath,origin_filepath=origin_filepath,split_subdir=split_subdir)
+    if os.path.exists(catalog_filepath):
         return True 
     else:
         return False
         
 
-def download_file(sftp: paramiko.SFTPClient, remote_filepath: str, local_dirpath: str, split_subdir: str = 'data', skip_download: bool = True) -> str:
+def download_file(sftp: paramiko.SFTPClient, origin_filepath: str, catalog_dirpath: str, split_subdir: str = 'data', skip_download: bool = True) -> str:
     """
     Downloads a file from the SFTP server and ensures that the download is complete by verifying the file size.
 
@@ -279,8 +279,8 @@ def download_file(sftp: paramiko.SFTPClient, remote_filepath: str, local_dirpath
 
     Parameters:
         sftp (paramiko.SFTPClient): An active SFTP client connection.
-        remote_filepath (str): The path to the remote file on the SFTP server.
-        local_dirpath (str): The path to the local directory where the download will be saved.
+        origin_filepath (str): The path to the remote file on the SFTP server.
+        catalog_dirpath (str): The path to the local directory where the download will be saved.
         split_subdir (str): The subdirectory name to split the file path on. Defaults to 'data'.
         skip_download (bool): Whether to skip downloading the file if it already exists locally. Defaults to True.
 
@@ -294,55 +294,55 @@ def download_file(sftp: paramiko.SFTPClient, remote_filepath: str, local_dirpath
     Example:
         ```python    
         credentials = _get_sftp_credentials()
-        remote_filepath = '/remote/path/to/data/subdir1/file1.jpg'
-        local_dirpath = '/local/path/to/directory'
+        origin_filepath = '/remote/path/to/data/subdir1/file1.jpg'
+        catalog_dirpath = '/local/path/to/directory'
         sftp, transport = open_sftp_connection(credentials)
-        download_file(sftp, remote_filepath, local_dirpath, 'data')
+        download_file(sftp, origin_filepath, catalog_dirpath, 'data')
         sftp.close()
         transport.close()
         ```
     """
     try:
         # Construct the local file path based on the remote file path
-        local_filepath = get_local_filepath(local_dirpath=local_dirpath, remote_filepath=remote_filepath, split_subdir=split_subdir)
+        catalog_filepath = get_catalog_filepath(catalog_dirpath=catalog_dirpath, origin_filepath=origin_filepath, split_subdir=split_subdir)
 
         # Check if the file already exists and skip download if specified
-        if skip_download and os.path.exists(local_filepath):
-            print(f"File {local_filepath} already exists. Skipping download.")
-            return local_filepath
+        if skip_download and os.path.exists(catalog_filepath):
+            print(f"File {catalog_filepath} already exists. Skipping download.")
+            return catalog_filepath
 
         # Ensure the local directory exists
-        os.makedirs(os.path.dirname(local_filepath), exist_ok=True)
+        os.makedirs(os.path.dirname(catalog_filepath), exist_ok=True)
 
         # Download the file from the SFTP server
-        sftp.get(remote_filepath, local_filepath)
+        sftp.get(origin_filepath, catalog_filepath)
 
         # Verify the file size
-        remote_file_size = sftp.stat(remote_filepath).st_size
-        local_file_size = os.path.getsize(local_filepath)
+        origin_file_size = sftp.stat(origin_filepath).st_size
+        catalog_file_size = os.path.getsize(catalog_filepath)
 
-        if remote_file_size != local_file_size:
-            raise ValueError(f"Download failed for {remote_filepath}: file size mismatch. "
-                             f"Remote size: {remote_file_size}, Local size: {local_file_size}")
+        if origin_file_size != catalog_file_size:
+            raise ValueError(f"Download failed for {origin_filepath}: file size mismatch. "
+                             f"Remote size: {origin_file_size}, Local size: {catalog_file_size}")
 
         # Return the local file path if the download was successful
-        return local_filepath
+        return catalog_filepath
 
     except Exception as e:
-        raise Exception(f"An error occurred while downloading {remote_filepath}: {e}")
+        raise Exception(f"An error occurred while downloading {origin_filepath}: {e}")
     
 
-def get_new_files_to_download(local_dirpath: str, sftp_filepaths: list, split_subdir: str = 'data') -> list:
+def get_new_files_to_download(catalog_dirpath: str, sftp_filepaths: list, split_subdir: str = 'data') -> list:
     """
     Identifies files that need to be downloaded from an SFTP server by comparing the list of remote filepaths
     with the files already present in the local directory.
 
     This function checks if each file in the list of remote filepaths (`sftp_filepaths`) has already been downloaded
-    to the specified local directory (`local_dirpath`). It uses a subdirectory structure (`split_subdir`) to organize
+    to the specified local directory (`catalog_dirpath`). It uses a subdirectory structure (`split_subdir`) to organize
     the files locally. If a file is not found locally, it is added to the list of files to be downloaded.
 
     Parameters:
-        local_dirpath (str): The base directory path where the files are stored locally.
+        catalog_dirpath (str): The base directory path where the files are stored locally.
         sftp_filepaths (list): A list of filepaths on the SFTP server to check against the local directory.
         split_subdir (str, optional): The subdirectory name to split the file path on. Defaults to 'data'.
 
@@ -351,33 +351,33 @@ def get_new_files_to_download(local_dirpath: str, sftp_filepaths: list, split_su
 
     Example:
         ```python
-        local_dirpath = '/local/path/to/directory'
+        catalog_dirpath = '/local/path/to/directory'
         sftp_filepaths = [
             '/remote/path/to/data/file1.jpg',
             '/remote/path/to/data/file2.jpg'
         ]
-        files_to_download = get_new_files_to_download(local_dirpath, sftp_filepaths)
+        files_to_download = get_new_files_to_download(catalog_dirpath, sftp_filepaths)
         print(files_to_download)
         # Output: ['/remote/path/to/data/file1.jpg', '/remote/path/to/data/file2.jpg'] if these files are not locally available
         ```
     """
     files_to_download = []
     
-    for remote_filepath in sftp_filepaths:
+    for origin_filepath in sftp_filepaths:
         if not is_file_downloaded_locally(
-            local_dirpath=local_dirpath,
-            remote_filepath=remote_filepath,
+            catalog_dirpath=catalog_dirpath,
+            origin_filepath=origin_filepath,
             split_subdir=split_subdir     
         ):
-            files_to_download.append(remote_filepath)
+            files_to_download.append(origin_filepath)
     
     return files_to_download
 
 
 
 
-def get_local_filepaths_from_sftp_downloaded_files_as_dict(
-    local_dirpath: str, 
+def get_catalog_filepaths_from_sftp_downloaded_files_as_dict(
+    catalog_dirpath: str, 
     sftp_filepaths: List[str], 
     split_subdir: str = 'data'
 ) -> List[Dict[str, str]]:
@@ -385,13 +385,13 @@ def get_local_filepaths_from_sftp_downloaded_files_as_dict(
     Identifies downloaded files from an SFTP server and returns their local and remote filepaths as a dictionary.
 
     This function compares the list of remote SFTP filepaths (`sftp_filepaths`) with files present in the local directory
-    (`local_dirpath`). It organizes the files in a subdirectory structure specified by `split_subdir`. For each file in
+    (`catalog_dirpath`). It organizes the files in a subdirectory structure specified by `split_subdir`. For each file in
     `sftp_filepaths`, it checks if the corresponding file has been downloaded and exists in the local directory. If a file
     is found locally, it adds a dictionary containing both the local and remote filepaths to the list.
 
     Parameters
     ----------
-    local_dirpath : str
+    catalog_dirpath : str
         The base directory path where the SFTP files are expected to be stored locally.
     sftp_filepaths : List[str]
         A list of filepaths from the SFTP server that need to be checked against the local directory.
@@ -402,24 +402,24 @@ def get_local_filepaths_from_sftp_downloaded_files_as_dict(
     -------
     List[Dict[str, str]]
         A list of dictionaries, where each dictionary contains:
-        - 'local_filepath': The full local filepath of the downloaded file.
-        - 'remote_filepath': The corresponding remote filepath from the SFTP server.
+        - 'catalog_filepath': The full local filepath of the downloaded file.
+        - 'origin_filepath': The corresponding remote filepath from the SFTP server.
 
     Examples
     --------
-    >>> local_dirpath = "/local/data"
+    >>> catalog_dirpath = "/local/data"
     >>> sftp_filepaths = [
     ...     "/remote/path/to/file1.txt",
     ...     "/remote/path/to/file2.txt"
     ... ]
-    >>> get_local_filepaths_from_sftp_downloaded_files_as_dict(local_dirpath, sftp_filepaths)
-    [{'local_filepath': '/local/data/file1.txt', 'remote_filepath': '/remote/path/to/file1.txt'},
-     {'local_filepath': '/local/data/file2.txt', 'remote_filepath': '/remote/path/to/file2.txt'}]
+    >>> get_catalog_filepaths_from_sftp_downloaded_files_as_dict(catalog_dirpath, sftp_filepaths)
+    [{'catalog_filepath': '/local/data/file1.txt', 'origin_filepath': '/remote/path/to/file1.txt'},
+     {'catalog_filepath': '/local/data/file2.txt', 'origin_filepath': '/remote/path/to/file2.txt'}]
 
     Notes
     -----
     This function assumes that the local file organization follows the specified `split_subdir` structure.
-    The `get_local_filepath` function (which should be defined elsewhere in your code) is used to derive the local
+    The `get_catalog_filepath` function (which should be defined elsewhere in your code) is used to derive the local
     filepath based on the provided directory structure.
 
     Dependencies
@@ -427,20 +427,20 @@ def get_local_filepaths_from_sftp_downloaded_files_as_dict(
     - os.path.exists
     - typing.List
     - typing.Dict
-    - get_local_filepath (a custom function that constructs the local file path based on inputs)
+    - get_catalog_filepath (a custom function that constructs the local file path based on inputs)
     """
     
     files_downloaded = []   
     
-    for remote_filepath in sftp_filepaths:
-        local_filepath = get_local_filepath(
-            local_dirpath=local_dirpath,
-            remote_filepath=remote_filepath,
+    for origin_filepath in sftp_filepaths:
+        catalog_filepath = get_catalog_filepath(
+            catalog_dirpath=catalog_dirpath,
+            origin_filepath=origin_filepath,
             split_subdir=split_subdir)
             
-        if os.path.exists(local_filepath):
+        if os.path.exists(catalog_filepath):
             files_downloaded.append(
-                {'local_filepath': local_filepath,
-                 'remote_filepath': remote_filepath})
+                {'catalog_filepath': catalog_filepath,
+                 'origin_filepath': origin_filepath})
     
     return files_downloaded

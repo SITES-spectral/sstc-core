@@ -46,7 +46,7 @@ def get_phenocam_table_schema() -> str:
 
 
 
-def _download_files_and_create_records_generator(acronym, location_id, platform_id, platform_type, local_dirpath: str, sftp, sftp_filepaths, split_subdir:str = 'data'):
+def _download_files_and_create_records_generator(acronym, location_id, platform_id, platform_type, catalog_dirpath: str, sftp, sftp_filepaths, split_subdir:str = 'data'):
     """
     Downloads files from an SFTP server and creates record dictionaries for insertion into the database.
 
@@ -55,7 +55,7 @@ def _download_files_and_create_records_generator(acronym, location_id, platform_
         location_id (str): The location ID.
         platform_id (str): The platform ID.
         platform_type (str): The platform type.
-        local_dirpath (str): The local directory path to save downloaded files.
+        catalog_dirpath (str): The local directory path to save downloaded files.
         sftp: The SFTP connection object.
         sftp_filepaths (list): List of file paths on the SFTP server to download.
         split_subdir (str): The subdirectory name to split the file path on. Defaults to 'data'.
@@ -74,7 +74,7 @@ def _download_files_and_create_records_generator(acronym, location_id, platform_
         
         table_name= 'ANS__BTH_FOR__P_BTH_1'
         db_path = f'/home/aurora02/data/SITES/Spectral/data/catalog/{system_name}_catalog.db'
-        local_dirpath = f'/home/aurora02/data/SITES/Spectral/data/catalog/{system_name}/locations/{location_id}/platforms/{platform_type}/{platform_id}'
+        catalog_dirpath = f'/home/aurora02/data/SITES/Spectral/data/catalog/{system_name}/locations/{location_id}/platforms/{platform_type}/{platform_id}'
        
         # Step 1: List files on the SFTP server
         sftp_filepaths = sftp_tools.list_files_sftp(
@@ -105,7 +105,7 @@ def _download_files_and_create_records_generator(acronym, location_id, platform_
             location_id, 
             platform_id, 
             platform_type, 
-            local_dirpath, 
+            catalog_dirpath, 
             sftp, 
             sftp_filepaths, 
             split_subdir='data'):
@@ -123,12 +123,12 @@ def _download_files_and_create_records_generator(acronym, location_id, platform_
         
        ```
     """
-    for remote_filepath in sftp_filepaths:
+    for origin_filepath in sftp_filepaths:
         # Download the file from the SFTP server
         downloaded_filepath = sftp_tools.download_file(
             sftp,
-            remote_filepath=remote_filepath,
-            local_dirpath=local_dirpath,
+            origin_filepath=origin_filepath,
+            catalog_dirpath=catalog_dirpath,
             split_subdir=split_subdir)
         
         # Get creation date and formatted date
@@ -143,7 +143,7 @@ def _download_files_and_create_records_generator(acronym, location_id, platform_
                 'year': year,
                 'creation_date': formatted_date,
                 'catalog_filepath': downloaded_filepath,
-                'source_filepath': remote_filepath,
+                'origin_filepath': origin_filepath,
                 'station_acronym': acronym,
                 'location_id': location_id,
                 'platform_id': platform_id,
@@ -198,7 +198,7 @@ def download_files_and_create_records(platform_dict: dict, db_filepath: str):
     platform_type = platform_dict.get('platform_type')
         
     table_name = f'{acronym}__{location_id}__{platform_id}'
-    local_dirpath = f'/home/aurora02/data/SITES/Spectral/data/catalog/{system_name}/locations/{location_id}/platforms/{platform_type}/{platform_id}'
+    catalog_dirpath = f'/home/aurora02/data/SITES/Spectral/data/catalog/{system_name}/locations/{location_id}/platforms/{platform_type}/{platform_id}'
     
     # Step 1: List files on the SFTP server
     sftp_filepaths = sftp_tools.list_files_sftp(
@@ -228,7 +228,7 @@ def download_files_and_create_records(platform_dict: dict, db_filepath: str):
         location_id, 
         platform_id, 
         platform_type, 
-        local_dirpath, 
+        catalog_dirpath, 
         sftp, 
         sftp_filepaths, 
         split_subdir='data'):
