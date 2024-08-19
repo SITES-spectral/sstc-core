@@ -56,48 +56,31 @@ def compute_qflag(
     
     elif ((n_records >= 3 if default_temporal_resolution else 2) and (n_records < 6 if default_temporal_resolution else 4 )) and (solar_elevation_class == 1):
         QFLAG = 21
-        if not is_per_image:
-            weight: 0.5
-        else:
-            weight: 0.5
+        weight: 0.5
         
     
     elif ((n_records >= 3 if default_temporal_resolution else 2) and (n_records < 6 if default_temporal_resolution else 4)) and (solar_elevation_class == 2):
         QFLAG = 22
-        if not is_per_image:
-            weight: 0.75
-        else:
-            weight: 0.75
+        weight: 0.75
+  
         
         
     elif ((n_records >= 3 if default_temporal_resolution else 2) and (n_records < 6 if default_temporal_resolution else 4)) and (solar_elevation_class == 3):
         QFLAG = 23
-        if not is_per_image:
-            weight: 1
-        else:
-            weight: 1
-        
+        weight: 1
+  
     elif (n_records >= 6 if default_temporal_resolution else 4) and (solar_elevation_class == 1):
         QFLAG = 31
-        if not is_per_image:
-            weight: 0.5
-        else:
-            weight: 0.5
+        weight: 0.75
         
     
     elif (n_records >= 6 if default_temporal_resolution else 4) and (solar_elevation_class == 2):
         QFLAG = 32
-        if not is_per_image:
-            weight: 0.75
-        else:
-            weight: 0.75
+        weight: 1.0
         
     elif (n_records >= 6 if default_temporal_resolution else 4) and (solar_elevation_class == 3):
         QFLAG = 33
-        if not is_per_image:
-            weight: 1
-        else:
-            weight: 1
+        weight: 1
         
     
     return {'QFLAG':QFLAG, 'weight': weight}
