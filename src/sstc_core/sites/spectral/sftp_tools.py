@@ -3,7 +3,7 @@ import os
 import stat
 from sstc_core.sites.spectral.utils import extract_two_dirs_and_filename
 import keyring
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 
 def _get_sftp_credentials():
@@ -225,11 +225,11 @@ def get_local_filepath(local_dirpath: str, remote_filepath: str, split_subdir: s
                                       Default is 'data'.
 
     Returns:
-        str: The constructed local file path.
+        str: The constructed `local_filepath`.
     """
     # Split the remote file path into components
     parts = remote_filepath.split('/')
-    filename = parts[-1]
+    # filename = parts[-1]
 
     # Find the index of the split_subdir in the parts
     if split_subdir in parts:
@@ -372,3 +372,75 @@ def get_new_files_to_download(local_dirpath: str, sftp_filepaths: list, split_su
             files_to_download.append(remote_filepath)
     
     return files_to_download
+
+
+
+
+def get_local_filepaths_from_sftp_downloaded_files_as_dict(
+    local_dirpath: str, 
+    sftp_filepaths: List[str], 
+    split_subdir: str = 'data'
+) -> List[Dict[str, str]]:
+    """
+    Identifies downloaded files from an SFTP server and returns their local and remote filepaths as a dictionary.
+
+    This function compares the list of remote SFTP filepaths (`sftp_filepaths`) with files present in the local directory
+    (`local_dirpath`). It organizes the files in a subdirectory structure specified by `split_subdir`. For each file in
+    `sftp_filepaths`, it checks if the corresponding file has been downloaded and exists in the local directory. If a file
+    is found locally, it adds a dictionary containing both the local and remote filepaths to the list.
+
+    Parameters
+    ----------
+    local_dirpath : str
+        The base directory path where the SFTP files are expected to be stored locally.
+    sftp_filepaths : List[str]
+        A list of filepaths from the SFTP server that need to be checked against the local directory.
+    split_subdir : str, optional
+        The subdirectory name used to organize the local files. Default is 'data'.
+
+    Returns
+    -------
+    List[Dict[str, str]]
+        A list of dictionaries, where each dictionary contains:
+        - 'local_filepath': The full local filepath of the downloaded file.
+        - 'remote_filepath': The corresponding remote filepath from the SFTP server.
+
+    Examples
+    --------
+    >>> local_dirpath = "/local/data"
+    >>> sftp_filepaths = [
+    ...     "/remote/path/to/file1.txt",
+    ...     "/remote/path/to/file2.txt"
+    ... ]
+    >>> get_local_filepaths_from_sftp_downloaded_files_as_dict(local_dirpath, sftp_filepaths)
+    [{'local_filepath': '/local/data/file1.txt', 'remote_filepath': '/remote/path/to/file1.txt'},
+     {'local_filepath': '/local/data/file2.txt', 'remote_filepath': '/remote/path/to/file2.txt'}]
+
+    Notes
+    -----
+    This function assumes that the local file organization follows the specified `split_subdir` structure.
+    The `get_local_filepath` function (which should be defined elsewhere in your code) is used to derive the local
+    filepath based on the provided directory structure.
+
+    Dependencies
+    ------------
+    - os.path.exists
+    - typing.List
+    - typing.Dict
+    - get_local_filepath (a custom function that constructs the local file path based on inputs)
+    """
+    
+    files_downloaded = []   
+    
+    for remote_filepath in sftp_filepaths:
+        local_filepath = get_local_filepath(
+            local_dirpath=local_dirpath,
+            remote_filepath=remote_filepath,
+            split_subdir=split_subdir)
+            
+        if os.path.exists(local_filepath):
+            files_downloaded.append(
+                {'local_filepath': local_filepath,
+                 'remote_filepath': remote_filepath})
+    
+    return files_downloaded

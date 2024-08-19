@@ -797,15 +797,17 @@ class Station(DuckDBManager):
 
     
     def create_record_dictionary(self, 
-                                 remote_filepath: str, 
+                                 
                                  platforms_type: str, 
                                  platform_id: str,
+                                 local_filepath:str,
                                  is_legacy: bool = False, 
                                  schema_dict: dict = get_schema_as_dict(
                                      platform_schema=phenocams_schema),
                                  backup_dirpath: str = 'aurora02_dirpath', 
                                  start_time: str = "10:00:00", 
-                                 end_time: str = "14:30:00", 
+                                 end_time: str = "14:30:00",
+                                  
                                  split_subdir: str = 'data', 
                                  timezone_str: str ='Europe/Stockholm',
                                  has_snow_presence:bool = False,                                 
@@ -843,11 +845,11 @@ class Station(DuckDBManager):
         local_dirpath = self.platforms[platforms_type][platform_id]['backups'][backup_dirpath]
 
         # Get local file path
-        local_filepath = sftp_tools.get_local_filepath(
-            local_dirpath=local_dirpath, 
-            remote_filepath=remote_filepath,
-            split_subdir=split_subdir
-        )
+        #local_filepath = sftp_tools.get_local_filepath(
+        #    local_dirpath=local_dirpath, 
+        #    remote_filepath=remote_filepath,
+        #    split_subdir=split_subdir
+        #)
 
         # Extract creation date and format it
         creation_date = utils.get_image_dates(local_filepath)
@@ -918,7 +920,7 @@ class Station(DuckDBManager):
         record_dict['is_legacy'] = is_legacy
         record_dict['L0_name' ] = L0_name
         record_dict['is_L1'] = is_L1
-        record_dict['catalog_filepath'] = local_dirpath
+        record_dict['catalog_filepath'] = local_filepath
         record_dict['source_filepath' ] = remote_filepath
         record_dict['version_data_processing'] = version.version_data_processing
         record_dict['version_code_sstc_core'] = version.version_code_sstc_core
