@@ -1,5 +1,6 @@
 ## [v0.14.0]
 -  updated `version_schema_platform_phenocams='0.2-2024'`
+-  fixed `default_platform_flags` missing rois
 
 ## [v0.13.1]
 - `qflags` code prunning matching processing v2.
