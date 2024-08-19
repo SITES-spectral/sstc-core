@@ -1,9 +1,12 @@
+## [v0.14.0]
+-  updated `version_schema_platform_phenocams='0.2-2024'`
+
 ## [v0.13.1]
 - `qflags` code prunning matching processing v2.
-- added `config.db_schemas.platforms_schemas.get_schema_as_dict`
+- Added `config.db_schemas.platforms_schemas.get_schema_as_dict`
 - improved `config.db_schemas.platforms_schemas` by adding `version` parameters
 - Added `sftp_tools.get_local_filepaths_from_sftp_downloaded_files_as_dict`
-- Updated
+
 
 ## [v0.13.0]
 - Implemented data processing V2.0 with new phencam QFLAGs and L2 and L3 derived products with weights. 

@@ -625,7 +625,7 @@ class Station(DuckDBManager):
                     'is_L1': ...,
                     'is_ready_for_products_use': ...,
                     'catalog_filepath': ...,
-                    'source_filepath': ...,
+                    'origin_filepath': ...,
                     'normalized_quality_index': ...,
                     'quality_index_weights_version': ...,
                     'flag_brightness': ...,
@@ -800,7 +800,8 @@ class Station(DuckDBManager):
                                  
                                  platforms_type: str, 
                                  platform_id: str,
-                                 local_filepath:str,
+                                 origin_filepath:str,
+                                 catalog_filepath:str,
                                  is_legacy: bool = False, 
                                  schema_dict: dict = get_schema_as_dict(
                                      platform_schema=phenocams_schema),
@@ -844,15 +845,8 @@ class Station(DuckDBManager):
         # Retrieve local directory path from the station's platform data
         local_dirpath = self.platforms[platforms_type][platform_id]['backups'][backup_dirpath]
 
-        # Get local file path
-        #local_filepath = sftp_tools.get_local_filepath(
-        #    local_dirpath=local_dirpath, 
-        #    remote_filepath=remote_filepath,
-        #    split_subdir=split_subdir
-        #)
-
         # Extract creation date and format it
-        creation_date = utils.get_image_dates(local_filepath)
+        creation_date = utils.get_image_dates(catalog_filepath)
         formatted_date = creation_date.strftime('%Y-%m-%d %H:%M:%S')
         normalized_date = creation_date.strftime('%Y%m%d%H%M%S')
         year = creation_date.year
@@ -920,8 +914,8 @@ class Station(DuckDBManager):
         record_dict['is_legacy'] = is_legacy
         record_dict['L0_name' ] = L0_name
         record_dict['is_L1'] = is_L1
-        record_dict['catalog_filepath'] = local_filepath
-        record_dict['source_filepath' ] = remote_filepath
+        record_dict['catalog_filepath'] = catalog_filepath
+        record_dict['origin_filepath' ] = origin_filepath
         record_dict['version_data_processing'] = version.version_data_processing
         record_dict['version_code_sstc_core'] = version.version_code_sstc_core
         record_dict['version_platform_flags'] = version.version_platform_flags
@@ -977,7 +971,7 @@ class Station(DuckDBManager):
             for remote_filepath in sftp_filepaths:
                 # Create record dictionary for the given file
                 record = self.create_record_dictionary(
-                    remote_filepath=remote_filepath,
+                    origin_filepath=remote_filepath,
                     platforms_type=platforms_type,
                     platform_id=platform_id,
                     is_legacy=False,
@@ -1136,7 +1130,7 @@ class Station(DuckDBManager):
                 'is_L1': ...,
                 'is_ready_for_products_use': ...,
                 'catalog_filepath': ...,
-                'source_filepath': ...,
+                'origin_filepath': ...,
                 'normalized_quality_index': ...,
                 'quality_index_weights_version': ...,
                 'flag_brightness': ...,
@@ -1304,7 +1298,7 @@ class Station(DuckDBManager):
                     'is_L1': ...,
                     'is_ready_for_products_use': ...,
                     'catalog_filepath': ...,
-                    'source_filepath': ...,
+                    'origin_filepath': ...,
                     'normalized_quality_index': ...,
                     'quality_index_weights_version': ...,
                     'flag_brightness': ...,

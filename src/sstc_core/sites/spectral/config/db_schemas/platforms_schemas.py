@@ -88,7 +88,7 @@ phenocams_schema = [
     {'field_name': 'catalog_filepath',
     'field_type': 'VARCHAR',
     'field_default_value': None},
-    {'field_name': 'source_filepath',
+    {'field_name': 'origin_filepath',
     'field_type': 'VARCHAR',
     'field_default_value': None},
     {'field_name': 'version_data_processing',
