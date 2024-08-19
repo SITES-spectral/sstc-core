@@ -890,10 +890,17 @@ class Station(DuckDBManager):
             variable_names=['creation_date', 'station_acronym', 'location_id', 'platform_id']
         )
        
-      
+        phenocam_rois_dict = self.phenocam_rois(
+            platforms_type=platforms_type,
+            platform_id=platform_id
+        )
         # Get the default platform flag values
-        default_platform_flags ={k: flag[k]  for k, flag in self.phenocams_default_flags_weights.items()} 
+        __default_platform_flags ={k: flag[k]  for k, flag in self.phenocams_default_flags_weights.items()} 
         
+        default_platform_flags = {}
+        for roi in phenocam_rois_dict.keys():
+            for k, v in __default_platform_flags.items():
+                default_platform_flags[f'{roi}_{k}'] = v  
         
         # update record dictionary
         record_dict['catalog_guid'] = catalog_guid
