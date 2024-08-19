@@ -807,10 +807,8 @@ class Station(DuckDBManager):
                                  start_time: str = "10:00:00", 
                                  end_time: str = "14:30:00", 
                                  split_subdir: str = 'data', 
-                                 skip: bool = False, 
                                  timezone_str: str ='Europe/Stockholm',
-                                 has_snow_presence:bool = False,
-                                 config_flags_yaml_filepath:str = config_flags_yaml_filepath
+                                 has_snow_presence:bool = False,                                 
                                  ) -> Dict[str, Any]:
         """
         Creates a dictionary representing a record for a file, including metadata and derived attributes.
@@ -829,7 +827,7 @@ class Station(DuckDBManager):
             start_time (str, optional): The start of the time window in 'HH:MM:SS' format. Defaults to "10:00:00".
             end_time (str, optional): The end of the time window in 'HH:MM:SS' format. Defaults to "14:30:00".
             split_subdir (str, optional): The subdirectory name used to organize local paths. Defaults to 'data'.
-            skip (bool, optional): If True, do not auto-assess image quality, leaving default values. Defaults to False.
+            
 
         Returns:
             Dict[str, Any]: A dictionary containing the record information, including metadata, derived attributes, and a unique ID.
@@ -838,7 +836,7 @@ class Station(DuckDBManager):
             Exception: If there are issues retrieving or processing the file data.
         """
         if schema_dict:
-            record_dict = record_dict
+            record_dict = schema_dict
         
         
         # Retrieve local directory path from the station's platform data
