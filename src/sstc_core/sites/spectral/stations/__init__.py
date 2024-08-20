@@ -1,16 +1,13 @@
 import os
 import importlib
 from typing import Optional
-from sstc_core.sites.spectral import utils, sftp_tools
-from sstc_core.sites.spectral.data_products.phenocams import get_default_phenocam_flags
-from sstc_core.sites.spectral.utils import normalize_string
+from sstc_core.sites.spectral import utils
 from sstc_core.sites.spectral.io_tools import load_yaml 
 from pathlib import Path
 import duckdb
 import hashlib
 from datetime import datetime
 from typing import Dict, Any, List
-from sstc_core.sites.spectral.image_quality import config_flags_yaml_filepath
 from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 from sstc_core.sites.spectral.data_products import phenocams
 from sstc_core.sites.spectral.config.db_schemas.platforms_schemas import phenocams_schema, get_schema_as_dict
@@ -382,7 +379,7 @@ class Station(DuckDBManager):
         self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_catalog.db"
         self.phenocam_quality_weights_filepath = self.meta.get("phenocam_quality_weights_filepath", None)
         self.sftp_dirpath = f'/{self.normalized_station_name}/data/'
-        self.phenocams_default_flags_weights = get_default_phenocam_flags(flags_yaml_filepath=config_flags_yaml_filepath)
+        self.phenocams_default_flags_weights = phenocams.get_default_phenocam_flags(flags_yaml_filepath=phenocams.config_flags_yaml_filepath)
 
         # Ensure the database file is created before calling the parent constructor
         if not self.db_filepath.exists():
