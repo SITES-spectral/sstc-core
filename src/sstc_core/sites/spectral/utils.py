@@ -357,6 +357,9 @@ def extract_keys_with_prefix(input_dict, starts_with='flag_'):
     """
     return {key: value for key, value in input_dict.items() if key.startswith(starts_with)}
 
+
+
+
 def set_all_values_to_false(input_dict:dict)->dict:
     """
     Sets all the values of the given dictionary to False.
@@ -614,3 +617,20 @@ def solar_illumination_conditions(
         'sun_azimuth_angle': sun_azimuth_angle,
         'solar_elevation_class': solar_elevation_class
     }
+
+def extract_keys_with_all_words(input_dict, words_list):
+    """
+    Extracts keys from the input dictionary where the associated string value contains all the words in the words_list.
+
+    Parameters:
+        input_dict (dict): The dictionary to filter.
+        words_list (list): A list of words to search for in the string values.
+
+    Returns:
+        dict: A new dictionary with only the keys whose corresponding string values contain all the words in the words_list.
+    """
+    def contains_all_words(s, words):
+        return all(word in s for word in words)
+
+    return {key: value for key, value in input_dict.items() if contains_all_words(value, words_list)}
+
