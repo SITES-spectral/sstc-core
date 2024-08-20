@@ -1,6 +1,8 @@
-## [v.15.1]
-- stable
+## [v0.15.2]
 - Added `utils.extract_keys_with_all_words`
+
+## [v0.15.1]
+- stable
 
 ## [v0.15.0]
 - `platforms_schemas` update
