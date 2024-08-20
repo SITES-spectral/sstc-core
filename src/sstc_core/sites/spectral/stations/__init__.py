@@ -979,7 +979,7 @@ class Station(DuckDBManager):
         record_dict['solar_elevation_class'] = solar_elevation_class
 
         # Compute quality flags
-        QFLAF = compute_qflag(
+        qflag_dict = compute_qflag(
             latitude_dd=latitude_dd,
             longitude_dd=longitude_dd,
             records_dict={catalog_guid: record_dict}, 
@@ -991,7 +991,8 @@ class Station(DuckDBManager):
         # Merge with quality flags and default platform flags
         record_dict = {
             **record_dict,
-            **{'QFLAG_image': QFLAF},  
+            **{'QFLAG_image_value': qflag_dict['QFLAG'],
+               'QFLAG_image_weight': qflag_dict['weight']   },  
             **default_platform_flags 
         } 
 

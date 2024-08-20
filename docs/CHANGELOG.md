@@ -1,3 +1,6 @@
+## [v0.15.0]
+- `platforms_schemas` update 
+
 ## [v0.14.1]
 - Refactored `image_quality.get_default_phenocam_flags` to `data_products.phenocams.get_default_phenocam_flags`
 - Refactored `image_quality.load_flags_weights` to `data_products.phenocams.load_flags_weights`

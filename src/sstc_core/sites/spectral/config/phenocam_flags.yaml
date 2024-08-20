@@ -1,4 +1,3 @@
-# version_flags: "0.13.0"  # refers to the github commited version
 flag_disable_for_processing: 
   value: False
   weight: 1

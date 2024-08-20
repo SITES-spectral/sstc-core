@@ -7,11 +7,30 @@ def compute_qflag(
     records_dict: dict,    
     timezone_str: str = 'Europe/Stockholm',
     is_per_image: bool = False, 
-    default_temporal_resolution: bool = True,  # default temporal resolution is 30 min, else 1 hr or more
-    ) -> int:
+    default_temporal_resolution: bool = True  # default temporal resolution is 30 min, else 1 hr or more
+) -> dict:
     """
-    new processing version v2.0
-    `is_per_image` if True the len of records_dict will not be considered on the qflag.
+    Computes the QFLAG and weight based on the given parameters.
+    
+    Parameters
+    ----------
+    latitude_dd : float
+        Latitude in decimal degrees.
+    longitude_dd : float
+        Longitude in decimal degrees.
+    records_dict : dict
+        A dictionary containing records with 'creation_date' as one of the keys.
+    timezone_str : str, optional
+        The timezone string, by default 'Europe/Stockholm'.
+    is_per_image : bool, optional
+        If True, the number of records will not be considered in the QFLAG calculation, by default False.
+    default_temporal_resolution : bool, optional
+        If True, uses a default temporal resolution of 30 minutes, otherwise 1 hour or more, by default True.
+
+    Returns
+    -------
+    dict
+        A dictionary containing 'QFLAG' and 'weight'.
     """
     
     datetime_list = [v['creation_date'] for _, v in records_dict.items()]
@@ -29,56 +48,50 @@ def compute_qflag(
    
     n_records = len(records_dict)
         
-    if (n_records < 3 if default_temporal_resolution else 2) and (solar_elevation_class == 1):
+    if (n_records < (3 if default_temporal_resolution else 2)) and (solar_elevation_class == 1):
         QFLAG = 11
-        if not is_per_image:
-            weight: 0.1
-        else:
-            weight: 0.5
+        weight = 0.1 if not is_per_image else 0.5
         
-    elif (n_records < 3 if default_temporal_resolution else 2) and (solar_elevation_class == 2):
+    elif (n_records < (3 if default_temporal_resolution else 2)) and (solar_elevation_class == 2):
         QFLAG = 12
-        if not is_per_image:
-            weight: 0.5
-        else:
-            weight: 0.75
+        weight = 0.5 if not is_per_image else 0.75
             
-    elif (n_records < 3 if default_temporal_resolution else 2) and (solar_elevation_class == 3):
+    elif (n_records < (3 if default_temporal_resolution else 2)) and (solar_elevation_class == 3):
         QFLAG = 13
-        if not is_per_image:
-            weight: 0.5
-        else:
-            weight: 1
+        weight = 0.5 if not is_per_image else 1
             
-    elif ((n_records >= 3 if default_temporal_resolution else 2) and (n_records < 6 if default_temporal_resolution else 4 )) and (solar_elevation_class == 1):
+    elif ((n_records >= (3 if default_temporal_resolution else 2)) and 
+          (n_records < (6 if default_temporal_resolution else 4))) and (solar_elevation_class == 1):
         QFLAG = 21
-        weight: 0.5
+        weight = 0.5
         
-    
-    elif ((n_records >= 3 if default_temporal_resolution else 2) and (n_records < 6 if default_temporal_resolution else 4)) and (solar_elevation_class == 2):
+    elif ((n_records >= (3 if default_temporal_resolution else 2)) and 
+          (n_records < (6 if default_temporal_resolution else 4))) and (solar_elevation_class == 2):
         QFLAG = 22
-        weight: 0.75
+        weight = 0.75
   
-                
-    elif ((n_records >= 3 if default_temporal_resolution else 2) and (n_records < 6 if default_temporal_resolution else 4)) and (solar_elevation_class == 3):
+    elif ((n_records >= (3 if default_temporal_resolution else 2)) and 
+          (n_records < (6 if default_temporal_resolution else 4))) and (solar_elevation_class == 3):
         QFLAG = 23
-        weight: 1
+        weight = 1
   
-    elif (n_records >= 6 if default_temporal_resolution else 4) and (solar_elevation_class == 1):
+    elif (n_records >= (6 if default_temporal_resolution else 4)) and (solar_elevation_class == 1):
         QFLAG = 31
-        weight: 0.75
+        weight = 0.75
         
-    
-    elif (n_records >= 6 if default_temporal_resolution else 4) and (solar_elevation_class == 2):
+    elif (n_records >= (6 if default_temporal_resolution else 4)) and (solar_elevation_class == 2):
         QFLAG = 32
-        weight: 1.0
+        weight = 1.0
         
-    elif (n_records >= 6 if default_temporal_resolution else 4) and (solar_elevation_class == 3):
+    elif (n_records >= (6 if default_temporal_resolution else 4)) and (solar_elevation_class == 3):
         QFLAG = 33
-        weight: 1
+        weight = 1
         
-    
-    return {'QFLAG':QFLAG, 'weight': weight}
+    else:
+        raise ValueError("Invalid input combination for n_records and solar_elevation_class")
+
+    return {'QFLAG': QFLAG, 'weight': weight}
+
     
 
         
