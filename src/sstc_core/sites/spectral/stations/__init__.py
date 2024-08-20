@@ -933,7 +933,7 @@ class Station(DuckDBManager):
         catalog_guid = utils.generate_unique_id(
             {
                 'catalog_guid': None,
-                'creation_data': creation_date,
+                'creation_date': formatted_date,
                 'station_acronym': station_acronym,
                 'location_id': location_id,
                 'platform_id': platform_id                
@@ -956,7 +956,7 @@ class Station(DuckDBManager):
         # Update record dictionary with metadata and computed values
         record_dict['catalog_guid'] = catalog_guid
         record_dict['year'] = year
-        record_dict['creation_date'] = creation_date
+        record_dict['creation_date'] = formatted_date
         record_dict['day_of_year'] = day_of_year
         record_dict['station_acronym'] = station_acronym
         record_dict['location_id'] = location_id

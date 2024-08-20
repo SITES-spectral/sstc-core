@@ -39,20 +39,20 @@ def copy_file_with_new_name(source_filepath, destination_directory, new_name)->s
 
 
 
-def generate_unique_id(data: dict, variable_names: list = None) -> str:
+def generate_unique_id(data: dict, variable_names: list = ['formatted_date', 'station_acronym', 'location_id', 'platform_id']) -> str:
     """
     Generates a unique global identifier based on the provided variable names from the data dictionary.
 
     Parameters:
         data (dict): A dictionary containing the data fields.
         variable_names (list, optional): A list of variable names to include in the unique identifier. 
-                                         Defaults to ['creation_date', 'station_acronym', 'location_id', 'platform_id'].
+                                         Defaults to ['formatted_date', 'station_acronym', 'location_id', 'platform_id'].
 
     Returns:
         str: A short unique global identifier.
     """
     if variable_names is None:
-        variable_names = ['creation_date', 'station_acronym', 'location_id', 'platform_id']
+        variable_names = ['formatted_date', 'station_acronym', 'location_id', 'platform_id']
 
     # Concatenate the specified fields from the data dictionary to form a unique string
     unique_string = "_".join(str(data[var]) for var in variable_names if var in data)
@@ -65,6 +65,7 @@ def generate_unique_id(data: dict, variable_names: list = None) -> str:
     short_hash = base64.urlsafe_b64encode(hash_digest[:12]).decode('utf-8').rstrip('=')
     
     return short_hash
+
 
 def day_of_year_to_month_day(year, day_of_year):
     # Calculate the date corresponding to the day of year

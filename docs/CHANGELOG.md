@@ -1,5 +1,9 @@
+## [v.15.1]
+- stable 
+
 ## [v0.15.0]
-- `platforms_schemas` update 
+- `platforms_schemas` update
+- Fixed record creation recording `creation_date` as time object instead of using `formatted_date` as string 
 
 ## [v0.14.1]
 - Refactored `image_quality.get_default_phenocam_flags` to `data_products.phenocams.get_default_phenocam_flags`
