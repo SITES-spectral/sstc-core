@@ -802,7 +802,9 @@ class Station(DuckDBManager):
                                 start_time: str = "10:00:00", 
                                 end_time: str = "14:30:00",
                                 timezone_str: str = 'Europe/Stockholm',
-                                has_snow_presence: bool = False,                                 
+                                has_snow_presence: bool = False,
+                                is_per_image: bool = True,
+                                default_temporal_resolution: bool = True                                 
                                 ) -> Dict[str, Any]:
         """
         Creates a dictionary representing a record for a file, including metadata and derived attributes.
@@ -849,6 +851,13 @@ class Station(DuckDBManager):
         has_snow_presence : bool, optional
             Indicates whether there is snow presence in the image associated with the record. Defaults to False.
 
+        is_per_image : bool, optional
+            Indicates whether the quality flag computation is to be performed per image. Defaults to True.
+
+        default_temporal_resolution : bool, optional
+            Indicates whether the default temporal resolution should be applied during quality flag computation. 
+            Defaults to True.
+
         Returns:
         -------
         Dict[str, Any]
@@ -874,7 +883,9 @@ class Station(DuckDBManager):
             start_time="08:00:00",
             end_time="16:00:00",
             timezone_str="Europe/Stockholm",
-            has_snow_presence=True
+            has_snow_presence=True,
+            is_per_image=True,
+            default_temporal_resolution=False
         )
         """
         if schema_dict:
@@ -892,13 +903,13 @@ class Station(DuckDBManager):
         
         # Calculate solar angles
         sun_position = utils.calculate_sun_position(
-                datetime_str= formatted_date, 
+                datetime_str=formatted_date, 
                 latitude_dd=latitude_dd, 
                 longitude_dd=longitude_dd, 
                 timezone_str=timezone_str)
         
         sun_elevation_angle = sun_position['sun_elevation_angle']
-        sun_azimuth_angle = sun_position['sun_azimuth_angle'] 
+        sun_azimuth_angle = sun_position['sun_azimuth_angle']
             
         solar_elevation_class = utils.get_solar_elevation_class(sun_elevation=sun_elevation_angle)
 
@@ -929,13 +940,13 @@ class Station(DuckDBManager):
             }, 
             variable_names=['creation_date', 'station_acronym', 'location_id', 'platform_id']
         )
-    
+
         phenocam_rois_dict = self.phenocam_rois(
             platforms_type=platforms_type,
             platform_id=platform_id
         )
         # Get the default platform flag values
-        __default_platform_flags = {k: self.phenocams_default_flags_weights[k]['value']  for k in self.phenocams_default_flags_weights.keys()} 
+        __default_platform_flags = {k: self.phenocams_default_flags_weights[k]['value'] for k in self.phenocams_default_flags_weights.keys()} 
         
         default_platform_flags = {}
         for roi in phenocam_rois_dict.keys():
@@ -972,9 +983,9 @@ class Station(DuckDBManager):
             latitude_dd=latitude_dd,
             longitude_dd=longitude_dd,
             records_dict={catalog_guid: record_dict}, 
-            has_snow_presence=has_snow_presence,
             timezone_str=timezone_str,
-            is_per_image=True,            
+            is_per_image=is_per_image,
+            default_temporal_resolution=default_temporal_resolution,            
         )
         
         # Merge with quality flags and default platform flags
@@ -986,7 +997,7 @@ class Station(DuckDBManager):
 
         return record_dict
     
-        
+
     def populate_station_db(self, 
                             catalog_origin_filepaths_dict_list: list, 
                             platform_id: str, 
@@ -996,7 +1007,10 @@ class Station(DuckDBManager):
                             end_time: str = "14:30:00",
                             timezone_str: str = 'Europe/Stockholm',
                             has_snow_presence: bool = False, 
-                            is_legacy: bool = False) -> bool:
+                            is_legacy: bool = False, 
+                            is_per_image: bool = True,
+                            default_temporal_resolution: bool = True
+                            ) -> bool:
         """
         Populates the station database with records based on SFTP file paths.
 
@@ -1042,6 +1056,13 @@ class Station(DuckDBManager):
             A boolean flag indicating whether the data is legacy. If set to True, the method will handle the data 
             as legacy data. Defaults to False.
 
+        is_per_image : bool, optional
+            Indicates whether the quality flag computation is to be performed per image. Defaults to True.
+
+        default_temporal_resolution : bool, optional
+            Indicates whether the default temporal resolution should be applied during quality flag computation. 
+            Defaults to True.
+
         Returns:
         -------
         bool
@@ -1062,7 +1083,9 @@ class Station(DuckDBManager):
             end_time="16:00:00",
             timezone_str="Europe/Stockholm",
             has_snow_presence=True,
-            is_legacy=True
+            is_legacy=True,
+            is_per_image=True,
+            default_temporal_resolution=False
         )
         if success:
             print("Database populated successfully.")
@@ -1082,9 +1105,11 @@ class Station(DuckDBManager):
                     is_legacy=is_legacy,
                     start_time=start_time,
                     end_time=end_time,
-                    schema_dict=schema_dict,
+                    schema_dict=schema_dict,    
                     timezone_str=timezone_str,
-                    has_snow_presence=has_snow_presence 
+                    has_snow_presence=has_snow_presence, 
+                    is_per_image=is_per_image,
+                    default_temporal_resolution=default_temporal_resolution,
                 )
                 
                 catalog_guid = record.get('catalog_guid')
@@ -1106,6 +1131,8 @@ class Station(DuckDBManager):
         except duckdb.Error as e:
             print(f"Error inserting record: {e}")
             return False
+        
+    
 
     def update_is_ready_for_products_use(self, table_name: str, catalog_guid: str, is_ready_for_products_use: bool):
         """
