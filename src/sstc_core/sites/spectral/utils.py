@@ -442,31 +442,57 @@ def calculate_sun_position(datetime_str:str, latitude_dd:float, longitude_dd:flo
     return {'sun_elevation_angle': float(sun_elevation_angle), 'sun_azimuth_angle': float(sun_azimuth_angle)} 
 
 
-def mean_datetime_str(datetime_list)->str:
+def mean_datetime_str(datetime_list) -> str:
     """
     Calculate the mean datetime string from the max and min of the list.
     If the list has a single item, return that item.
+    Handles cases where items may be either datetime objects or strings.
     Handles errors for invalid datetime strings and empty lists.
 
     Parameters:
-        datetime_list (list): List of datetime strings in format 'YYYY-MM-DD HH:MM:SS'
+    ----------
+    datetime_list : list
+        List of datetime objects or datetime strings in format 'YYYY-MM-DD HH:MM:SS'
     
     Returns:
-        str: datetime string in format 'YYYY-MM-DD HH:MM:SS' or an error message
+    -------
+    str
+        Mean datetime string in format 'YYYY-MM-DD HH:MM:SS' or an error message
+    
+    Raises:
+    ------
+    ValueError
+        If the list contains invalid datetime strings or the list is empty.
+    
+    Examples:
+    --------
+    >>> mean_datetime_str(["2023-08-20 12:00:00", "2023-08-21 12:00:00"])
+    '2023-08-20 18:00:00'
+
+    >>> mean_datetime_str([datetime(2023, 8, 20, 12, 0, 0), datetime(2023, 8, 21, 12, 0, 0)])
+    '2023-08-20 18:00:00'
     """
     # Check if the list is empty
     if not datetime_list:
         return "Error: The datetime list is empty."
 
     try:
-        # Convert the datetime strings to datetime objects
-        datetimes = [datetime.strptime(dt, '%Y-%m-%d %H:%M:%S') for dt in datetime_list]
+        # Convert all items to datetime objects if they are not already
+        datetimes = []
+        for dt in datetime_list:
+            if isinstance(dt, str):
+                datetimes.append(datetime.strptime(dt, '%Y-%m-%d %H:%M:%S'))
+            elif isinstance(dt, datetime):
+                datetimes.append(dt)
+            else:
+                return f"Error: Invalid item in datetime list: {dt}. Expected datetime object or string."
+
     except ValueError as e:
         return f"Error: Invalid datetime string format. {e}"
 
-    # If the list has only one item, return that item
+    # If the list has only one item, return that item as a string
     if len(datetimes) == 1:
-        return datetime_list[0]
+        return datetimes[0].strftime('%Y-%m-%d %H:%M:%S')
 
     # Find the minimum and maximum datetimes
     min_datetime = min(datetimes)
