@@ -1,3 +1,7 @@
+## [v0.14.1]
+- Refactored `image_quality.get_default_phenocam_flags` to `data_products.phenocams.get_default_phenocam_flags`
+- Refactored `image_quality.load_flags_weights` to `data_products.phenocams.load_flags_weights`
+
 ## [v0.14.0]
 -  updated `version_schema_platform_phenocams='0.2-2024'`
 -  fixed `default_platform_flags` missing rois

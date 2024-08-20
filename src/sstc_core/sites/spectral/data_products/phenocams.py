@@ -4,7 +4,15 @@ from typing import List, Dict, Any
 import numpy as np
 import cv2
 from PIL import Image
+from sstc_core.sites.spectral.io_tools import load_yaml
 
+# Get the absolute path of the current script
+__script_parent_path = os.path.dirname(os.path.abspath(__file__))
+
+config_flags_yaml_filepath = os.path.join( os.path.dirname(__script_parent_path), 'config', 'phenocam_flags.yaml')
+
+if not os.path.exists(config_flags_yaml_filepath):
+    raise FileExistsError(f'{config_flags_yaml_filepath}')
 
 def serialize_polygons(phenocam_rois):
     """
@@ -468,3 +476,100 @@ def group_records_by_unique_filepath(input_dict: dict, filepath_key: str) -> dic
         unique_values[value].append(record_id)
 
     return unique_values
+
+
+def get_default_phenocam_flags(flags_yaml_filepath: str ) -> dict:
+    """
+    Load and return the default PhenoCam flags from a YAML configuration file.
+
+    This function reads a YAML file containing default flag settings for PhenoCam data processing and returns the contents as a dictionary. These flags are typically used to control various aspects of image quality assessment, such as detecting snow, glare, or other artifacts.
+
+    Parameters
+    ----------
+    flags_yaml_filepath : str, optional
+        The file path to the YAML configuration file containing the PhenoCam flags. 
+        Expected config file:  '/config/phenocam_flags.yaml'.
+
+    Returns
+    -------
+    dict
+        A dictionary containing the default PhenoCam flags as specified in the YAML configuration file.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the YAML file specified by `flags_yaml_filepath` does not exist.
+    yaml.YAMLError
+        If there is an error parsing the YAML file.
+
+    Examples
+    --------
+    >>> flags = get_default_phenocam_flags(flags_yaml_filepath)
+    >>> print(flags)
+    {
+        'flag_brightness': False,
+        'flag_blur': False,
+        'flag_snow': True,
+        ...
+    }
+
+    Notes
+    -----
+    The function relies on a YAML file for configuration. Ensure that the file path is correct and that the YAML file is properly formatted.
+
+    Dependencies
+    ------------
+    - yaml (PyYAML library): For loading YAML files.
+    - load_yaml (function): A utility function used to load the YAML file into a dictionary.
+    """
+    flags_dict = load_yaml(filepath=flags_yaml_filepath)
+
+    return flags_dict
+
+
+def load_flags_weights(flags_yaml_filepath: str) -> dict:
+    """
+    Load weights for PhenoCam flags from a YAML configuration file.
+
+    This function retrieves the default PhenoCam flags using the `get_default_phenocam_flags` function and then extracts the associated weights for each flag. If a weight is not specified for a flag, it defaults to 1.
+
+    Parameters
+    ----------
+    flags_yaml_filepath : str, optional
+        The file path to the YAML configuration file containing the PhenoCam flags. 
+        Expected config file:  '/config/phenocam_flags.yaml'.
+
+
+    Returns
+    -------
+    dict
+        A dictionary where the keys are the flag names and the values are the weights associated with each flag. 
+        If a weight is not provided for a flag in the YAML configuration, a default weight of 1 is assigned.
+
+    Examples
+    --------
+    >>> weights = load_weights_from_yaml()
+    >>> print(weights)
+    {
+        'flag_brightness': 0.8,
+        'flag_blur': 0.9,
+        'flag_snow': 1.0,
+        ...
+    }
+
+    Notes
+    -----
+    The function assumes that the weights for the PhenoCam flags are defined in the YAML configuration file loaded by 
+    the `get_default_phenocam_flags` function. If no weight is defined for a particular flag, a default weight of 1 is used.
+
+    Dependencies
+    ------------
+    - `get_default_phenocam_flags` (function): This function is used to load the default PhenoCam flags from a YAML file.
+    - yaml (PyYAML library): Used for loading YAML files if needed by the `get_default_phenocam_flags` function.
+    """
+    flags = get_default_phenocam_flags(flags_yaml_filepath = flags_yaml_filepath)
+    weights_dict ={}
+    for flag in flags:
+        weights_dict[flag] = flags[flag].get('weight', 1)
+
+    return weights_dict

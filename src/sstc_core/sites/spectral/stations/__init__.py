@@ -2,6 +2,7 @@ import os
 import importlib
 from typing import Optional
 from sstc_core.sites.spectral import utils, sftp_tools
+from sstc_core.sites.spectral.data_products.phenocams import get_default_phenocam_flags
 from sstc_core.sites.spectral.utils import normalize_string
 from sstc_core.sites.spectral.io_tools import load_yaml 
 from pathlib import Path
@@ -9,7 +10,7 @@ import duckdb
 import hashlib
 from datetime import datetime
 from typing import Dict, Any, List
-from sstc_core.sites.spectral.image_quality import get_default_phenocam_flags, config_flags_yaml_filepath
+from sstc_core.sites.spectral.image_quality import config_flags_yaml_filepath
 from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 from sstc_core.sites.spectral.data_products import phenocams
 from sstc_core.sites.spectral.config.db_schemas.platforms_schemas import phenocams_schema, get_schema_as_dict
