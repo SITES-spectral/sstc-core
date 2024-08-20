@@ -8,6 +8,7 @@ import unicodedata
 import hashlib
 import base64
 import pytz
+import re
 from pysolar.solar import get_altitude, get_azimuth
 
 
@@ -618,9 +619,13 @@ def solar_illumination_conditions(
         'solar_elevation_class': solar_elevation_class
     }
 
+
+
+
 def extract_keys_with_all_words(input_dict, words_list):
     """
-    Extracts keys from the input dictionary where the associated string value contains all the words in the words_list.
+    Extracts keys from the input dictionary where the associated string value contains all the words in the words_list,
+    using regular expressions for matching.
 
     Parameters:
         input_dict (dict): The dictionary to filter.
@@ -630,7 +635,8 @@ def extract_keys_with_all_words(input_dict, words_list):
         dict: A new dictionary with only the keys whose corresponding string values contain all the words in the words_list.
     """
     def contains_all_words(s, words):
-        return all(word in s for word in words)
+        if not isinstance(s, str):
+            return False
+        return all(re.search(r'\b' + re.escape(word) + r'\b', s) for word in words)
 
     return {key: value for key, value in input_dict.items() if contains_all_words(value, words_list)}
-
