@@ -1127,11 +1127,15 @@ class Station(DuckDBManager):
                     self.add_station_data(table_name=table_name, data=record)
                 else:
                     print(f"Record with catalog_guid {catalog_guid} already exists in {table_name}.")
-            return True
+            
 
         except duckdb.Error as e:
             print(f"Error inserting record: {e}")
             return False
+        
+        finally:
+            self.close_connection()         
+            return True
         
     
 
