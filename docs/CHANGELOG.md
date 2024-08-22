@@ -1,5 +1,13 @@
+## [v0.15.3]
+- Improved `platforms_schemas` for phenocams to auto build schema based on ROIS for flags and L2 & L3 parameters.
+- Added `__build_phenocams_rois_parameters_schema`
+- Added `build_phenocams_rois_L2_parameters`
+- Added `build_phenocams_rois_L3_parameters`
+- Added `build_phenocams_schema`
+
 ## [v0.15.2]
 - Added `utils.extract_keys_with_all_words`
+- minor fixes
 
 ## [v0.15.1]
 - stable
