@@ -951,6 +951,8 @@ class Station(DuckDBManager):
         default_platform_flags = {}
         for roi in phenocam_rois_dict.keys():
             for k, v in __default_platform_flags.items():
+                if k == 'sun_altitude_low_20deg' and solar_elevation_class == 1:
+                    v: True
                 default_platform_flags[f'{roi}_{k}'] = v  
         
         # Update record dictionary with metadata and computed values
