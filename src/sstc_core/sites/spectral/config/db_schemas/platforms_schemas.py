@@ -16,8 +16,12 @@ def build_phenocams_rois_flags_schema(station: Station, platform_id: str,  pheno
     if 'has_snow_presence' not in phenocam_flags_dict:
         phenocam_flags_dict['has_snow_presence'] = {
               'value': False,
-              'weight': 1}
+              'weight': 0}
      
+    if 'flag_disable_for_processing' not in phenocams_core_schema:
+        phenocam_flags_dict['flag_disable_for_processing'] = {
+              'value': False,
+              'weight': 1}
     
     suffixes = phenocam_flags_dict.keys()
 
