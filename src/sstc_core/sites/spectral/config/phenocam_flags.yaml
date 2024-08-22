@@ -16,7 +16,7 @@ flag_high_brightness:
 flag_low_brightness:
   value: False
   weight: 0.25
-flag_glare: 
+flag_obstructions:
   value: False
   weight: 0.5
 flag_clouds: 
@@ -40,15 +40,15 @@ flag_ice:
 flag_dirt: 
   value: False
   weight: 1
-flag_obstructions:
-  value: False
-  weight: 1
 flag_birds: 
   value: False
   weight: 1
 flag_insects: 
   value: False
   weight: 1
+flag_glare: 
+  value: False
+  weight: 0.5
 flag_blur:
   value: False
   weight: 1
