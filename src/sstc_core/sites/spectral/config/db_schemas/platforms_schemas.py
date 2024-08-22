@@ -13,16 +13,6 @@ def build_phenocams_rois_flags_schema(station: Station, platform_id: str,  pheno
     
     fields_list = []
     
-    if 'has_snow_presence' not in phenocam_flags_dict:
-        phenocam_flags_dict['has_snow_presence'] = {
-              'value': False,
-              'weight': 0}
-     
-    #if 'flag_disable_for_processing' not in phenocams_core_schema:
-    #    phenocam_flags_dict['flag_disable_for_processing'] = {
-    #          'value': False,
-    #          'weight': 1}
-    
     suffixes = phenocam_flags_dict.keys()
 
     if phenocam_rois_dict:
@@ -512,10 +502,11 @@ def build_phenocams_schema(
 ) -> List[Dict[str, Any]]:
     """
     Builds the complete schema for PhenoCams data by combining the core schema elements with 
-    Level 2 (L2) and Level 3 (L3) ROI parameters.
+    Phenocam Platforms Flags, Level 2 (L2) and Level 3 (L3) ROI parameters.
 
     This function generates the L2 and L3 ROI parameters for the given platform using the 
-    `build_phenocams_rois_L2_parameters` and `build_phenocams_rois_L3_parameters` functions. 
+    `build_phenocams_rois_flags_schema`, `build_phenocams_rois_L2_parameters` and 
+    `build_phenocams_rois_L3_parameters` functions. 
     It then appends these parameters to the provided PhenoCams core schema, resulting in a 
     comprehensive schema that covers all required fields.
 
@@ -543,8 +534,9 @@ def build_phenocams_schema(
     ... )
     >>> print(complete_schema)
     [{'field_name': 'catalog_guid', 'field_type': 'VARCHAR', 'field_default_value': None}, 
-     {'field_name': 'L2_1_num_pixels', 'field_type': 'INTEGER', 'field_default_value': None}, 
-     {'field_name': 'L3_1_has_snow_presence', 'field_type': 'BOOLEAN', 'field_default_value': False}, 
+     {'field_name': 'ROI_01_flag_shadows', 'field_type': 'BOOLEAN', 'field_default_value': False},      
+     {'field_name': 'L2_ROI_01_num_pixels', 'field_type': 'INTEGER', 'field_default_value': None}, 
+     {'field_name': 'L3_ROI_01_has_snow_presence', 'field_type': 'BOOLEAN', 'field_default_value': False}, 
      ...]
     """
     
@@ -554,7 +546,8 @@ def build_phenocams_schema(
     phenocams_rois_L2_parameters = build_phenocams_rois_L2_parameters(station=station, platform_id=platform_id)
     phenocams_rois_L3_parameters = build_phenocams_rois_L3_parameters(station=station, platform_id=platform_id)
     
-    # Append L2 and L3 parameters to the core schema
+    # Append flags, L2 and L3 parameters to the core schema
+    phenocams_core_schema += phenocam_flags_dict
     phenocams_core_schema += phenocams_rois_L2_parameters
     phenocams_core_schema += phenocams_rois_L3_parameters
     
