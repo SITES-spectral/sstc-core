@@ -18,10 +18,10 @@ def build_phenocams_rois_flags_schema(station: Station, platform_id: str,  pheno
               'value': False,
               'weight': 0}
      
-    if 'flag_disable_for_processing' not in phenocams_core_schema:
-        phenocam_flags_dict['flag_disable_for_processing'] = {
-              'value': False,
-              'weight': 1}
+    #if 'flag_disable_for_processing' not in phenocams_core_schema:
+    #    phenocam_flags_dict['flag_disable_for_processing'] = {
+    #          'value': False,
+    #          'weight': 1}
     
     suffixes = phenocam_flags_dict.keys()
 
@@ -547,6 +547,9 @@ def build_phenocams_schema(
      {'field_name': 'L3_1_has_snow_presence', 'field_type': 'BOOLEAN', 'field_default_value': False}, 
      ...]
     """
+    
+    phenocam_flags_dict = get_default_phenocam_flags(flags_yaml_filepath= config_flags_yaml_filepath)
+    build_phenocams_rois_flags_schema(station=station, platform_id=platform_id, phenocam_flags_dict=phenocam_flags_dict)
     # Generate L2 and L3 ROI parameters
     phenocams_rois_L2_parameters = build_phenocams_rois_L2_parameters(station=station, platform_id=platform_id)
     phenocams_rois_L3_parameters = build_phenocams_rois_L3_parameters(station=station, platform_id=platform_id)
