@@ -541,13 +541,13 @@ def build_phenocams_schema(
     """
     
     phenocam_flags_dict = get_default_phenocam_flags(flags_yaml_filepath= config_flags_yaml_filepath)
-    build_phenocams_rois_flags_schema(station=station, platform_id=platform_id, phenocam_flags_dict=phenocam_flags_dict)
+    phenocams_rois_flags_schema = build_phenocams_rois_flags_schema(station=station, platform_id=platform_id, phenocam_flags_dict=phenocam_flags_dict)
     # Generate L2 and L3 ROI parameters
     phenocams_rois_L2_parameters = build_phenocams_rois_L2_parameters(station=station, platform_id=platform_id)
     phenocams_rois_L3_parameters = build_phenocams_rois_L3_parameters(station=station, platform_id=platform_id)
     
     # Append flags, L2 and L3 parameters to the core schema
-    phenocams_core_schema += phenocam_flags_dict
+    phenocams_core_schema += phenocams_rois_flags_schema
     phenocams_core_schema += phenocams_rois_L2_parameters
     phenocams_core_schema += phenocams_rois_L3_parameters
     
