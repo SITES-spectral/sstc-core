@@ -376,7 +376,7 @@ def get_schema_as_dict(platform_schema: List[Dict[str, Any]]) -> Dict[str, Any]:
     - typing.Dict
     - typing.Any
     """
-    return {schema['field_name']: schema['field_default_value'] for schema in platform_schema}
+    return {schema['field_name']: schema.get('field_default_value', None) for schema in platform_schema}
     
     
 phenocams_core_schema = [
