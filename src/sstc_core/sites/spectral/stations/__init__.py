@@ -10,8 +10,8 @@ from datetime import datetime
 from typing import Dict, Any, List
 from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 from sstc_core.sites.spectral.data_products import phenocams
-from sstc_core.sites.spectral.config.db_schemas.platforms_schemas import phenocams_schema, get_schema_as_dict
 from sstc_core import version
+
 
 class DatabaseError(Exception):
     """Base class for other exceptions"""
