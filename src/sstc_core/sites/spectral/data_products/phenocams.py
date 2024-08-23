@@ -578,196 +578,151 @@ def load_flags_weights(flags_yaml_filepath: str) -> dict:
 import numpy as np
 
 
-def calculate_roi_weighted_means_and_stds(records_dict: Dict[int, List[Dict[str, Any]]],
-                                          weights_dict: Dict[int, Dict[str, Dict[str, float]]],
-                                          rois_list: List[str]
-                                         ) -> Dict[str, Any]:
+def calculate_final_weights_for_rois(record: dict, rois_list: list, flags_and_weights: dict) -> dict:
     """
-    Calculate weighted means and standard deviations for each ROI based on valid records
-    grouped by day_of_year.
+    Calculate the final weights to be applied for each ROI in a valid record.
 
     Parameters:
-        records_dict (Dict[int, List[Dict[str, Any]]]): Dictionary where the keys are day_of_year 
-        and the values are lists of record dictionaries, each containing ROI data.
-        weights_dict (Dict[int, Dict[str, Dict[str, float]]]): Dictionary where the keys are day_of_year,
-        and the values are dictionaries of weights per ROI.
-        rois_list (List[str]): List of ROI names to process (e.g., ['ROI_01', 'ROI_02', 'ROI_03']).
+    - record (dict): The record containing the ROI data.
+    - rois_list (list): List of ROI names to process.
+    - flags_and_weights (dict): Dictionary containing flag values and weights.
 
     Returns:
-        Dict[str, Any]: A dictionary with the day_of_year as the first key, the ROI name as the 
-        second key, and a dictionary containing weighted means, standard deviations, sums, pixel counts, 
-        and weights used for each day.
-
-    Example:
-        result = calculate_roi_weighted_means_and_stds(records_dict, weights_dict, ['ROI_01', 'ROI_02', 'ROI_03'])
+    - dict: Dictionary containing the final weights for each ROI.
     """
+    final_weights = {}
 
+    for roi in rois_list:
+        total_flag_weight = 0
+
+        # Iterate over all flags for the ROI and sum their weights if the flag is True
+        for flag, data in flags_and_weights.items():
+            flag_key = f"{roi}_{flag}"
+            if record.get(flag_key, False):
+                total_flag_weight += data['weight']
+
+        # Calculate the final weight
+        final_weight = 1 - total_flag_weight
+
+        # If the final weight is less than 0, set it to 0
+        if final_weight < 0:
+            final_weight = 0
+
+        final_weights[roi] = final_weight
+
+    return final_weights
+
+
+def calculate_roi_weighted_means_and_stds(
+    records_dict: dict, 
+    rois_list: list, 
+    flags_and_weights: dict
+) -> dict:
+    """
+    Calculate the weighted means and standard deviations for each ROI across all records grouped by day of year.
+
+    Parameters:
+    - records_dict (dict): Dictionary containing records grouped by day_of_year.
+    - rois_list (list): List of ROI names to process.
+    - flags_and_weights (dict): Dictionary containing flag values and weights.
+
+    Returns:
+    - dict: Dictionary containing the weighted means and standard deviations for each ROI across all records grouped by day_of_year.
+    """
     results = {}
 
     for day_of_year, records in records_dict.items():
-        day_results = {}
-        weights_used = {}
-
+        day_results = {roi: {"weighted_sum_red": 0, "weighted_sum_green": 0, "weighted_sum_blue": 0, "total_pixels": 0, "weights_used": {}} for roi in rois_list}
+        roi_pixel_data = {roi: {"red": [], "green": [], "blue": [], "weights": []} for roi in rois_list}
+        
         for record in records:
-            catalog_guid = record['catalog_guid']
-            day_weights = weights_dict.get(day_of_year, {})
+            final_weights = calculate_final_weights_for_rois(record, rois_list, flags_and_weights)
             
-            for roi in rois_list:
-                roi_flag_key = f'{roi}_flag_disable_for_processing'
-                if record.get(roi_flag_key, False):
-                    continue  # Skip ROIs that are flagged for exclusion
+            for roi, weight in final_weights.items():
+                if weight > 0:
+                    num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
+                    red_sum = record.get(f"L2_{roi}_SUM_Red", 0)
+                    green_sum = record.get(f"L2_{roi}_SUM_Green", 0)
+                    blue_sum = record.get(f"L2_{roi}_SUM_Blue", 0)
 
-                weight = day_weights.get(catalog_guid, {}).get(roi, 0)
-                if weight == 0:
-                    continue  # Skip if the weight is 0
+                    day_results[roi]["weighted_sum_red"] += red_sum * weight
+                    day_results[roi]["weighted_sum_green"] += green_sum * weight
+                    day_results[roi]["weighted_sum_blue"] += blue_sum * weight
+                    day_results[roi]["total_pixels"] += num_pixels
+                    day_results[roi]["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi_name": roi}
 
-                if catalog_guid not in weights_used:
-                    weights_used[catalog_guid] = {}
-                weights_used[catalog_guid][roi] = weight
+                    # Append data for standard deviation calculation
+                    roi_pixel_data[roi]["red"].append(red_sum / num_pixels if num_pixels else 0)
+                    roi_pixel_data[roi]["green"].append(green_sum / num_pixels if num_pixels else 0)
+                    roi_pixel_data[roi]["blue"].append(blue_sum / num_pixels if num_pixels else 0)
+                    roi_pixel_data[roi]["weights"].append(weight)
 
-                num_pixels = record.get(f'L2_{roi}_num_pixels', 0)
-                sum_red = record.get(f'L2_{roi}_SUM_Red', 0)
-                sum_green = record.get(f'L2_{roi}_SUM_Green', 0)
-                sum_blue = record.get(f'L2_{roi}_SUM_Blue', 0)
+        # Calculate weighted means for each ROI after processing all records for the day
+        for roi in rois_list:
+            if day_results[roi]["total_pixels"] > 0:
+                day_results[roi]["weighted_mean_red"] = day_results[roi]["weighted_sum_red"] / day_results[roi]["total_pixels"]
+                day_results[roi]["weighted_mean_green"] = day_results[roi]["weighted_sum_green"] / day_results[roi]["total_pixels"]
+                day_results[roi]["weighted_mean_blue"] = day_results[roi]["weighted_sum_blue"] / day_results[roi]["total_pixels"]
 
-                if roi not in day_results:
-                    day_results[roi] = {
-                        'weighted_mean_red': 0,
-                        'weighted_mean_green': 0,
-                        'weighted_mean_blue': 0,
-                        'weighted_sum_red': 0,
-                        'weighted_sum_green': 0,
-                        'weighted_sum_blue': 0,
-                        'sum_of_weights': 0,
-                        'sum_of_pixels': 0,
-                        'weights_used': {},
-                        'num_records_used': 0
-                    }
-
-                # Update sums and weights for calculating weighted means and standard deviations
-                day_results[roi]['weighted_mean_red'] += weight * sum_red
-                day_results[roi]['weighted_mean_green'] += weight * sum_green
-                day_results[roi]['weighted_mean_blue'] += weight * sum_blue
-
-                day_results[roi]['weighted_sum_red'] += sum_red
-                day_results[roi]['weighted_sum_green'] += sum_green
-                day_results[roi]['weighted_sum_blue'] += sum_blue
-
-                day_results[roi]['sum_of_weights'] += weight
-                day_results[roi]['sum_of_pixels'] += num_pixels
-
-                # Track weights used
-                day_results[roi]['weights_used'][catalog_guid] = {roi: weight}
-
-                day_results[roi]['num_records_used'] += 1
-
-        # Calculate the final weighted means
-        for roi in day_results:
-            if day_results[roi]['sum_of_weights'] > 0:
-                day_results[roi]['weighted_mean_red'] /= day_results[roi]['sum_of_weights']
-                day_results[roi]['weighted_mean_green'] /= day_results[roi]['sum_of_weights']
-                day_results[roi]['weighted_mean_blue'] /= day_results[roi]['sum_of_weights']
-
-            day_results[roi]['std_dev_red'] = (
-                sum(
-                    weights_used[guid][roi] * ((record[f'L2_{roi}_SUM_Red'] / record[f'L2_{roi}_num_pixels']) - day_results[roi]['weighted_mean_red']) ** 2
-                    for guid, record in [(rec['catalog_guid'], rec) for rec in records if rec['catalog_guid'] in weights_used]
-                ) / day_results[roi]['sum_of_weights']
-            ) ** 0.5
-
-            day_results[roi]['std_dev_green'] = (
-                sum(
-                    weights_used[guid][roi] * ((record[f'L2_{roi}_SUM_Green'] / record[f'L2_{roi}_num_pixels']) - day_results[roi]['weighted_mean_green']) ** 2
-                    for guid, record in [(rec['catalog_guid'], rec) for rec in records if rec['catalog_guid'] in weights_used]
-                ) / day_results[roi]['sum_of_weights']
-            ) ** 0.5
-
-            day_results[roi]['std_dev_blue'] = (
-                sum(
-                    weights_used[guid][roi] * ((record[f'L2_{roi}_SUM_Blue'] / record[f'L2_{roi}_num_pixels']) - day_results[roi]['weighted_mean_blue']) ** 2
-                    for guid, record in [(rec['catalog_guid'], rec) for rec in records if rec['catalog_guid'] in weights_used]
-                ) / day_results[roi]['sum_of_weights']
-            ) ** 0.5
+                # Calculate standard deviations
+                if len(roi_pixel_data[roi]["weights"]) > 1:
+                    day_results[roi]["std_red"] = np.sqrt(np.average((np.array(roi_pixel_data[roi]["red"]) - day_results[roi]["weighted_mean_red"])**2, weights=roi_pixel_data[roi]["weights"]))
+                    day_results[roi]["std_green"] = np.sqrt(np.average((np.array(roi_pixel_data[roi]["green"]) - day_results[roi]["weighted_mean_green"])**2, weights=roi_pixel_data[roi]["weights"]))
+                    day_results[roi]["std_blue"] = np.sqrt(np.average((np.array(roi_pixel_data[roi]["blue"]) - day_results[roi]["weighted_mean_blue"])**2, weights=roi_pixel_data[roi]["weights"]))
+                else:
+                    day_results[roi]["std_red"] = 0
+                    day_results[roi]["std_green"] = 0
+                    day_results[roi]["std_blue"] = 0
+            else:
+                day_results[roi]["weighted_mean_red"] = 0
+                day_results[roi]["weighted_mean_green"] = 0
+                day_results[roi]["weighted_mean_blue"] = 0
+                day_results[roi]["std_red"] = 0
+                day_results[roi]["std_green"] = 0
+                day_results[roi]["std_blue"] = 0
 
         results[day_of_year] = day_results
 
     return results
 
-
-def calculate_roi_weighted_means_and_stds_per_record(records_dict: Dict[int, List[Dict[str, Any]]],
-                                                     weights_dict: Dict[int, Dict[str, Dict[str, float]]],
-                                                     rois_list: List[str]) -> Dict[int, Dict[str, Any]]:
+def calculate_roi_weighted_means_and_stds_per_record(
+    record: dict, 
+    rois_list: list, 
+    flags_and_weights: dict
+) -> dict:
     """
-    Calculate weighted means for each ROI based on valid records grouped by year.
-
-    This function processes records to compute the weighted means for each ROI within each valid record. 
-    Standard deviations are not included in the final results since this function operates on individual records, 
-    which do not have variability within a single sample. Hence, the standard deviation would be zero.
+    Calculate the weighted means for each ROI in the record.
 
     Parameters:
-        records_dict (Dict[int, List[Dict[str, Any]]]): Dictionary where the keys are day_of_year and the values 
-        are lists of record dictionaries, each containing ROI data.
-        weights_dict (Dict[int, Dict[str, Dict[str, float]]]): Dictionary where the keys are day_of_year, 
-        and the values are dictionaries of weights per ROI.
-        rois_list (List[str]): List of ROI names to process (e.g., ['ROI_01', 'ROI_02', 'ROI_03']).
+    - record (dict): The record containing the ROI data.
+    - rois_list (list): List of ROI names to process.
+    - flags_and_weights (dict): Dictionary containing flag values and weights.
 
     Returns:
-        Dict[int, Dict[str, Any]]: A dictionary with year as the first key, catalog_guid as the second key, and a dictionary
-        containing weighted means, sums, pixel counts, and weights used for each record.
-
-    Notes:
-        - Standard deviations are not calculated because the function deals with individual records, 
-          where each ROI is represented by a single data point. Without multiple data points for each ROI, 
-          standard deviation calculations are not meaningful.
-
-    Example:
-        result = calculate_roi_weighted_means_and_stds_per_record(records_dict, weights_dict, ['ROI_01', 'ROI_02', 'ROI_03'])
+    - dict: Dictionary containing the weighted means for each valid ROI.
     """
-
     results = {}
+    final_weights = calculate_final_weights_for_rois(record, rois_list, flags_and_weights)
 
-    for day_of_year, records in records_dict.items():
-        for record in records:
-            catalog_guid = record['catalog_guid']
-            day_weights = weights_dict.get(day_of_year, {})
-            record_results = {}
-            for roi in rois_list:
-                roi_flag_key = f'{roi}_flag_disable_for_processing'
-                if record.get(roi_flag_key, False):
-                    continue  # Skip ROIs that are flagged for exclusion
+    for roi, weight in final_weights.items():
+        if weight > 0:
+            # Proceed with weighted calculations only if the final weight is greater than 0
+            num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
+            red_sum = record.get(f"L2_{roi}_SUM_Red", 0)
+            green_sum = record.get(f"L2_{roi}_SUM_Green", 0)
+            blue_sum = record.get(f"L2_{roi}_SUM_Blue", 0)
 
-                weight = day_weights.get(catalog_guid, {}).get(roi, 0)
-                if weight == 0:
-                    continue  # Skip if the weight is 0
-
-                num_pixels = record.get(f'L2_{roi}_num_pixels', 0)
-                sum_red = record.get(f'L2_{roi}_SUM_Red', 0)
-                sum_green = record.get(f'L2_{roi}_SUM_Green', 0)
-                sum_blue = record.get(f'L2_{roi}_SUM_Blue', 0)
-
-                if num_pixels == 0 or weight == 0:
-                    continue  # Skip if there are no pixels or the weight is zero
-
-                # Calculate means
-                mean_red = sum_red / num_pixels
-                mean_green = sum_green / num_pixels
-                mean_blue = sum_blue / num_pixels
-
-                # Store the results
-                record_results[roi] = {
-                    'weighted_mean_red': mean_red,
-                    'weighted_mean_green': mean_green,
-                    'weighted_mean_blue': mean_blue,
-                    'sum_of_red': sum_red,
-                    'sum_of_green': sum_green,
-                    'sum_of_blue': sum_blue,
-                    'sum_of_pixels': num_pixels,
-                    'weight_used': weight,
-                }
-
-            if catalog_guid in results:
-                results[day_of_year][catalog_guid].update(record_results)
-            else:
-                results[day_of_year] = {catalog_guid: record_results}
+            # Store results
+            results[roi] = {
+                "weighted_mean_red": (red_sum * weight) / num_pixels if num_pixels else 0,
+                "weighted_mean_green": (green_sum * weight) / num_pixels if num_pixels else 0,
+                "weighted_mean_blue": (blue_sum * weight) / num_pixels if num_pixels else 0,
+                "total_pixels": num_pixels,
+                "final_weight": weight,
+                "total_sum_red": red_sum,
+                "total_sum_green": green_sum,
+                "total_sum_blue": blue_sum,
+            }
 
     return results
+
