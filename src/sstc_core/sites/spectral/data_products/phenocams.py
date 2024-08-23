@@ -831,11 +831,11 @@ def create_l3_parameters_dataframe(data_dict, year):
         day = int(day)
         for roi_name, parameters in rois.items():
             for param_name, param_value in parameters.items():
-                if param_name == "weights_used":
+                if param_name == "weights_used" and isinstance(param_value, dict):
                     # Handle the weights_used separately
                     for catalog_guid, weight_info in param_value.items():
                         weight_column_name = f"L3_{roi_name}_weight__{catalog_guid}"
-                        data[day][weight_column_name] = weight_info['weight']
+                        data[day][weight_column_name] = weight_info.get('weight')
                 else:
                     # Form the column name based on ROI and parameter
                     column_name = f"L3_{roi_name}_{param_name}"
@@ -848,7 +848,7 @@ def create_l3_parameters_dataframe(data_dict, year):
     # Sort the DataFrame by the index (days of the year)
     df.sort_index(inplace=True)
     
-    # Fill missing values with None
+    # Fill missing values with pd.NA (a proper placeholder for missing data)
     df = df.reindex(range(1, days_in_year + 1)).fillna(pd.NA)
     
     return df
