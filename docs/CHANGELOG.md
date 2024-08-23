@@ -1,5 +1,6 @@
 ## [v0.15.4] 
 - Added `phenocams.calculate_roi_weighted_means_and_stds`
+- Added `phenocams.calculate_roi_weighted_means_and_stds_per_record`
 
 ## [v0.15.3]
 - Improved `platforms_schemas` for phenocams to auto build schema based on ROIS for flags and L2 & L3 parameters.
