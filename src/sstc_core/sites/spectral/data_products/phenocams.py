@@ -796,7 +796,7 @@ def create_l2_parameters_dataframe(data_dict, year):
     df.sort_index(inplace=True)
     
     # Fill missing values with None
-    df = df.reindex(range(1, days_in_year + 1)).fillna(None)
+    df = df.reindex(range(1, days_in_year + 1)).fillna(pd.NA)
     
     return df
 
@@ -849,6 +849,6 @@ def create_l3_parameters_dataframe(data_dict, year):
     df.sort_index(inplace=True)
     
     # Fill missing values with None
-    df = df.reindex(range(1, days_in_year + 1)).fillna(None)
+    df = df.reindex(range(1, days_in_year + 1)).fillna(pd.NA)
     
     return df
