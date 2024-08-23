@@ -1347,7 +1347,9 @@ class Station(DuckDBManager):
             raise
 
         finally:
-            self.close_connection()    
+            self.close_connection()
+            
+                
     def add_new_fields_to_table(self, table_name: str, new_fields: List[Dict[str, Any]]) -> bool:
         """
         Adds new fields to an existing table and initializes them with default values for all records.

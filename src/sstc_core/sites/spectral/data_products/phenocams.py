@@ -573,3 +573,79 @@ def load_flags_weights(flags_yaml_filepath: str) -> dict:
         weights_dict[flag] = flags[flag].get('weight', 1)
 
     return weights_dict
+
+
+def calculate_roi_weighted_means_and_stds(records_dict, weights_dict):
+    """
+    Calculates the weighted means and standard deviations of RGB channels for each ROI in the provided records.
+    Includes the sums of each channel, the number of pixels, and the weight used for the weighted mean.
+
+    Parameters:
+    ----------
+    records_dict : dict
+        A dictionary where the keys are `day_of_year` and the values are lists of records (dictionaries).
+    weights_dict : dict
+        A dictionary where the keys are `day_of_year` and the values are the weights for each day.
+
+    Returns:
+    -------
+    result_dict : dict
+        A dictionary structured by `day_of_year` with each day containing a subdictionary where keys are 
+        `ROI_01`, `ROI_02`, etc., and values are dictionaries with `mean`, `std`, `sums`, `num_pixels`, 
+        and `weights` for each RGB channel.
+    
+    Example:
+    --------
+    ```python
+    records_by_day = station.get_records_ready_for_products_by_year(table_name, 2024)
+    weights_dict = {111: 0.9, 112: 0.8, ...}  # Example weights for each day
+    results = calculate_roi_weighted_means_and_stds(records_by_day, weights_dict)
+    ```
+    
+    Notes:
+    ------
+    - The method only processes ROIs that are not disabled for processing.
+    - The weights_dict should provide a weight for each `day_of_year` in the records_dict.
+    """
+    result_dict = {}
+
+    for day_of_year, records in records_dict.items():
+        result_dict[day_of_year] = {}
+
+        for roi in ['ROI_01', 'ROI_02', 'ROI_03']:  # Assuming these are the ROIs
+            if records[0][f'{roi}_flag_disable_for_processing']:
+                continue
+            
+            sum_red = sum(record[f'L2_{roi}_SUM_Red'] for record in records)
+            sum_green = sum(record[f'L2_{roi}_SUM_Green'] for record in records)
+            sum_blue = sum(record[f'L2_{roi}_SUM_Blue'] for record in records)
+            
+            num_pixels = sum(record[f'L2_{roi}_num_pixels'] for record in records)
+
+            # Calculate weighted means
+            weight = weights_dict.get(day_of_year, 1)  # Default weight is 1 if not provided
+            weighted_mean_red = np.average([record[f'L2_{roi}_SUM_Red'] / record[f'L2_{roi}_num_pixels'] for record in records], weights=[weight] * len(records))
+            weighted_mean_green = np.average([record[f'L2_{roi}_SUM_Green'] / record[f'L2_{roi}_num_pixels'] for record in records], weights=[weight] * len(records))
+            weighted_mean_blue = np.average([record[f'L2_{roi}_SUM_Blue'] / record[f'L2_{roi}_num_pixels'] for record in records], weights=[weight] * len(records))
+            
+            # Calculate standard deviations
+            std_red = np.sqrt(np.average([(record[f'L2_{roi}_SUM_Red'] / record[f'L2_{roi}_num_pixels'] - weighted_mean_red) ** 2 for record in records], weights=[weight] * len(records)))
+            std_green = np.sqrt(np.average([(record[f'L2_{roi}_SUM_Green'] / record[f'L2_{roi}_num_pixels'] - weighted_mean_green) ** 2 for record in records], weights=[weight] * len(records)))
+            std_blue = np.sqrt(np.average([(record[f'L2_{roi}_SUM_Blue'] / record[f'L2_{roi}_num_pixels'] - weighted_mean_blue) ** 2 for record in records], weights=[weight] * len(records)))
+
+            # Store results
+            result_dict[day_of_year][roi] = {
+                'weighted_mean_red': weighted_mean_red,
+                'weighted_mean_green': weighted_mean_green,
+                'weighted_mean_blue': weighted_mean_blue,
+                'std_red': std_red,
+                'std_green': std_green,
+                'std_blue': std_blue,
+                'sum_red': sum_red,
+                'sum_green': sum_green,
+                'sum_blue': sum_blue,
+                'num_pixels': num_pixels,
+                'weight': weight
+            }
+
+    return result_dict
