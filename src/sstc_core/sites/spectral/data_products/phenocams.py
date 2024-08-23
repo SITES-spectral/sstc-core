@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Dict, Any
 import numpy as np
+import pandas as pd
 import cv2
 from PIL import Image
 from sstc_core.sites.spectral.io_tools import load_yaml
@@ -575,8 +576,6 @@ def load_flags_weights(flags_yaml_filepath: str) -> dict:
     return weights_dict
 
 
-import numpy as np
-
 
 def calculate_final_weights_for_rois(record: dict, rois_list: list, flags_and_weights: dict) -> dict:
     """
@@ -619,7 +618,7 @@ def calculate_roi_weighted_means_and_stds(
     flags_and_weights: dict
 ) -> dict:
     """
-    Calculate the weighted means and standard deviations for each ROI across all records grouped by day of year.
+    Calculate the weighted means, standard deviations, and derived records (GCC, RCC) per day of year for each ROI.
 
     Parameters:
     - records_dict (dict): Dictionary containing records grouped by day_of_year.
@@ -627,13 +626,15 @@ def calculate_roi_weighted_means_and_stds(
     - flags_and_weights (dict): Dictionary containing flag values and weights.
 
     Returns:
-    - dict: Dictionary containing the weighted means and standard deviations for each ROI across all records grouped by day_of_year.
+    - dict: Dictionary containing the weighted means, standard deviations, sum of weighted means, GCC, and RCC for each ROI per day of year.
     """
     results = {}
 
     for day_of_year, records in records_dict.items():
-        day_results = {roi: {"weighted_sum_red": 0, "weighted_sum_green": 0, "weighted_sum_blue": 0, "total_pixels": 0, "weights_used": {}} for roi in rois_list}
-        roi_pixel_data = {roi: {"red": [], "green": [], "blue": [], "weights": []} for roi in rois_list}
+        day_results = {roi: {"weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
+                             "sum_of_weighted_means": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
+                             "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, "num_valid_records": 0} 
+                       for roi in rois_list}
         
         for record in records:
             final_weights = calculate_final_weights_for_rois(record, rois_list, flags_and_weights)
@@ -645,46 +646,58 @@ def calculate_roi_weighted_means_and_stds(
                     green_sum = record.get(f"L2_{roi}_SUM_Green", 0)
                     blue_sum = record.get(f"L2_{roi}_SUM_Blue", 0)
 
-                    day_results[roi]["weighted_sum_red"] += red_sum * weight
-                    day_results[roi]["weighted_sum_green"] += green_sum * weight
-                    day_results[roi]["weighted_sum_blue"] += blue_sum * weight
-                    day_results[roi]["total_pixels"] += num_pixels
-                    day_results[roi]["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi_name": roi}
+                    if num_pixels > 0:
+                        weighted_mean_red = (red_sum * weight) / num_pixels
+                        weighted_mean_green = (green_sum * weight) / num_pixels
+                        weighted_mean_blue = (blue_sum * weight) / num_pixels
 
-                    # Append data for standard deviation calculation
-                    roi_pixel_data[roi]["red"].append(red_sum / num_pixels if num_pixels else 0)
-                    roi_pixel_data[roi]["green"].append(green_sum / num_pixels if num_pixels else 0)
-                    roi_pixel_data[roi]["blue"].append(blue_sum / num_pixels if num_pixels else 0)
-                    roi_pixel_data[roi]["weights"].append(weight)
+                        day_results[roi]["weighted_mean_red"] += weighted_mean_red
+                        day_results[roi]["weighted_mean_green"] += weighted_mean_green
+                        day_results[roi]["weighted_mean_blue"] += weighted_mean_blue
+                        day_results[roi]["total_pixels"] += num_pixels
+                        day_results[roi]["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi": roi}
+                        day_results[roi]["num_valid_records"] += 1
 
-        # Calculate weighted means for each ROI after processing all records for the day
+        # Calculate derived records for each ROI
         for roi in rois_list:
-            if day_results[roi]["total_pixels"] > 0:
-                day_results[roi]["weighted_mean_red"] = day_results[roi]["weighted_sum_red"] / day_results[roi]["total_pixels"]
-                day_results[roi]["weighted_mean_green"] = day_results[roi]["weighted_sum_green"] / day_results[roi]["total_pixels"]
-                day_results[roi]["weighted_mean_blue"] = day_results[roi]["weighted_sum_blue"] / day_results[roi]["total_pixels"]
+            total_valid_records = day_results[roi]["num_valid_records"]
+            if total_valid_records > 0:
+                # Compute the sum of weighted means
+                sum_of_weighted_means = (
+                    day_results[roi]["weighted_mean_red"] +
+                    day_results[roi]["weighted_mean_green"] +
+                    day_results[roi]["weighted_mean_blue"]
+                )
 
-                # Calculate standard deviations
-                if len(roi_pixel_data[roi]["weights"]) > 1:
-                    day_results[roi]["std_red"] = np.sqrt(np.average((np.array(roi_pixel_data[roi]["red"]) - day_results[roi]["weighted_mean_red"])**2, weights=roi_pixel_data[roi]["weights"]))
-                    day_results[roi]["std_green"] = np.sqrt(np.average((np.array(roi_pixel_data[roi]["green"]) - day_results[roi]["weighted_mean_green"])**2, weights=roi_pixel_data[roi]["weights"]))
-                    day_results[roi]["std_blue"] = np.sqrt(np.average((np.array(roi_pixel_data[roi]["blue"]) - day_results[roi]["weighted_mean_blue"])**2, weights=roi_pixel_data[roi]["weights"]))
-                else:
-                    day_results[roi]["std_red"] = 0
-                    day_results[roi]["std_green"] = 0
-                    day_results[roi]["std_blue"] = 0
-            else:
-                day_results[roi]["weighted_mean_red"] = 0
-                day_results[roi]["weighted_mean_green"] = 0
-                day_results[roi]["weighted_mean_blue"] = 0
-                day_results[roi]["std_red"] = 0
-                day_results[roi]["std_green"] = 0
-                day_results[roi]["std_blue"] = 0
+                day_results[roi]["sum_of_weighted_means"] = sum_of_weighted_means
+
+                # Compute GCC and RCC values
+                if sum_of_weighted_means > 0:
+                    day_results[roi]["GCC_value"] = day_results[roi]["weighted_mean_green"] / sum_of_weighted_means
+                    day_results[roi]["RCC_value"] = day_results[roi]["weighted_mean_red"] / sum_of_weighted_means
+
+                # Compute standard deviations
+                red_values = []
+                green_values = []
+                blue_values = []
+
+                for record in records:
+                    weight = day_results[roi]["weights_used"].get(record["catalog_guid"], {}).get("weight", 0)
+                    if weight > 0:
+                        num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
+                        if num_pixels > 0:
+                            red_values.append((record.get(f"L2_{roi}_SUM_Red", 0) * weight) / num_pixels)
+                            green_values.append((record.get(f"L2_{roi}_SUM_Green", 0) * weight) / num_pixels)
+                            blue_values.append((record.get(f"L2_{roi}_SUM_Blue", 0) * weight) / num_pixels)
+
+                if len(red_values) > 1:
+                    day_results[roi]["std_red"] = np.std(red_values)
+                    day_results[roi]["std_green"] = np.std(green_values)
+                    day_results[roi]["std_blue"] = np.std(blue_values)
 
         results[day_of_year] = day_results
 
     return results
-
 
 def calculate_roi_weighted_means_and_stds_per_record(
     records_dict: dict, 
@@ -738,3 +751,104 @@ def calculate_roi_weighted_means_and_stds_per_record(
         results[day_of_year] = day_results
 
     return results
+
+
+
+def create_l2_parameters_dataframe(data_dict, year):
+    """
+    Creates a DataFrame indexed by day of the year for a given `year`, containing all parameter values 
+    for each ROI, using the catalog_guid to help form the column names.
+    
+    Parameters
+    ----------
+    data_dict : dict
+        Dictionary containing the data indexed by day of year, catalog_guid, and ROI name.
+    year : int
+        The year for which the DataFrame is being created (used to calculate days in the year).
+        
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with days of the year as the index and columns representing the parameter
+        values for each ROI, with catalog_guid included in the column names.
+    """
+    # Determine the number of days in the year (considering leap years)
+    days_in_year = 366 if (year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)) else 365
+    
+    # Initialize an empty dictionary to store data
+    data = {day: {} for day in range(1, days_in_year + 1)}
+    
+    # Iterate through the data dictionary
+    for day, catalogs in data_dict.items():
+        day = int(day)
+        for catalog_guid, rois in catalogs.items():
+            for roi_name, parameters in rois.items():
+                for param_name, param_value in parameters.items():
+                    # Form the column name based on catalog_guid, ROI, and parameter
+                    column_name = f"{catalog_guid}__{roi_name}_{param_name}"
+                    # Store the parameter value in the data dictionary
+                    data[day][column_name] = param_value
+    
+    # Create a DataFrame from the dictionary
+    df = pd.DataFrame.from_dict(data, orient='index')
+    
+    # Sort the DataFrame by the index (days of the year)
+    df.sort_index(inplace=True)
+    
+    # Fill missing values with None
+    df = df.reindex(range(1, days_in_year + 1)).fillna(None)
+    
+    return df
+
+
+def create_l3_parameters_dataframe(data_dict, year):
+    """
+    Creates a DataFrame indexed by day of the year for a given `year`, containing all parameter values 
+    for each ROI, using `L3_{roi_name}_{param_name}` to form the column names. The `weights_used` entries
+    are expanded to form columns in the format `L3_{roi_name}_weight__{catalog_guid}`.
+    
+    Parameters
+    ----------
+    data_dict : dict
+        Dictionary containing the data indexed by day of year and ROI name.
+    year : int
+        The year for which the DataFrame is being created (used to calculate days in the year).
+        
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with days of the year as the index and columns representing the parameter
+        values for each ROI, including expanded `weights_used`.
+    """
+    # Determine the number of days in the year (considering leap years)
+    days_in_year = 366 if (year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)) else 365
+    
+    # Initialize an empty dictionary to store data
+    data = {day: {} for day in range(1, days_in_year + 1)}
+    
+    # Iterate through the data dictionary
+    for day, rois in data_dict.items():
+        day = int(day)
+        for roi_name, parameters in rois.items():
+            for param_name, param_value in parameters.items():
+                if param_name == "weights_used":
+                    # Handle the weights_used separately
+                    for catalog_guid, weight_info in param_value.items():
+                        weight_column_name = f"L3_{roi_name}_weight__{catalog_guid}"
+                        data[day][weight_column_name] = weight_info['weight']
+                else:
+                    # Form the column name based on ROI and parameter
+                    column_name = f"L3_{roi_name}_{param_name}"
+                    # Store the parameter value in the data dictionary
+                    data[day][column_name] = param_value
+    
+    # Create a DataFrame from the dictionary
+    df = pd.DataFrame.from_dict(data, orient='index')
+    
+    # Sort the DataFrame by the index (days of the year)
+    df.sort_index(inplace=True)
+    
+    # Fill missing values with None
+    df = df.reindex(range(1, days_in_year + 1)).fillna(None)
+    
+    return df
