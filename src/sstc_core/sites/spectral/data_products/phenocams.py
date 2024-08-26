@@ -651,7 +651,7 @@ def calculate_roi_weighted_means_and_stds(
         return utils.mean_datetime_str(datetime_list=datetime_list)
 
     def compute_qflag_for_day(records: List[Dict], latitude: float, longitude: float) -> Union[float, None]:
-        records_dict = {record['catalog_id']: record for record in records}
+        records_dict = {record['catalog_guid']: record for record in records}
         return compute_qflag(latitude_dd=latitude, longitude_dd=longitude, records_dict=records_dict, timezone_str='Europe/Stockholm')
 
     def process_records_for_roi(records: List[Dict], roi: str, flags_and_weights: Dict[str, float], overwrite_weight: bool) -> Dict[str, Union[float, bool, int, Dict]]:
