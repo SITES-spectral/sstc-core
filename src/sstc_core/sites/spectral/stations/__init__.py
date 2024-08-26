@@ -1814,6 +1814,54 @@ class Station(DuckDBManager):
 
         finally:
             self.close_connection()
+            
+    def get_day_of_year_min_max_filtered(self, table_name: str, year: int) -> Dict[str, int]:
+        """
+        Retrieves the minimum and maximum values of the `day_of_year` field for the given year, 
+        with additional filters for `is_ready_for_products_use` and `is_data_processing_disabled`.
+
+        Parameters:
+            table_name (str): The name of the table to query.
+            year (int): The year to filter records by.
+
+        Returns:
+            Dict[str, int]: A dictionary containing the minimum and maximum values of the `day_of_year` field.
+                            The dictionary has keys 'min' and 'max'.
+
+        Raises:
+            duckdb.Error: If there is an error executing the query or managing the connection.
+        """
+        query = f"""
+            SELECT day_of_year 
+            FROM {table_name} 
+            WHERE year = ? 
+            AND is_ready_for_products_use = TRUE 
+            AND is_data_processing_disabled = FALSE
+        """
+        
+        try:
+            if self.connection is None:
+                self.connect()
+
+            result = self.execute_query(query, (year,))
+            
+            if not result:
+                return {'min': None, 'max': None}
+
+            # Convert the day_of_year strings to integers
+            day_of_year_ints = [int(row[0]) for row in result]
+            min_day_of_year = min(day_of_year_ints)
+            max_day_of_year = max(day_of_year_ints)
+
+            return {'min': min_day_of_year, 'max': max_day_of_year}
+        
+        except duckdb.Error as e:
+            print(f"An error occurred while retrieving min and max day_of_year from table '{table_name}': {e}")
+            raise
+        
+        finally:
+            self.close_connection()
+
 
 
             
