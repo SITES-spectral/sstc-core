@@ -1815,53 +1815,66 @@ class Station(DuckDBManager):
         finally:
             self.close_connection()
             
-    def get_day_of_year_min_max_filtered(self, table_name: str, year: int) -> Dict[str, int]:
+    def get_min_max_dates_with_filters(self, 
+                                       table_name: str, 
+                                       year: int, 
+                                       filters_dict: Optional[Dict[str, Any]] ={
+                                           'is_ready_for_products_use': True,
+                                           'is_data_processing_disabled': False,
+                                           } ) -> Dict[str, Optional[str]]:
         """
-        Retrieves the minimum and maximum values of the `day_of_year` field for the given year, 
-        with additional filters for `is_ready_for_products_use` and `is_data_processing_disabled`.
+        Retrieves the minimum and maximum values of the `creation_date` field for the given year,
+        with additional filters specified in the `filters_dict`.
 
         Parameters:
             table_name (str): The name of the table to query.
             year (int): The year to filter records by.
+            filters_dict (Optional[Dict[str, Any]]): A dictionary of additional filters to apply. 
+                                                    The keys are column names, and the values are the 
+                                                    values to filter by.
 
         Returns:
-            Dict[str, int]: A dictionary containing the minimum and maximum values of the `day_of_year` field.
-                            The dictionary has keys 'min' and 'max'.
+            Dict[str, Optional[str]]: A dictionary containing the minimum and maximum values of the `creation_date` field.
+                                    The dictionary has keys 'min' and 'max'.
 
         Raises:
             duckdb.Error: If there is an error executing the query or managing the connection.
         """
-        query = f"""
-            SELECT day_of_year 
+        base_query = f"""
+            SELECT MIN(creation_date) AS min_date, MAX(creation_date) AS max_date
             FROM {table_name} 
-            WHERE year = ? 
-            AND is_ready_for_products_use = TRUE 
-            AND is_data_processing_disabled = FALSE
+            WHERE year = ?          
         """
+
+        filters_query = ""
+        params = [year]
+
+        if filters_dict:
+            for key, value in filters_dict.items():
+                filters_query += f" AND {key} = ?"
+                params.append(value)
+
+        query = base_query + filters_query
         
         try:
             if self.connection is None:
                 self.connect()
 
-            result = self.execute_query(query, (year,))
+            result = self.execute_query(query, tuple(params))
             
-            if not result:
+            if not result or result[0][0] is None:
                 return {'min': None, 'max': None}
 
-            # Convert the day_of_year strings to integers
-            day_of_year_ints = [int(row[0]) for row in result]
-            min_day_of_year = min(day_of_year_ints)
-            max_day_of_year = max(day_of_year_ints)
+            min_date, max_date = result[0]
 
-            return {'min': min_day_of_year, 'max': max_day_of_year}
+            return {'min': min_date, 'max': max_date}
         
         except duckdb.Error as e:
-            print(f"An error occurred while retrieving min and max day_of_year from table '{table_name}': {e}")
+            print(f"An error occurred while retrieving min and max dates from table '{table_name}': {e}")
             raise
         
         finally:
             self.close_connection()
-
 
 
             

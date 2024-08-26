@@ -3,7 +3,7 @@
 - Added `phenocams.calculate_roi_weighted_means_and_stds_per_record`
 - Added `phenocams.create_l2_parameters_dataframe`
 - Added `phenocams.create_l3_parameters_dataframe`
-  
+- Added `station.get_min_max_dates_with_filters`
 
 ## [v0.15.3]
 - Improved `platforms_schemas` for phenocams to auto build schema based on ROIS for flags and L2 & L3 parameters.
