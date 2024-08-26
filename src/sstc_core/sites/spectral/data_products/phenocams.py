@@ -6,6 +6,7 @@ import pandas as pd
 import cv2
 from PIL import Image
 from sstc_core.sites.spectral.io_tools import load_yaml
+from sstc_core.sites.spectral import utils
 
 # Get the absolute path of the current script
 __script_parent_path = os.path.dirname(os.path.abspath(__file__))
@@ -633,18 +634,25 @@ def calculate_roi_weighted_means_and_stds(
     for day_of_year, records in records_dict.items():
         day_results = {roi: {"weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
                              "sum_of_weighted_means": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
-                             "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, "num_valid_records": 0} 
+                             "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, "num_valid_records": 0, 
+                             "has_flags": False} 
                        for roi in rois_list}
         
         for record in records:
             final_weights = calculate_final_weights_for_rois(record, rois_list, flags_and_weights)
             
-            for roi, weight in final_weights.items():
+            for roi, _ in final_weights.items():   # weight
+                ## We are not affecting the creating the a weighted
+                rois_flags_dict = utils.extract_keys_with_prefix(input_dict=record, starts_with=roi)
+                has_flags = any([ v for k, v in rois_flags_dict.items()])
+                
+                weight = 1
                 if weight > 0:
                     num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
                     red_sum = record.get(f"L2_{roi}_SUM_Red", 0)
                     green_sum = record.get(f"L2_{roi}_SUM_Green", 0)
                     blue_sum = record.get(f"L2_{roi}_SUM_Blue", 0)
+                    
 
                     if num_pixels > 0:
                         weighted_mean_red = (red_sum * weight) / num_pixels
@@ -657,6 +665,7 @@ def calculate_roi_weighted_means_and_stds(
                         day_results[roi]["total_pixels"] += num_pixels
                         day_results[roi]["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi": roi}
                         day_results[roi]["num_valid_records"] += 1
+                        day_results[roi]['has_flags'] = has_flags  
 
         # Calculate derived records for each ROI
         for roi in rois_list:
@@ -682,7 +691,10 @@ def calculate_roi_weighted_means_and_stds(
                 blue_values = []
 
                 for record in records:
-                    weight = day_results[roi]["weights_used"].get(record["catalog_guid"], {}).get("weight", 0)
+                    # not using weights
+                    #weight = day_results[roi]["weights_used"].get(record["catalog_guid"], {}).get("weight", 0)
+                    weight = 1
+                    
                     if weight > 0:
                         num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
                         if num_pixels > 0:
@@ -833,9 +845,10 @@ def create_l3_parameters_dataframe(data_dict, year):
             for param_name, param_value in parameters.items():
                 if param_name == "weights_used" and isinstance(param_value, dict):
                     # Handle the weights_used separately
-                    for catalog_guid, weight_info in param_value.items():
-                        weight_column_name = f"L3_{roi_name}_weight__{catalog_guid}"
-                        data[day][weight_column_name] = weight_info.get('weight')
+                    #for catalog_guid, weight_info in param_value.items():
+                         
+                        # weight_column_name = f"L3_{roi_name}_weight__{catalog_guid}"
+                #        data[day][weight_column_name] = weight_info.get('weight')
                 else:
                     # Form the column name based on ROI and parameter
                     column_name = f"L3_{roi_name}_{param_name}"
