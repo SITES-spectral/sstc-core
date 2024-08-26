@@ -635,17 +635,19 @@ def calculate_roi_weighted_means_and_stds(
         day_results = {roi: {"weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
                              "sum_of_weighted_means": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
                              "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, "num_valid_records": 0, 
-                             "has_flags": False} 
+                             "has_flags": False, 'has_snow_presence': False} 
                        for roi in rois_list}
         
+          
         for record in records:
+            
             final_weights = calculate_final_weights_for_rois(record, rois_list, flags_and_weights)
             
             for roi, _ in final_weights.items():   # weight
                 ## We are not affecting the creating the a weighted
                 rois_flags_dict = utils.extract_keys_with_prefix(input_dict=record, starts_with=roi)
                 has_flags = any([ v for k, v in rois_flags_dict.items()])
-                
+                day_results[roi]['has_snow_presence'] = record[f'L3_{roi}_has_snow_presence'] 
                 weight = 1
                 if weight > 0:
                     num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
@@ -739,7 +741,9 @@ def calculate_roi_weighted_means_and_stds_per_record(
             final_weights = calculate_final_weights_for_rois(record, rois_list, flags_and_weights)
             
             for roi, weight in final_weights.items():
+                weight = 1
                 if weight > 0:
+                    
                     num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
                     red_sum = record.get(f"L2_{roi}_SUM_Red", 0)
                     green_sum = record.get(f"L2_{roi}_SUM_Green", 0)
