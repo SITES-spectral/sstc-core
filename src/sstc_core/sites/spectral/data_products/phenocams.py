@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 import numpy as np
 import pandas as pd
 import cv2
@@ -615,123 +615,105 @@ def calculate_final_weights_for_rois(record: dict, rois_list: list, flags_and_we
 
 
 def calculate_roi_weighted_means_and_stds(
-    records_dict: dict, 
-    rois_list: list, 
-    flags_and_weights: dict,
+    records_dict: Dict[int, List[Dict[str, Union[int, float, bool, str]]]], 
+    rois_list: List[str], 
+    flags_and_weights: Dict[str, float],
     latitude_dd: float, 
-    longitude_dd:float,
-    
-) -> dict:
+    longitude_dd: float,
+    overwrite_weight: bool = True
+) -> Dict[int, Dict[str, Union[float, Dict]]]:
     """    
     Calculate the weighted means, standard deviations, and derived records (GCC, RCC) per day of year for each ROI.
-    NOTE: Documentation requires update 
-    #TODO: Update documentation
 
-    Parameters:
-    - records_dict (dict): Dictionary containing records grouped by day_of_year.
-    - rois_list (list): List of ROI names to process.
-    - flags_and_weights (dict): Dictionary containing flag values and weights.
+    Parameters
+    ----------
+    records_dict : dict
+        A dictionary where each key is a day of the year and the corresponding value is a list of records for that day. Each record contains pixel data and other relevant information.
+    rois_list : list
+        A list of strings representing the names of Regions of Interest (ROIs) to process.
+    flags_and_weights : dict
+        A dictionary mapping flag values to their corresponding weights, used to adjust the calculations based on the presence of flags in the data.
+    latitude_dd : float
+        The latitude in decimal degrees, used to calculate the quality flag (QFLAG) for the records.
+    longitude_dd : float
+        The longitude in decimal degrees, used in conjunction with latitude to calculate the QFLAG for the records.
+    overwrite_weight : bool, optional
+        If True, the weight is set to 1 regardless of the calculated value. Defaults to True.
 
-    Returns:
-    - dict: Dictionary containing the weighted means, standard deviations, sum of weighted means, GCC, and RCC for each ROI per day of year.
+    Returns
+    -------
+    dict
+        A dictionary where each key is a day of the year, and the corresponding value is a nested dictionary containing the calculated metrics for each ROI.
     """
-    results = {}
-     
-    for day_of_year, records in records_dict.items():
-        day_results = {roi: {"weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
-                             "sum_of_weighted_means": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
-                             "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, "num_valid_records": 0, 
-                             "has_flags": False, 'has_snow_presence': False, 'QFLAG_value': None, 'mean_datetime': None} 
-                       for roi in rois_list}
+    
+    def calculate_mean_datetime(records: List[Dict[str, Union[str, int, float]]]) -> str:
+        datetime_list = [item['creation_date'] for item in records]
+        return utils.mean_datetime_str(datetime_list=datetime_list)
+
+    def compute_qflag_for_day(records: List[Dict], latitude: float, longitude: float) -> Union[float, None]:
+        records_dict = {record['catalog_id']: record for record in records}
+        return compute_qflag(latitude_dd=latitude, longitude_dd=longitude, records_dict=records_dict, timezone_str='Europe/Stockholm')
+
+    def process_records_for_roi(records: List[Dict], roi: str, flags_and_weights: Dict[str, float], overwrite_weight: bool) -> Dict[str, Union[float, bool, int, Dict]]:
+        roi_results = {
+            "weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
+            "sum_of_weighted_means": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
+            "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, 
+            "num_valid_records": 0, "has_flags": False, 'has_snow_presence': False
+        }
         
-        datetime_list = [ item['creation_date'] for item in records ]
-        mean_datetime =  utils.mean_datetime_str(datetime_list=datetime_list)
+        red_values, green_values, blue_values = [], [], []
         
-        __records_dict ={ _record['catalog_id']: _record for _record in records }  
-        
-        QFLAG_value = compute_qflag(
-                latitude_dd=latitude_dd,
-                longitude_dd=longitude_dd,
-                records_dict= __records_dict,
-                timezone_str= 'Europe/Stockholm'
-                )
-        
-        day_xtras ={'mean_datetime': mean_datetime, 'QFLAG_value': QFLAG_value} 
-         
-          
         for record in records:
-            
-            final_weights = calculate_final_weights_for_rois(record, rois_list, flags_and_weights)
-            
-            for roi, _ in final_weights.items():   # weight
-                ## We are not affecting the creating the a weighted
-                rois_flags_dict = utils.extract_keys_with_prefix(input_dict=record, starts_with=roi)
-                has_flags = any([ v for k, v in rois_flags_dict.items()])
-                day_results[roi]['has_snow_presence'] = record[f'L3_{roi}_has_snow_presence'] 
-                weight = 1
-                if weight > 0:
-                    num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
-                    red_sum = record.get(f"L2_{roi}_SUM_Red", 0)
-                    green_sum = record.get(f"L2_{roi}_SUM_Green", 0)
-                    blue_sum = record.get(f"L2_{roi}_SUM_Blue", 0)
-                    
+            weight = 1 if overwrite_weight else calculate_final_weights_for_rois(record, rois_list, flags_and_weights).get(roi, 1)
+            num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
+            if num_pixels > 0:
+                red_sum = record.get(f"L2_{roi}_SUM_Red", 0)
+                green_sum = record.get(f"L2_{roi}_SUM_Green", 0)
+                blue_sum = record.get(f"L2_{roi}_SUM_Blue", 0)
+                
+                weighted_mean_red = (red_sum * weight) / num_pixels
+                weighted_mean_green = (green_sum * weight) / num_pixels
+                weighted_mean_blue = (blue_sum * weight) / num_pixels
 
-                    if num_pixels > 0:
-                        weighted_mean_red = (red_sum * weight) / num_pixels
-                        weighted_mean_green = (green_sum * weight) / num_pixels
-                        weighted_mean_blue = (blue_sum * weight) / num_pixels
+                roi_results["weighted_mean_red"] += weighted_mean_red
+                roi_results["weighted_mean_green"] += weighted_mean_green
+                roi_results["weighted_mean_blue"] += weighted_mean_blue
+                roi_results["total_pixels"] += num_pixels
+                roi_results["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi": roi}
+                roi_results["num_valid_records"] += 1
+                roi_results['has_flags'] = any([v for k, v in utils.extract_keys_with_prefix(input_dict=record, starts_with=roi).items()])
+                roi_results['has_snow_presence'] = record[f'L3_{roi}_has_snow_presence']
+                
+                red_values.append(weighted_mean_red)
+                green_values.append(weighted_mean_green)
+                blue_values.append(weighted_mean_blue)
 
-                        day_results[roi]["weighted_mean_red"] += weighted_mean_red
-                        day_results[roi]["weighted_mean_green"] += weighted_mean_green
-                        day_results[roi]["weighted_mean_blue"] += weighted_mean_blue
-                        day_results[roi]["total_pixels"] += num_pixels
-                        day_results[roi]["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi": roi}
-                        day_results[roi]["num_valid_records"] += 1
-                        day_results[roi]['has_flags'] = has_flags  
+        total_valid_records = roi_results["num_valid_records"]
+        if total_valid_records > 0:
+            roi_results["sum_of_weighted_means"] = roi_results["weighted_mean_red"] + roi_results["weighted_mean_green"] + roi_results["weighted_mean_blue"]
+            if roi_results["sum_of_weighted_means"] > 0:
+                roi_results["GCC_value"] = roi_results["weighted_mean_green"] / roi_results["sum_of_weighted_means"]
+                roi_results["RCC_value"] = roi_results["weighted_mean_red"] / roi_results["sum_of_weighted_means"]
 
-        # Calculate derived records for each ROI
-        for roi in rois_list:
-            total_valid_records = day_results[roi]["num_valid_records"]
-            if total_valid_records > 0:
-                # Compute the sum of weighted means
-                sum_of_weighted_means = (
-                    day_results[roi]["weighted_mean_red"] +
-                    day_results[roi]["weighted_mean_green"] +
-                    day_results[roi]["weighted_mean_blue"]
-                )
-
-                day_results[roi]["sum_of_weighted_means"] = sum_of_weighted_means
-
-                # Compute GCC and RCC values
-                if sum_of_weighted_means > 0:
-                    day_results[roi]["GCC_value"] = day_results[roi]["weighted_mean_green"] / sum_of_weighted_means
-                    day_results[roi]["RCC_value"] = day_results[roi]["weighted_mean_red"] / sum_of_weighted_means
-
-                # Compute standard deviations
-                red_values = []
-                green_values = []
-                blue_values = []
-
-                for record in records:
-                    # not using weights
-                    #weight = day_results[roi]["weights_used"].get(record["catalog_guid"], {}).get("weight", 0)
-                    weight = 1
-                    
-                    if weight > 0:
-                        num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
-                        if num_pixels > 0:
-                            red_values.append((record.get(f"L2_{roi}_SUM_Red", 0) * weight) / num_pixels)
-                            green_values.append((record.get(f"L2_{roi}_SUM_Green", 0) * weight) / num_pixels)
-                            blue_values.append((record.get(f"L2_{roi}_SUM_Blue", 0) * weight) / num_pixels)
-
-                if len(red_values) > 1:
-                    day_results[roi]["std_red"] = np.std(red_values)
-                    day_results[roi]["std_green"] = np.std(green_values)
-                    day_results[roi]["std_blue"] = np.std(blue_values)
-
-        results[day_of_year] = {**day_xtras,  **day_results, } 
-
+            if len(red_values) > 1:
+                roi_results["std_red"] = np.std(red_values)
+                roi_results["std_green"] = np.std(green_values)
+                roi_results["std_blue"] = np.std(blue_values)
+                
+        return roi_results
+    
+    results = {}
+    for day_of_year, records in records_dict.items():
+        mean_datetime = calculate_mean_datetime(records)
+        QFLAG_value = compute_qflag_for_day(records, latitude_dd, longitude_dd)
+        day_xtras = {'mean_datetime': mean_datetime, 'QFLAG_value': QFLAG_value}
+        
+        day_results = {roi: process_records_for_roi(records, roi, flags_and_weights, overwrite_weight) for roi in rois_list}
+        results[day_of_year] = {**day_xtras, **day_results}
+    
     return results
+
 
 def calculate_roi_weighted_means_and_stds_per_record(
     records_dict: dict, 
