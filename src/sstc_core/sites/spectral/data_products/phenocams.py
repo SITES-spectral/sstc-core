@@ -7,6 +7,7 @@ import cv2
 from PIL import Image
 from sstc_core.sites.spectral.io_tools import load_yaml
 from sstc_core.sites.spectral import utils
+from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 
 # Get the absolute path of the current script
 __script_parent_path = os.path.dirname(os.path.abspath(__file__))
@@ -616,10 +617,15 @@ def calculate_final_weights_for_rois(record: dict, rois_list: list, flags_and_we
 def calculate_roi_weighted_means_and_stds(
     records_dict: dict, 
     rois_list: list, 
-    flags_and_weights: dict
+    flags_and_weights: dict,
+    latitude_dd: float, 
+    longitude_dd:float,
+    
 ) -> dict:
-    """
+    """    
     Calculate the weighted means, standard deviations, and derived records (GCC, RCC) per day of year for each ROI.
+    NOTE: Documentation requires update 
+    #TODO: Update documentation
 
     Parameters:
     - records_dict (dict): Dictionary containing records grouped by day_of_year.
@@ -630,14 +636,28 @@ def calculate_roi_weighted_means_and_stds(
     - dict: Dictionary containing the weighted means, standard deviations, sum of weighted means, GCC, and RCC for each ROI per day of year.
     """
     results = {}
-
+     
     for day_of_year, records in records_dict.items():
         day_results = {roi: {"weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
                              "sum_of_weighted_means": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
                              "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, "num_valid_records": 0, 
-                             "has_flags": False, 'has_snow_presence': False} 
+                             "has_flags": False, 'has_snow_presence': False, 'QFLAG_value': None, 'mean_datetime': None} 
                        for roi in rois_list}
         
+        datetime_list = [ item['creation_date'] for item in records ]
+        mean_datetime =  utils.mean_datetime_str(datetime_list=datetime_list)
+        
+        __records_dict ={ _record['catalog_id']: _record for _record in records }  
+        
+        QFLAG_value = compute_qflag(
+                latitude_dd=latitude_dd,
+                longitude_dd=longitude_dd,
+                records_dict= __records_dict,
+                timezone_str= 'Europe/Stockholm'
+                )
+        
+        day_xtras ={'mean_datetime': mean_datetime, 'QFLAG_value': QFLAG_value} 
+         
           
         for record in records:
             
@@ -709,7 +729,7 @@ def calculate_roi_weighted_means_and_stds(
                     day_results[roi]["std_green"] = np.std(green_values)
                     day_results[roi]["std_blue"] = np.std(blue_values)
 
-        results[day_of_year] = day_results
+        results[day_of_year] = {**day_xtras,  **day_results, } 
 
     return results
 
