@@ -709,8 +709,8 @@ def calculate_roi_weighted_means_and_stds(
         QFLAG_value = compute_qflag_for_day(records, latitude_dd, longitude_dd)
         day_xtras = {'mean_datetime': mean_datetime, 'QFLAG_value': QFLAG_value}
         
-        day_results = {roi: process_records_for_roi(records, roi, flags_and_weights, overwrite_weight) for roi in rois_list}
-        results[day_of_year] = {**day_xtras, **day_results}
+        day_results = {roi: {**process_records_for_roi(records, roi, flags_and_weights, overwrite_weight), **day_xtras } for roi in rois_list}
+        results[day_of_year] = day_results
     
     return results
 
