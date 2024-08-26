@@ -844,6 +844,7 @@ def create_l3_parameters_dataframe(data_dict, year):
         for roi_name, parameters in rois.items():
             for param_name, param_value in parameters.items():
                 if param_name == "weights_used" and isinstance(param_value, dict):
+                    pass
                     # Handle the weights_used separately
                     #for catalog_guid, weight_info in param_value.items():
                          
