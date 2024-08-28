@@ -863,8 +863,8 @@ def create_l3_parameters_dataframe(data_dict, year):
                       
                     
                 else:
-                    if 'flag_' in param_name:
-                        param_name = param_name.replace('flag_', 'iflag_')
+                    if 'weighted' in param_name:
+                        param_name = param_name.replace('weighted', '')
                     # Form the column name based on ROI and parameter
                     column_name = f"L3_{roi_name}_{param_name}"
                     # Store the parameter value in the data dictionary
