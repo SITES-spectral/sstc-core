@@ -218,7 +218,8 @@ def build_phenocams_rois_L3_parameters(
         'SD_Blue': None,
         'MEANS_RGB_SUM': None,
         'GCC_daily_value': None,
-        'RCC_daily_value': None
+        'RCC_daily_value': None, 
+        'has_flags': False,
     },   
     default_field_type: str = 'DOUBLE',  # Options: 'BOOLEAN', 'VARCHAR', 'INTEGER', 'DOUBLE'
     custom_field_types: dict = {
@@ -478,16 +479,7 @@ phenocams_core_schema = [
     'field_default_value': None},
     {'field_name': 'L2_RCC_CIMV_filepath',
     'field_type': 'VARCHAR',
-    'field_default_value': None},
-    {'field_name': 'L2_RGB_CISDV_filepath',
-    'field_type': 'VARCHAR',
-    'field_default_value': None},
-    {'field_name': 'L2_GCC_CISDV_filepath',
-    'field_type': 'VARCHAR',
-    'field_default_value': None},
-    {'field_name': 'L2_RCC_CISDV_filepath',
-    'field_type': 'VARCHAR',
-    'field_default_value': None},
+    'field_default_value': None},    
     {'field_name': 'L3_ROI_TS_filepath',
     'field_type': 'VARCHAR',
     'field_default_value': None},

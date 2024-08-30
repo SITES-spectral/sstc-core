@@ -1,3 +1,6 @@
+## [v0.16.0]
+- Updated Platform names. Rooftop Building name instead of  Buiding Top name.
+
 ## [v0.15.4] 
 - Added `phenocams.calculate_roi_weighted_means_and_stds`
 - Added `phenocams.calculate_roi_weighted_means_and_stds_per_record`

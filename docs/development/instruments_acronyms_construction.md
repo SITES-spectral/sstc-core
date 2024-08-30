@@ -6,18 +6,18 @@ Avoid the use of hyppens "-" as separator, better to use underscore or double un
      - Format: `FMS_M<height>`
      - Example: `FMS_M4` for a Fixed Multispectral Sensor on a 4-meter Mast.
      - Typical Heights: 4 meters, 10 meters, 15 meters, 25 meters, 50 meters.
-   - **Building Top**:
-     - Format: `FMS_BT<building_number or initial>`
-     - Example: `FMS_BTH_1` for a Fixed Multispectral Sensor on Building Top H sensor number 1.
+   - **Rooftop (RF) building name ()**:
+     - Format: `FMS_RFB<building_number or initial>`
+     - Example: `FMS_RFBH_1` for a Fixed Multispectral Sensor on Rooftop Building H sensor number 1.
 
 2. **Mast (M)**
    - **PhenoCam**:
      - Format: `P_M<height>`
      - Example: `P_M4` for a PhenoCam on a 4-meter Mast.
      - Typical Heights: 4 meters, 10 meters, 15 meters, 25 meters, 50 meters.
-   - **Building Top**:
-     - Format: `P_BT<building_number or initial>`
-     - Example: `P_BTH_1` for a Fixed Multispectral Sensor on Building Top H camera 1.
+   - **Rooftop Building**:
+     - Format: `P_RFB<building_number or initial>`
+     - Example: `P_RFBH_1` for a Fixed Multispectral Sensor on Rooftop Building H camera 1.
 
    - **Fixed Multispectral Sensors**:
      - Format: `FMS_M<height>`
@@ -38,9 +38,9 @@ Avoid the use of hyppens "-" as separator, better to use underscore or double un
      - Format: `P_M<height>_<required index if more than 1>`
      - Example: `P_M4_1` for a PhenoCam on a 4-meter Mast device 1.
      - Typical Heights: 4 meters, 10 meters, 15 meters, 25 meters, 50 meters.
-   - **Building Top (BT)**:
-     - Format: `P_BT<building_number or letter>_<required index if more than 1>`
-     - Example: `P_BT1_1` for a PhenoCam on Building Top 1 device 1.
+   - **Rooftop Building (RFB)**:
+     - Format: `P_RFB<building_number or letter>_<required index if more than 1>`
+     - Example: `P_RFB1_1` for a PhenoCam on Rooftop Building 1 device 1.
 
 
 6. **Satellite (SAT)**
@@ -59,8 +59,8 @@ Avoid the use of hyppens "-" as separator, better to use underscore or double un
 1. **Fixed Multispectral Sensor on a 10-meter Mast**:
    - Acronym: `FMS_M10`
 
-2. **PhenoCam on Building Top 2**:
-   - Acronym: `P_BT2`
+2. **PhenoCam on Rooftop Building 2**:
+   - Acronym: `P_RFB2`
 
 3. **UAV 3 flying at 50 meters**:
    - Acronym: `UAV50_3`
@@ -74,8 +74,8 @@ Avoid the use of hyppens "-" as separator, better to use underscore or double un
 6. **PhenoCam 2  on a 15-meter Mast**:
    - Acronym: `P_M15_2`
 
-7. **Fixed Multispectral Sensor 2 on Building Top 1**:
-   - Acronym: `FMS_BT1_2`
+7. **Fixed Multispectral Sensor 2 on Rooftop Building 1**:
+   - Acronym: `FMS_RFB1_2`
 
 8. **Sentinel-2 MSI 1**:
    - Acronym: `SAT_S2MSI`
@@ -90,11 +90,11 @@ Avoid the use of hyppens "-" as separator, better to use underscore or double un
 
 ## Best Practice for platform metadata.
 'PhenoCams':{   
-        'P_BTH-1':{
+        'P_RFBH-1':{
             'description': 'Building H Top at ANS. Lars Eklundh custom optical camera.', 
             'legacy_acronym':"ANS-FOR-P01", 
             'status': 'active',
-            'platform_key': 'P_BTH_01',
+            'platform_key': 'P_RFBH_01',
             'ROI': 'Forest in Alpine Montain - Abiskojaure at Abisko National Park',
             'Viewing_Direction': 'West',
             
