@@ -68,11 +68,11 @@ def _download_files_and_create_records_generator(acronym, location_id, platform_
         # Defining variables
         system_name='abisko'
         acronym= 'ANS'
-        platform_id= 'P_BTH_1'
-        location_id= 'BTH_FOR'
+        platform_id= 'P_RTBH_1'
+        location_id= 'RTBH_FOR'
         platform_type: 'PhenoCam'
         
-        table_name= 'ANS__BTH_FOR__P_BTH_1'
+        table_name= 'ANS__RTBH_FOR__P_RTBH_1'
         db_path = f'/home/aurora02/data/SITES/Spectral/data/catalog/{system_name}_catalog.db'
         catalog_dirpath = f'/home/aurora02/data/SITES/Spectral/data/catalog/{system_name}/locations/{location_id}/platforms/{platform_type}/{platform_id}'
        
@@ -168,8 +168,8 @@ def download_files_and_create_records(platform_dict: dict, db_filepath: str):
         platform_dict = {
             'system_name': 'abisko',
             'acronym': 'ANS',
-            'location_id': 'BTH_FOR',
-            'platform_id': 'P_BTH_1',
+            'location_id': 'RTBH_FOR',
+            'platform_id': 'P_RTBH_1',
             'platform_type': 'PhenoCam'
         }
         
