@@ -643,13 +643,13 @@ def extract_keys_with_all_words(input_dict, words_list):
     return {key: value for key, value in input_dict.items() if contains_all_words(value, words_list)}
 
 
-def calculate_mean_time_resolution(records):
+def calculate_mean_time_resolution(records_list):
     """
     Calculate the mean time resolution between records in a list of dictionaries.
 
     Parameters
     ----------
-    records : list of dict
+    records_list : list of dict
         List of dictionaries, each containing a 'creation_date' key.
 
     Returns
@@ -659,18 +659,18 @@ def calculate_mean_time_resolution(records):
 
     Examples
     --------
-    >>> records = [
+    >>> records_list = [
     >>>     {'creation_date': '2024-06-07 08:17:23'},
     >>>     {'creation_date': '2024-06-07 08:47:23'},
     >>>     {'creation_date': '2024-06-07 09:17:23'}
     >>> ]
-    >>> calculate_mean_time_resolution(records)
+    >>> calculate_mean_time_resolution(records_list)
     '30 minutes'
     """
     # Extract the creation dates and convert them to datetime objects
     creation_dates = sorted(
         [datetime.strptime(record['creation_date'], '%Y-%m-%d %H:%M:%S')
-         for record in records]
+         for record in records_list]
     )
 
     # Calculate the time differences between consecutive dates
