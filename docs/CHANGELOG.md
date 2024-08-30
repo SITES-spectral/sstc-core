@@ -3,6 +3,7 @@
 - Code pruning
 - redifined `flags_weights dict` to `flags_penalties_dict`
 - Updated `platform_flags` schema
+- Added `utils.calculate_mean_time_resolution`
 
 ## [v0.16.1]
 - Updated individual flags scheme

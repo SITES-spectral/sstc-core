@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 from PIL import Image
 from PIL.ExifTags import TAGS
 from shutil import copy2
-from typing import Dict, Any
+from typing import Dict, Any, List
 import unicodedata
 import hashlib
 import base64
 import pytz
 import re
+import numpy as np
 from pysolar.solar import get_altitude, get_azimuth
 
 
@@ -640,3 +641,52 @@ def extract_keys_with_all_words(input_dict, words_list):
         return all(re.search(r'\b' + re.escape(word) + r'\b', s) for word in words)
 
     return {key: value for key, value in input_dict.items() if contains_all_words(value, words_list)}
+
+
+def calculate_mean_time_resolution(records_list: List[Dict[str, Any] ] ):
+    """
+    Calculate the mean time resolution between records in a list of dictionaries.
+
+    Parameters
+    ----------
+    records : list of dict
+        List of dictionaries, each containing a 'creation_date' key.
+
+    Returns
+    -------
+    mean_resolution : str
+        The mean time resolution between records as a human-readable string.
+
+    Examples
+    --------
+    >>> records = [
+    >>>     {'creation_date': '2024-06-07 08:17:23'},
+    >>>     {'creation_date': '2024-06-07 08:47:23'},
+    >>>     {'creation_date': '2024-06-07 09:17:23'}
+    >>> ]
+    >>> calculate_mean_time_resolution(records)
+    '30 minutes'
+    """
+    # Extract the creation dates and convert them to datetime objects
+    creation_dates = [
+        datetime.strptime(record['creation_date'], '%Y-%m-%d %H:%M:%S')
+        for record in records_list
+    ]
+
+    # Calculate the time differences between consecutive dates
+    time_diffs = np.diff(creation_dates)
+
+    # Calculate the mean time difference
+    mean_diff = np.mean(time_diffs)
+
+    # Convert mean_diff to a human-readable format
+    total_seconds = mean_diff.total_seconds()
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+
+    if hours > 0:
+        mean_resolution = f"{int(hours)} hour(s), {int(minutes)} minute(s)"
+    else:
+        mean_resolution = f"{int(minutes)} minute(s)"
+
+    return mean_resolution
