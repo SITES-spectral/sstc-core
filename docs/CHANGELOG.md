@@ -2,6 +2,7 @@
 - Updated calculations for weighted means in `calculate_roi_weighted_means_and_stds_per_record` and `calculate_roi_weighted_means_and_stds`.
 - Code pruning
 - redifined `flags_weights dict` to `flags_penalties_dict`
+- Updated `platform_flags` schema
 
 ## [v0.16.1]
 - Updated individual flags scheme
