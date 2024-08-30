@@ -530,11 +530,11 @@ def get_default_phenocam_flags(flags_yaml_filepath: str ) -> dict:
     return flags_dict
 
 
-def load_flags_weights(flags_yaml_filepath: str) -> dict:
+def load_iflags_penalties(flags_yaml_filepath: str) -> dict:
     """
-    Load weights for PhenoCam flags from a YAML configuration file.
+    Load penalties for PhenoCam individual flags from a YAML configuration file.
 
-    This function retrieves the default PhenoCam flags using the `get_default_phenocam_flags` function and then extracts the associated weights for each flag. If a weight is not specified for a flag, it defaults to 1.
+    This function retrieves the default PhenoCam flags using the `get_default_phenocam_flags` function and then extracts the associated penalties for each flag. If a penalty is not specified for a flag, it defaults to 0.
 
     Parameters
     ----------
@@ -546,13 +546,13 @@ def load_flags_weights(flags_yaml_filepath: str) -> dict:
     Returns
     -------
     dict
-        A dictionary where the keys are the flag names and the values are the weights associated with each flag. 
-        If a weight is not provided for a flag in the YAML configuration, a default weight of 1 is assigned.
+        A dictionary where the keys are the flag names and the values are the penalities associated with each individual flag. 
+        If a penalty is not provided for a flag in the YAML configuration, a default penalty of 1 is assigned.
 
     Examples
     --------
-    >>> weights = load_weights_from_yaml()
-    >>> print(weights)
+    >>> penalties = load_iflags_penalties()
+    >>> print(penalties)
     {
         'flag_brightness': 0.8,
         'flag_blur': 0.9,
@@ -562,8 +562,8 @@ def load_flags_weights(flags_yaml_filepath: str) -> dict:
 
     Notes
     -----
-    The function assumes that the weights for the PhenoCam flags are defined in the YAML configuration file loaded by 
-    the `get_default_phenocam_flags` function. If no weight is defined for a particular flag, a default weight of 1 is used.
+    The function assumes that the penaöties for the PhenoCam flags are defined in the YAML configuration file loaded by 
+    the `get_default_phenocam_flags` function. If no penalty value is defined for a particular flag, a default penalty of 0 is used.
 
     Dependencies
     ------------
@@ -571,22 +571,22 @@ def load_flags_weights(flags_yaml_filepath: str) -> dict:
     - yaml (PyYAML library): Used for loading YAML files if needed by the `get_default_phenocam_flags` function.
     """
     flags = get_default_phenocam_flags(flags_yaml_filepath = flags_yaml_filepath)
-    weights_dict ={}
+    iflags_penalties_dict ={}
     for flag in flags:
-        weights_dict[flag] = flags[flag].get('weight', 1)
+        iflags_penalties_dict[flag] = flags[flag].get('penalty_value', 0)
 
-    return weights_dict
+    return iflags_penalties_dict
 
 
 
-def calculate_final_weights_for_rois(record: dict, rois_list: list, flags_and_weights: dict) -> dict:
+def calculate_final_weights_for_rois(record: dict, rois_list: list, iflags_penalties_dict: dict) -> dict:
     """
     Calculate the final weights to be applied for each ROI in a valid record.
 
     Parameters:
     - record (dict): The record containing the ROI data.
     - rois_list (list): List of ROI names to process.
-    - flags_and_weights (dict): Dictionary containing flag values and weights.
+    - iflags_penalties_dict (dict): Dictionary containing flags and_penalties values.
 
     Returns:
     - dict: Dictionary containing the final weights for each ROI.
@@ -594,20 +594,21 @@ def calculate_final_weights_for_rois(record: dict, rois_list: list, flags_and_we
     final_weights = {}
 
     for roi in rois_list:
-        total_flag_weight = 0
+        total_iflag_penality_value = 0
 
         # Iterate over all flags for the ROI and sum their weights if the flag is True
-        for flag, data in flags_and_weights.items():
+        for flag, data in iflags_penalties_dict.items():
             flag_key = f"{roi}_{flag}"
             if record.get(flag_key, False):
-                total_flag_weight += data['weight']
+                total_iflag_penality_value += data['penalty_value']
 
         # Calculate the final weight
-        final_weight = 1 - total_flag_weight
+        final_weight = 1 - total_iflag_penality_value
 
         # If the final weight is less than 0, set it to 0
         if final_weight < 0:
             final_weight = 0
+        
 
         final_weights[roi] = final_weight
 
@@ -617,7 +618,7 @@ def calculate_final_weights_for_rois(record: dict, rois_list: list, flags_and_we
 def calculate_roi_weighted_means_and_stds(
     records_dict: Dict[int, List[Dict[str, Union[int, float, bool, str]]]], 
     rois_list: List[str], 
-    flags_and_weights: Dict[str, float],
+    iflags_penalties_dict: Dict[str, float],
     latitude_dd: float, 
     longitude_dd: float,
     overwrite_weight: bool = True
@@ -631,14 +632,14 @@ def calculate_roi_weighted_means_and_stds(
         A dictionary where each key is a day of the year and the corresponding value is a list of records for that day. Each record contains pixel data and other relevant information.
     rois_list : list
         A list of strings representing the names of Regions of Interest (ROIs) to process.
-    flags_and_weights : dict
-        A dictionary mapping flag values to their corresponding weights, used to adjust the calculations based on the presence of flags in the data.
+    iflags_penalties_dict : dict
+        A dictionary mapping flag values to their corresponding penalty values, used to adjust the calculations based on the presence of flags in the data.
     latitude_dd : float
         The latitude in decimal degrees, used to calculate the quality flag (QFLAG) for the records.
     longitude_dd : float
         The longitude in decimal degrees, used in conjunction with latitude to calculate the QFLAG for the records.
     overwrite_weight : bool, optional
-        If True, the weight is set to 1 regardless of the calculated value. Defaults to True.
+        If True, the weight is set to 1 for all records, regardless of the calculated value. Defaults to True.
 
     Returns
     -------
@@ -654,44 +655,51 @@ def calculate_roi_weighted_means_and_stds(
         records_dict = {record['catalog_guid']: record for record in records}
         return compute_qflag(latitude_dd=latitude, longitude_dd=longitude, records_dict=records_dict, timezone_str='Europe/Stockholm')
 
-    def process_records_for_roi(records: List[Dict], roi: str, flags_and_weights: Dict[str, float], overwrite_weight: bool) -> Dict[str, Union[float, bool, int, Dict]]:
+    def process_records_for_roi(records: List[Dict], roi: str, iflags_penalties_dict: Dict[str, float], overwrite_weight: bool) -> Dict[str, Union[float, bool, int, Dict]]:
         roi_results = {
             "weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
-            "sum_of_weighted_means": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
+            "sum_of_weights": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
             "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, 
             "num_valid_records": 0, "has_flags": False, 'has_snow_presence': False
         }
         
         red_values, green_values, blue_values = [], [], []
+        red_weighted_sum, green_weighted_sum, blue_weighted_sum = 0, 0, 0
+        total_weight = 0
         
         for record in records:
-            weight = 1 if overwrite_weight else calculate_final_weights_for_rois(record, rois_list, flags_and_weights).get(roi, 1)
+            weight = 1 if overwrite_weight else calculate_final_weights_for_rois(record, rois_list, iflags_penalties_dict).get(roi, 1)
             num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
             if num_pixels > 0:
-                red_sum = record.get(f"L2_{roi}_SUM_Red", 0)
-                green_sum = record.get(f"L2_{roi}_SUM_Green", 0)
-                blue_sum = record.get(f"L2_{roi}_SUM_Blue", 0)
-                
-                weighted_mean_red = (red_sum * weight) / num_pixels
-                weighted_mean_green = (green_sum * weight) / num_pixels
-                weighted_mean_blue = (blue_sum * weight) / num_pixels
+                red_mean = record.get(f"L2_{roi}_SUM_Red", 0) / num_pixels
+                green_mean = record.get(f"L2_{roi}_SUM_Green", 0) / num_pixels
+                blue_mean = record.get(f"L2_{roi}_SUM_Blue", 0) / num_pixels
 
-                roi_results["weighted_mean_red"] += weighted_mean_red
-                roi_results["weighted_mean_green"] += weighted_mean_green
-                roi_results["weighted_mean_blue"] += weighted_mean_blue
+                # Accumulate weighted sums and weights for final weighted average calculation
+                red_weighted_sum += red_mean * weight
+                green_weighted_sum += green_mean * weight
+                blue_weighted_sum += blue_mean * weight
+                total_weight += weight
+
                 roi_results["total_pixels"] += num_pixels
                 roi_results["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi": roi}
                 roi_results["num_valid_records"] += 1
                 roi_results['has_flags'] = any([v for k, v in utils.extract_keys_with_prefix(input_dict=record, starts_with=roi).items()])
                 roi_results['has_snow_presence'] = record[f'L3_{roi}_has_snow_presence']
                 
-                red_values.append(weighted_mean_red)
-                green_values.append(weighted_mean_green)
-                blue_values.append(weighted_mean_blue)
+                red_values.append(red_mean)
+                green_values.append(green_mean)
+                blue_values.append(blue_mean)
 
-        total_valid_records = roi_results["num_valid_records"]
-        if total_valid_records > 0:
+        if total_weight > 0:
+            # Final weighted mean calculation
+            roi_results["weighted_mean_red"] = red_weighted_sum / total_weight
+            roi_results["weighted_mean_green"] = green_weighted_sum / total_weight
+            roi_results["weighted_mean_blue"] = blue_weighted_sum / total_weight
+
+            roi_results["sum_of_weights"] = total_weight
             roi_results["sum_of_weighted_means"] = roi_results["weighted_mean_red"] + roi_results["weighted_mean_green"] + roi_results["weighted_mean_blue"]
+            
             if roi_results["sum_of_weighted_means"] > 0:
                 roi_results["GCC_value"] = roi_results["weighted_mean_green"] / roi_results["sum_of_weighted_means"]
                 roi_results["RCC_value"] = roi_results["weighted_mean_red"] / roi_results["sum_of_weighted_means"]
@@ -709,27 +717,37 @@ def calculate_roi_weighted_means_and_stds(
         QFLAG_value = compute_qflag_for_day(records, latitude_dd, longitude_dd)
         day_xtras = {'mean_datetime': mean_datetime, 'QFLAG_value': QFLAG_value}
         
-        day_results = {roi: {**process_records_for_roi(records, roi, flags_and_weights, overwrite_weight), **day_xtras } for roi in rois_list}
+        day_results = {roi: {**process_records_for_roi(records, roi, iflags_penalties_dict, overwrite_weight), **day_xtras } for roi in rois_list}
         results[day_of_year] = day_results
     
     return results
 
 
+
 def calculate_roi_weighted_means_and_stds_per_record(
     records_dict: dict, 
     rois_list: list, 
-    flags_and_weights: dict
+    iflags_penalties_dict: dict,
+    overwrite_weight: bool = True
 ) -> dict:
     """
     Calculate the weighted means for each ROI individually for each valid record.
 
-    Parameters:
-    - records_dict (dict): Dictionary containing records grouped by day_of_year.
-    - rois_list (list): List of ROI names to process.
-    - flags_and_weights (dict): Dictionary containing flag values and weights.
+    Parameters
+    ----------
+    records_dict : dict
+        Dictionary containing records grouped by day_of_year.
+    rois_list : list
+        List of ROI names to process.
+    iflags_penalties_dict : dict
+        Dictionary containing flags and_penalties values.
+    overwrite_weight : bool, optional
+        If True, the weight is set to 1 for all records, regardless of the calculated value. Defaults to True.
 
-    Returns:
-    - dict: Dictionary containing the weighted means for each ROI individually for each valid record.
+    Returns
+    -------
+    dict
+        Dictionary containing the weighted means for each ROI individually for each valid record.
     """
     results = {}
 
@@ -740,21 +758,23 @@ def calculate_roi_weighted_means_and_stds_per_record(
             record_guid = record["catalog_guid"]
             record_results = {roi: {"weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, "weight": 0, "total_pixels": 0} for roi in rois_list}
             
-            final_weights = calculate_final_weights_for_rois(record, rois_list, flags_and_weights)
+            final_weights = calculate_final_weights_for_rois(record, rois_list, iflags_penalties_dict)
             
             for roi, weight in final_weights.items():
-                weight = 1
+                # Overwrite weight if the overwrite_weight flag is set
+                weight = 1 if overwrite_weight else weight
+                
                 if weight > 0:
-                    
                     num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
-                    red_sum = record.get(f"L2_{roi}_SUM_Red", 0)
-                    green_sum = record.get(f"L2_{roi}_SUM_Green", 0)
-                    blue_sum = record.get(f"L2_{roi}_SUM_Blue", 0)
-
                     if num_pixels > 0:
-                        record_results[roi]["weighted_mean_red"] = (red_sum * weight) / num_pixels
-                        record_results[roi]["weighted_mean_green"] = (green_sum * weight) / num_pixels
-                        record_results[roi]["weighted_mean_blue"] = (blue_sum * weight) / num_pixels
+                        red_mean = record.get(f"L2_{roi}_SUM_Red", 0) / num_pixels
+                        green_mean = record.get(f"L2_{roi}_SUM_Green", 0) / num_pixels
+                        blue_mean = record.get(f"L2_{roi}_SUM_Blue", 0) / num_pixels
+
+                        # Calculate the weighted means correctly
+                        record_results[roi]["weighted_mean_red"] = red_mean * weight
+                        record_results[roi]["weighted_mean_green"] = green_mean * weight
+                        record_results[roi]["weighted_mean_blue"] = blue_mean * weight
                         record_results[roi]["total_pixels"] = num_pixels
                         record_results[roi]["weight"] = weight
                     else:
@@ -769,7 +789,6 @@ def calculate_roi_weighted_means_and_stds_per_record(
         results[day_of_year] = day_results
 
     return results
-
 
 
 def create_l2_parameters_dataframe(data_dict, year):

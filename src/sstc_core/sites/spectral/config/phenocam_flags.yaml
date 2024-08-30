@@ -1,63 +1,66 @@
-flag_disable_for_processing: 
+iflag_disable_for_processing: 
   value: False
-  weight: 1
-flag_sun_altitude_low_20deg:
+  penalty_value: 1
+iflag_sun_altitude_low_20deg:
   value: False
-  weight: 0.25
-flag_shadows: 
+  penalty_value: 0.25
+iflag_shadows: 
   value: False
-  weight: 0.5
-flag_haze: 
+  penalty_value: 0.5
+iflag_haze: 
   value: False
-  weight: 0.5          
-flag_high_brightness:
+  penalty_value: 0.5
+iflag_heterogeneous_illumination:
   value: False
-  weight: 0.25
-flag_low_brightness:
+  penalty_value: 0.5          
+iflag_high_brightness:
   value: False
-  weight: 0.25
-flag_obstructions:
+  penalty_value: 0.25
+iflag_low_brightness:
   value: False
-  weight: 0.5
-flag_clouds: 
+  penalty_value: 0.25
+iflag_obstructions:
   value: False
-  weight: 1
-flag_fog:
+  penalty_value: 0.5
+iflag_clouds: 
   value: False
-  weight: 1
-flag_water_drops:
+  penalty_value: 1
+iflag_fog:
   value: False
-  weight: 1
-flag_heavy_rain: 
+  penalty_value: 1
+iflag_heavy_rain: 
   value: False
-  weight: 1
-flag_snow: 
+  penalty_value: 1
+iflag_lens_water_drops:
   value: False
-  weight: 1
-flag_ice:
+  penalty_value: 1
+iflag_lens_snow: 
+  value: False
+  penalty_value: 1
+iflag_lens_ice:
   value: False 
-  weight: 1
-flag_dirt: 
+  penalty_value: 1
+iflag_lens_dirt: 
   value: False
-  weight: 1
-flag_birds: 
+  penalty_value: 1
+iflag_birds: 
   value: False
-  weight: 1
-flag_insects: 
+  penalty_value: 1
+iflag_insects: 
   value: False
-  weight: 1
-flag_glare: 
+  penalty_value: 1
+iflag_glare: 
   value: False
-  weight: 0.5
-flag_blur:
+  penalty_value: 0.5
+iflag_blur:
   value: False
-  weight: 1
-flag_mount_loose:
+  penalty_value: 1
+iflag_mount_loose:
   value: False
-  weight: 1
-flag_camera_error:
+  penalty_value: 1
+iflag_camera_error:
   value: False
-  weight: 1
-flag_other: 
+  penalty_value: 1
+iflag_other: 
   value: False
-  weight: 1
+  penalty_value: 1

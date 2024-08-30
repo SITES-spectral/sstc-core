@@ -1,3 +1,11 @@
+## [v0.17.0] 
+- Updated calculations for weighted means in `calculate_roi_weighted_means_and_stds_per_record` and `calculate_roi_weighted_means_and_stds`.
+- Code pruning
+- redifined `flags_weights dict` to `flags_penalties_dict`
+
+## [v0.16.1]
+- Updated individual flags scheme
+
 ## [v0.16.0]
 - Updated Platform names. Rooftop Building name instead of  Buiding Top name.
 

@@ -345,13 +345,13 @@ def is_within_time_window(formatted_date: str, start_time: str = "10:00:00", end
     return start_time_obj <= creation_time <= end_time_obj
 
 
-def extract_keys_with_prefix(input_dict, starts_with='flag_'):
+def extract_keys_with_prefix(input_dict, starts_with='iflag_'):
     """
     Extracts keys from the input dictionary that start with the specified prefix.
 
     Parameters:
         input_dict (dict): The dictionary to filter.
-        starts_with (str): The prefix to filter keys by. Default is 'flag_'.
+        starts_with (str): The prefix to filter keys by. Default is 'iflag_'.
 
     Returns:
         dict: A new dictionary with only the keys starting with the specified prefix and their corresponding values.

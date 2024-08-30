@@ -626,18 +626,18 @@ class Station(DuckDBManager):
                     'origin_filepath': ...,
                     'normalized_quality_index': ...,
                     'quality_index_weights_version': ...,
-                    'flag_brightness': ...,
-                    'flag_blur': ...,
-                    'flag_snow': ...,
-                    'flag_rain': ...,
-                    'flag_water_drops': ...,
-                    'flag_dirt': ...,
-                    'flag_obstructions': ...,
-                    'flag_glare': ...,
-                    'flag_fog': ...,
-                    'flag_rotation': ...,
-                    'flag_birds': ...,
-                    'flag_other': ...,                    
+                    'iflag_brightness': ...,
+                    'iflag_blur': ...,
+                    'iflag_snow': ...,
+                    'iflag_rain': ...,
+                    'iflag_water_drops': ...,
+                    'iflag_dirt': ...,
+                    'iflag_obstructions': ...,
+                    'iflag_glare': ...,
+                    'iflag_fog': ...,
+                    'iflag_rotation': ...,
+                    'iflag_birds': ...,
+                    'iflag_other': ...,                    
                 },
                 ...
             },
@@ -1052,11 +1052,11 @@ class Station(DuckDBManager):
             Defaults to 'Europe/Stockholm'.
 
         has_snow_presence : bool, optional
-            A boolean flag indicating whether there is snow presence in the image associated with the record. 
+            A boolean iflag indicating whether there is snow presence in the image associated with the record. 
             Defaults to False.
 
         is_legacy : bool, optional
-            A boolean flag indicating whether the data is legacy. If set to True, the method will handle the data 
+            A boolean iflag indicating whether the data is legacy. If set to True, the method will handle the data 
             as legacy data. Defaults to False.
 
         is_per_image : bool, optional
@@ -1272,18 +1272,18 @@ class Station(DuckDBManager):
                 'origin_filepath': ...,
                 'normalized_quality_index': ...,
                 'quality_index_weights_version': ...,
-                'flag_brightness': ...,
-                'flag_blur': ...,
-                'flag_snow': ...,
-                'flag_rain': ...,
-                'flag_water_drops': ...,
-                'flag_dirt': ...,
-                'flag_obstructions': ...,
-                'flag_glare': ...,
-                'flag_fog': ...,
-                'flag_rotation': ...,
-                'flag_birds': ...,
-                'flag_other': ...,
+                'iflag_brightness': ...,
+                'iflag_blur': ...,
+                'iflag_snow': ...,
+                'iflag_rain': ...,
+                'iflag_water_drops': ...,
+                'iflag_dirt': ...,
+                'iflag_obstructions': ...,
+                'iflag_glare': ...,
+                'iflag_fog': ...,
+                'iflag_rotation': ...,
+                'iflag_birds': ...,
+                'iflag_other': ...,
                 ...
             },
             ...
@@ -1442,18 +1442,18 @@ class Station(DuckDBManager):
                     'origin_filepath': ...,
                     'normalized_quality_index': ...,
                     'quality_index_weights_version': ...,
-                    'flag_brightness': ...,
-                    'flag_blur': ...,
-                    'flag_snow': ...,
-                    'flag_rain': ...,
-                    'flag_water_drops': ...,
-                    'flag_dirt': ...,
-                    'flag_obstructions': ...,
-                    'flag_glare': ...,
-                    'flag_fog': ...,
-                    'flag_rotation': ...,
-                    'flag_birds': ...,
-                    'flag_other': ...,
+                    'iflag_brightness': ...,
+                    'iflag_blur': ...,
+                    'iflag_snow': ...,
+                    'iflag_rain': ...,
+                    'iflag_water_drops': ...,
+                    'iflag_dirt': ...,
+                    'iflag_obstructions': ...,
+                    'iflag_glare': ...,
+                    'iflag_fog': ...,
+                    'iflag_rotation': ...,
+                    'iflag_birds': ...,
+                    'iflag_other': ...,
                     'is_quality_assessed': ...,
                 },
                 ...
