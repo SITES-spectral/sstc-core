@@ -685,8 +685,8 @@ def calculate_mean_time_resolution(records_list):
     minutes = (total_seconds % 3600) // 60
 
     if hours > 0:
-        mean_resolution = f"{int(hours)} hour(s), {int(minutes)} minute(s)"
+        mean_resolution = {'hours': int(hours), 'minutes': int(minutes)}  #    f"{int(hours)} hour(s), {int(minutes)} minute(s)"
     else:
-        mean_resolution = f"{int(minutes)} minute(s)"
+        mean_resolution = {'hours': 0, 'minutes': int(minutes)}  #f"{int(minutes)} minute(s)"
 
     return mean_resolution
