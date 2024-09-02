@@ -4,9 +4,9 @@ iflag_disable_for_processing:
 iflag_sun_altitude_low_20deg:
   value: False
   penalty_value: 0.25
-iflag_shadows: 
+iflag_obstructions:
   value: False
-  penalty_value: 0.5
+  penalty_value: 0.25
 iflag_haze: 
   value: False
   penalty_value: 0.5
@@ -21,16 +21,10 @@ iflag_full_overcast:
   penalty_value: 0.0
 iflag_heterogeneous_illumination:
   value: False
-  penalty_value: 0.5          
-iflag_high_brightness:
+  penalty_value: 0.5
+iflag_shadows: 
   value: False
-  penalty_value: 0.25
-iflag_low_brightness:
-  value: False
-  penalty_value: 0.25
-iflag_obstructions:
-  value: False
-  penalty_value: 0.25
+  penalty_value: 0.5
 iflag_clouds: 
   value: False
   penalty_value: 1
@@ -52,6 +46,12 @@ iflag_lens_ice:
 iflag_lens_dirt: 
   value: False
   penalty_value: 1
+iflag_high_brightness:
+  value: False
+  penalty_value: 0.25
+iflag_low_brightness:
+  value: False
+  penalty_value: 0.25
 iflag_birds: 
   value: False
   penalty_value: 1
