@@ -963,27 +963,27 @@ def create_l3_parameters_dataframe(data_dict, year):
         day = int(day)
         for roi_name, parameters in rois.items():
             for param_name, param_value in parameters.items():
-                if param_name == "weights_used" and isinstance(param_value, dict):
-                    pass
+                #if param_name == "weights_used" and isinstance(param_value, dict):
+                #    pass
                     # Handle the weights_used separately
                     #for catalog_guid, weight_info in param_value.items():
                          
                         # weight_column_name = f"L3_{roi_name}_weight__{catalog_guid}"
                         #data[day][weight_column_name] = weight_info.get('weight')
-                elif 'QFLAG' in param_name:
-                    QFLAG = param_value['QFLAG']
-                    column_name = f"L3_{roi_name}_{'QFLAG_value'}"
-                    data[day][column_name] = QFLAG
+                #elif 'QFLAG' in param_name:
+                #    QFLAG = param_value['QFLAG']
+                #    column_name = f"L3_{roi_name}_{'QFLAG_value'}"
+                #    data[day][column_name] = QFLAG
                       
                     
-                else:
-                    if 'weighted' in param_name:
-                        param_name = param_name.replace('weighted_', '')
-                    # Form the column name based on ROI and parameter
-                    column_name = f"L3_{roi_name}_{param_name}"
-                    # Store the parameter value in the data dictionary
-                    data[day][column_name] = param_value
-    
+                # else:
+                if 'weighted' in param_name:
+                    param_name = param_name.replace('weighted_', '')
+                # Form the column name based on ROI and parameter
+                column_name = f"L3_{roi_name}_{param_name}"
+                # Store the parameter value in the data dictionary
+                data[day][column_name] = param_value
+
     # Create a DataFrame from the dictionary
     df = pd.DataFrame.from_dict(data, orient='index')
     
