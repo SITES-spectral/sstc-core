@@ -792,13 +792,13 @@ def calculate_roi_weighted_means_and_stds(
     results = {}
     
     for day_of_year, records in records_dict.items():
-        mean_datetime = calculate_mean_datetime(records)
+        # mean_datetime = calculate_mean_datetime(records)
         
-        r_list = [{'creation_date': record['creation_date']} for record in records]
+        # r_list = [{'creation_date': record['creation_date']} for record in records]
         
-        meantime_resolution = utils.calculate_mean_time_resolution(records_list=records)
+        # meantime_resolution = utils.calculate_mean_time_resolution(records_list=records)
         
-        default_temporal_resolution = False if meantime_resolution['hours'] > 0 or meantime_resolution['minutes'] > 30 else True 
+        #default_temporal_resolution = False if meantime_resolution['hours'] > 0 or meantime_resolution['minutes'] > 30 else True 
         # qflag_dict = compute_qflag_for_day(
         #    records, 
         #    latitude_dd,
