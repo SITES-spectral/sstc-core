@@ -731,14 +731,14 @@ def calculate_roi_weighted_means_and_stds(
             overwrite_weight=False
         )
         ```
-        """
-        
+        """       
         
         roi_results = {
             "weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
             "sum_of_weights": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
             "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, 
-            "num_valid_records": 0, "has_flags": False, 'has_snow_presence': False
+            "num_valid_records": 0, "has_flags": False, 'has_snow_presence': False,
+            
         }
         
         red_values, green_values, blue_values = [], [], []
@@ -786,7 +786,7 @@ def calculate_roi_weighted_means_and_stds(
                 roi_results["std_red"] = np.std(red_values)
                 roi_results["std_green"] = np.std(green_values)
                 roi_results["std_blue"] = np.std(blue_values)
-                
+                           
         return roi_results
     
     results = {}
@@ -797,7 +797,7 @@ def calculate_roi_weighted_means_and_stds(
         r_list = [{'creation_date': record['creation_date']} for record in records_list]
         meantime_resolution = utils.calculate_mean_time_resolution(records_list=r_list)
         default_temporal_resolution = False if meantime_resolution['hours'] > 0 or meantime_resolution['minutes'] > 30 else True 
-        QFLAG_value = compute_qflag_for_day(
+        qflag_dict = compute_qflag_for_day(
             records, 
             latitude_dd,
             longitude_dd, 
@@ -805,7 +805,7 @@ def calculate_roi_weighted_means_and_stds(
             is_per_image=False)
         day_xtras = {
             'mean_datetime': mean_datetime, 
-            'QFLAG_value': QFLAG_value, 
+            'QFLAG_value': qflag_dict['QFLAG'] , 
             'meantime_resolution':  f"{meantime_resolution['hours']}:{ meantime_resolution['minutes']}:00",
             'default_temporal_resolution': default_temporal_resolution, 
             }

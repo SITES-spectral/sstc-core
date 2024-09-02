@@ -90,7 +90,11 @@ def compute_qflag(
     else:
         raise ValueError("Invalid input combination for n_records and solar_elevation_class")
 
-    return {'QFLAG': QFLAG, 'weight': weight}
+    return {
+        'QFLAG': QFLAG, 
+        'weight': weight,
+        'default_temporal_resolution': default_temporal_resolution,
+        'is_per_image': is_per_image}
 
     
 
