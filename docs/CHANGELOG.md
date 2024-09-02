@@ -1,3 +1,6 @@
+## [v0.17.1]
+- WIP
+   
 ## [v0.17.0] 
 - Updated calculations for weighted means in `calculate_roi_weighted_means_and_stds_per_record` and `calculate_roi_weighted_means_and_stds`.
 - Code pruning
