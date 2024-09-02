@@ -229,7 +229,9 @@ def build_phenocams_rois_L3_parameters(
         'num_pixels': 'INTEGER',
         'QFLAG_value': 'INTEGER',
         'has_snow_presence': 'BOOLEAN',
-        'is_data_processing_disabled': 'BOOLEAN'
+        'is_data_processing_disabled': 'BOOLEAN',
+        'meantime_resolution': 'VARCHAR',
+        'default_temporal_resolution': 'BOOLEAN',        
     }
 ) -> List[dict]:
     """

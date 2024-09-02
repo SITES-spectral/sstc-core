@@ -643,7 +643,7 @@ def extract_keys_with_all_words(input_dict, words_list):
     return {key: value for key, value in input_dict.items() if contains_all_words(value, words_list)}
 
 
-def calculate_mean_time_resolution(records_list):
+def calculate_mean_time_resolution(records_list: list) -> dict:
     """
     Calculate the mean time resolution between records in a list of dictionaries.
 
@@ -654,8 +654,10 @@ def calculate_mean_time_resolution(records_list):
 
     Returns
     -------
-    mean_resolution : str
-        The mean time resolution between records as a human-readable string.
+    meantime_resolution : dict
+        A dictionary containing the mean time resolution between records with the keys:
+        - 'hours': The average number of hours between records.
+        - 'minutes': The average number of minutes between records.
 
     Examples
     --------
@@ -665,7 +667,7 @@ def calculate_mean_time_resolution(records_list):
     >>>     {'creation_date': '2024-06-07 09:17:23'}
     >>> ]
     >>> calculate_mean_time_resolution(records_list)
-    '30 minutes'
+    {'hours': 0, 'minutes': 30}
     """
     # Extract the creation dates and convert them to datetime objects
     creation_dates = sorted(
@@ -684,9 +686,10 @@ def calculate_mean_time_resolution(records_list):
     hours = total_seconds // 3600
     minutes = (total_seconds % 3600) // 60
 
+    # Create a dictionary to return the mean time resolution
     if hours > 0:
-        mean_resolution = {'hours': int(hours), 'minutes': int(minutes)}  #    f"{int(hours)} hour(s), {int(minutes)} minute(s)"
+        meantime_resolution = {'hours': int(hours), 'minutes': int(minutes)}
     else:
-        mean_resolution = {'hours': 0, 'minutes': int(minutes)}  #f"{int(minutes)} minute(s)"
+        meantime_resolution = {'hours': 0, 'minutes': int(minutes)}
 
-    return mean_resolution
+    return meantime_resolution

@@ -6,7 +6,8 @@
 - Added `utils.calculate_mean_time_resolution`
 - Updated `phenocam flags` included sunny, cloudy and fullovercast
 - Fixed-minor bugs
-
+- Updated ROIs schema to include meantime_resolution 
+  
 ## [v0.16.1]
 - Updated individual flags scheme
 
