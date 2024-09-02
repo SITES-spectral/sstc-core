@@ -600,7 +600,7 @@ def calculate_final_weights_for_rois(record: dict, rois_list: list, iflags_penal
         for flag, data in iflags_penalties_dict.items():
             flag_key = f"{roi}_{flag}"
             if record.get(flag_key, False):
-                total_iflag_penality_value += data['penalty_value']
+                total_iflag_penality_value += data.get('penalty_value', 0)
 
         # Calculate the final weight
         final_weight = 1 - total_iflag_penality_value

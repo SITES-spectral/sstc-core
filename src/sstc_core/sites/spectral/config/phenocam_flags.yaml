@@ -10,6 +10,15 @@ iflag_shadows:
 iflag_haze: 
   value: False
   penalty_value: 0.5
+iflag_sunny: 
+  value: False
+  penalty_value: 0.0
+iflag_cloudy: 
+  value: False
+  penalty_value: 0.0
+iflag_full_overcast: 
+  value: False
+  penalty_value: 0.0
 iflag_heterogeneous_illumination:
   value: False
   penalty_value: 0.5          
@@ -21,7 +30,7 @@ iflag_low_brightness:
   penalty_value: 0.25
 iflag_obstructions:
   value: False
-  penalty_value: 0.5
+  penalty_value: 0.25
 iflag_clouds: 
   value: False
   penalty_value: 1
