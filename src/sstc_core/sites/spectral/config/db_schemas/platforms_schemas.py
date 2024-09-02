@@ -229,9 +229,7 @@ def build_phenocams_rois_L3_parameters(
         'num_pixels': 'INTEGER',
         'QFLAG_value': 'INTEGER',
         'has_snow_presence': 'BOOLEAN',
-        'is_data_processing_disabled': 'BOOLEAN',
-        'meantime_resolution': 'VARCHAR',
-        'default_temporal_resolution': 'BOOLEAN',        
+        'is_data_processing_disabled': 'BOOLEAN',        
     }
 ) -> List[dict]:
     """
@@ -443,6 +441,12 @@ phenocams_core_schema = [
     {'field_name': 'version_schema_platform_phenocams',
     'field_type': 'VARCHAR',
     'field_default_value': None},
+    {'field_name': 'default_temporal_resolution',
+    'field_type': 'BOOLEAN',
+    'field_default_value': None},
+    {'field_name': 'meantime_resolution',
+    'field_type': 'VARCHAR',
+    'field_default_value': None},
     {'field_name': 'flags_confirmed',
     'field_type': 'BOOLEAN',
     'field_default_value': False},
@@ -464,6 +468,9 @@ phenocams_core_schema = [
     {'field_name': 'QFLAG_image_weight',
     'field_type': 'DOUBLE',
     'field_default_value': None},
+    {'field_name': 'is_per_image',
+    'field_type': 'BOOLEAN',
+    'field_default_value': False},    
     {'field_name': 'is_in_dataportal',
     'field_type': 'BOOLEAN',
     'field_default_value': False},

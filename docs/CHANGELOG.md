@@ -1,3 +1,6 @@
+## [0.18.0] 
+- Updated platform schema 0.5
+
 ## [v0.17.1]
 - updates in schema for handling time_resolution 
    
