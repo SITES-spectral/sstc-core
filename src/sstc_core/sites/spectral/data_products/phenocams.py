@@ -793,7 +793,7 @@ def calculate_roi_weighted_means_and_stds(
     
     for day_of_year, records in records_dict.items():
         mean_datetime = calculate_mean_datetime(records)
-        records_list = [ record for i, record in records.items()]
+        records_list = [ record for record in records]
         r_list = [{'creation_date': record['creation_date']} for record in records_list]
         meantime_resolution = utils.calculate_mean_time_resolution(records_list=r_list)
         default_temporal_resolution = False if meantime_resolution['hours'] > 0 or meantime_resolution['minutes'] > 30 else True 
