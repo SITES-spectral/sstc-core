@@ -793,27 +793,32 @@ def calculate_roi_weighted_means_and_stds(
     
     for day_of_year, records in records_dict.items():
         mean_datetime = calculate_mean_datetime(records)
-        records_list = [ record for record in records]
-        r_list = [{'creation_date': record['creation_date']} for record in records_list]
-        meantime_resolution = utils.calculate_mean_time_resolution(records_list=r_list)
-        default_temporal_resolution = False if meantime_resolution['hours'] > 0 or meantime_resolution['minutes'] > 30 else True 
-        qflag_dict = compute_qflag_for_day(
-            records, 
-            latitude_dd,
-            longitude_dd, 
-            default_temporal_resolution=default_temporal_resolution,
-            is_per_image=False)
-        day_xtras = {
-            'mean_datetime': mean_datetime, 
-            'QFLAG_value': qflag_dict['QFLAG'] , 
-            'meantime_resolution':  f"{str(meantime_resolution["hours"]).zfill(2)}:{str(meantime_resolution["hours"]).zfill(2)}",
-            'default_temporal_resolution': default_temporal_resolution, 
-            }
         
-        day_xtras_per_roi ={ roi:{**day_xtras} for roi in rois_list} 
+        r_list = [{'creation_date': record['creation_date']} for record in records]
+        
+        meantime_resolution = utils.calculate_mean_time_resolution(records_list=records)
+        
+        default_temporal_resolution = False if meantime_resolution['hours'] > 0 or meantime_resolution['minutes'] > 30 else True 
+        # qflag_dict = compute_qflag_for_day(
+        #    records, 
+        #    latitude_dd,
+        #    longitude_dd, 
+        #    default_temporal_resolution=default_temporal_resolution,
+        #    is_per_image=False)
+        #day_xtras = {
+        #    'mean_datetime': mean_datetime, 
+        #    'QFLAG_value': qflag_dict['QFLAG'] , 
+        #    'meantime_resolution':  f"{str(meantime_resolution["hours"]).zfill(2)}:{str(meantime_resolution["hours"]).zfill(2)}",
+        #    'default_temporal_resolution': default_temporal_resolution, 
+        #    }
+         
+            
+        #day_xtras_per_roi ={ roi:{**day_xtras} for roi in rois_list} 
         
         day_results = {roi: {**process_records_for_roi(records, roi, iflags_penalties_dict, overwrite_weight)} for roi in rois_list}
-        results[day_of_year] ={**day_results, **day_xtras_per_roi}  
+        
+        
+        results[day_of_year] =  day_results  #{**day_results, **day_xtras_per_roi}  
     
     return results
 
