@@ -675,6 +675,65 @@ def calculate_roi_weighted_means_and_stds(
         overwrite_weight: bool, 
         skip_iflags_list =['iflag_sunny', 'iflag_cloudy', 'iflag_full_overcast'],
         ) -> Dict[str, Union[float, bool, int, Dict]]:
+        """
+        Processes a list of records for a specific Region of Interest (ROI) to calculate weighted means, standard deviations, and other metrics.
+
+        This method processes all records corresponding to a given ROI. It calculates weighted mean values for the red, green, and blue channels, 
+        along with their respective standard deviations. The method also computes the sum of weights, GCC (Green Chromatic Coordinates) value, 
+        RCC (Red Chromatic Coordinates) value, and additional metadata.
+
+        Parameters
+        ----------
+        records : List[Dict]
+            A list of records where each record is a dictionary containing various data fields including the ROI values.
+        roi : str
+            The name of the Region of Interest (ROI) to be processed (e.g., 'ROI_01', 'ROI_02').
+        iflags_penalties_dict : Dict[str, float]
+            A dictionary containing penalties (as weight modifiers) for various flags associated with the ROI. The keys are flag names, and the values are penalty weights.
+        overwrite_weight : bool
+            If True, the weight for each record is set to 1, ignoring the calculated final weights from the penalties. If False, the calculated weight is used.
+        skip_iflags_list : List[str], optional
+            A list of flags to skip when checking for the presence of flags in the ROI (default is ['iflag_sunny', 'iflag_cloudy', 'iflag_full_overcast']).
+
+        Returns
+        -------
+        Dict[str, Union[float, bool, int, Dict]]
+            A dictionary containing the following keys:
+                - 'weighted_mean_red': Weighted mean of the red channel for the ROI.
+                - 'weighted_mean_green': Weighted mean of the green channel for the ROI.
+                - 'weighted_mean_blue': Weighted mean of the blue channel for the ROI.
+                - 'sum_of_weights': The sum of weights used in the calculation.
+                - 'sum_of_weighted_means': The sum of the weighted means for red, green, and blue channels.
+                - 'GCC_value': Green Chromatic Coordinates value for the ROI.
+                - 'RCC_value': Red Chromatic Coordinates value for the ROI.
+                - 'total_pixels': Total number of pixels considered in the ROI.
+                - 'std_red': Standard deviation of the red channel values.
+                - 'std_green': Standard deviation of the green channel values.
+                - 'std_blue': Standard deviation of the blue channel values.
+                - 'weights_used': A dictionary mapping each `catalog_guid` to a dictionary containing 'weight' and 'roi' keys.
+                - 'num_valid_records': The number of valid records processed for the ROI.
+                - 'has_flags': Boolean indicating if any flags (excluding those in `skip_iflags_list`) were set for the ROI.
+                - 'has_snow_presence': Boolean indicating if snow presence was detected in the ROI.
+
+        Notes
+        -----
+        - The standard deviations ('std_red', 'std_green', 'std_blue') are calculated only if there is more than one valid record.
+        - The method skips any records where the ROI has `flag_disable_for_processing` set to True.
+        - The `calculate_final_weights_for_rois` function is used to determine the final weight for each record unless `overwrite_weight` is True.
+
+        Example
+        -------
+        ```python
+        roi_results = process_records_for_roi(
+            records=my_records,
+            roi='ROI_01',
+            iflags_penalties_dict={'flag_haze': 0.5, 'flag_clouds': 0.25},
+            overwrite_weight=False
+        )
+        ```
+        """
+        
+        
         roi_results = {
             "weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
             "sum_of_weights": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
