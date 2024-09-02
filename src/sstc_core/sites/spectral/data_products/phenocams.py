@@ -806,14 +806,14 @@ def calculate_roi_weighted_means_and_stds(
         day_xtras = {
             'mean_datetime': mean_datetime, 
             'QFLAG_value': qflag_dict['QFLAG'] , 
-            'meantime_resolution':  f"{meantime_resolution['hours']}:{ meantime_resolution['minutes']}:00",
+            'meantime_resolution':  f"{str(meantime_resolution["hours"]).zfill(2)}:{str(meantime_resolution["hours"]).zfill(2)}",
             'default_temporal_resolution': default_temporal_resolution, 
             }
         
         day_xtras_per_roi ={ roi:{**day_xtras} for roi in rois_list} 
         
-        day_results = {roi: {**process_records_for_roi(records, roi, iflags_penalties_dict, overwrite_weight), **day_xtras_per_roi[roi] } for roi in rois_list}
-        results[day_of_year] = day_results
+        day_results = {roi: {**process_records_for_roi(records, roi, iflags_penalties_dict, overwrite_weight)} for roi in rois_list}
+        results[day_of_year] ={**day_results, **day_xtras_per_roi}  
     
     return results
 

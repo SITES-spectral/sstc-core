@@ -994,7 +994,9 @@ class Station(DuckDBManager):
         record_dict = {
             **record_dict,
             **{'QFLAG_image_value': qflag_dict['QFLAG'],
-               'QFLAG_image_weight': qflag_dict['weight']   },  
+               'QFLAG_image_weight': qflag_dict['weight'],
+               "default_temporal_resolution": default_temporal_resolution, 
+               "is_per_image": is_per_image},  
             **default_platform_flags 
         } 
 
