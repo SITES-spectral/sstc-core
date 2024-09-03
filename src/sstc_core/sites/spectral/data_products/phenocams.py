@@ -732,12 +732,12 @@ def calculate_roi_weighted_means_and_stds(
         )
         ```
         """       
-        
+        # TODO: Add overwriteweight
         roi_results = {
             "weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
             "sum_of_weights": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
             "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, 
-            "num_valid_records": 0, "has_flags": False, 'has_snow_presence': False,
+            "num_valid_records": 0, "has_flags": False, 'has_snow_presence': False, 
             
         }
         

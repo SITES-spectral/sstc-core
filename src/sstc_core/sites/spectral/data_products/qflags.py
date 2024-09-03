@@ -32,6 +32,7 @@ def compute_qflag(
     dict
         A dictionary containing 'QFLAG' and 'weight'.
     """
+    print(records_dict)
     
     datetime_list = [v['creation_date'] for _, v in records_dict.items()]
     
