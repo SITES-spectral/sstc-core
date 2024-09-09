@@ -813,7 +813,7 @@ def process_records_for_roi(
 
 
 def calculate_roi_weighted_means_and_stds(
-    records_dict: Dict[int, List[Dict[str, Union[int, float, bool, str]]]], 
+    doy_dict_with_records_list: Dict[int, List[Dict[str, Union[int, float, bool, str]]]], 
     rois_list: List[str], 
     iflags_penalties_dict: Dict[str, float],
     latitude_dd: float, 
@@ -826,7 +826,7 @@ def calculate_roi_weighted_means_and_stds(
     
     Parameters
     ----------    
-    records_dict : dict
+    doy_dict_with_records_list : dict
         A dictionary where each key is a day of the year and the corresponding value is a list of records for that day. Each record contains pixel data and other relevant information.
     rois_list : list
         A list of strings representing the names of Regions of Interest (ROIs) to process.
@@ -848,7 +848,7 @@ def calculate_roi_weighted_means_and_stds(
     #################
     results = {}
     
-    for day_of_year, records in records_dict.items():
+    for day_of_year, records in doy_dict_with_records_list.items():
         mean_datetime = calculate_mean_datetime(records)
         
         r_list = [{'creation_date': record['creation_date']} for record in records]
