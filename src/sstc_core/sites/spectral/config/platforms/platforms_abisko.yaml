@@ -10,7 +10,7 @@ PhenoCams:
           epsg: "epsg:4326"
           latitude_dd: 68.353729
           longitude_dd: 18.816522
-    height_in_meters_above_ground: 4
+    height_in_meters_above_ground: 4.5
     legacy_acronym: ANS-FOR-P01
     location_id: RTBH_FOR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Abisko-RTBH_FOR-P_RTBH_1-mantainance_log.yaml'

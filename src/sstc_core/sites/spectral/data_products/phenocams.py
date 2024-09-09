@@ -578,7 +578,6 @@ def load_iflags_penalties(flags_yaml_filepath: str) -> dict:
     return iflags_penalties_dict
 
 
-
 def calculate_final_weights_for_rois(record: dict, rois_list: list, iflags_penalties_dict: dict) -> dict:
     """
     Calculate the final weights to be applied for each ROI in a valid record.
@@ -616,6 +615,201 @@ def calculate_final_weights_for_rois(record: dict, rois_list: list, iflags_penal
     return final_weights
 
 
+def calculate_mean_datetime(records: List[Dict[str, Union[str, int, float]]]) -> str:
+    """
+    Calculate the mean datetime from a list of records.
+
+    Parameters
+    ----------
+    records : List[Dict[str, Union[str, int, float]]]
+        A list of records, where each record is a dictionary containing a 'creation_date' key with its value as a string.
+
+    Returns
+    -------
+    str
+        A string representing the mean datetime calculated from the 'creation_date' values in the input records.
+
+    Notes
+    -----
+    This function extracts the 'creation_date' from each record, computes the mean datetime using the utility function
+    `utils.mean_datetime_str`, and returns the result as a string.
+    """
+    datetime_list = [item['creation_date'] for item in records]
+    return utils.mean_datetime_str(datetime_list=datetime_list)
+
+
+def compute_qflag_for_day(
+    records: List[Dict], 
+    latitude: float, 
+    longitude: float,
+    default_temporal_resolution: bool,
+    is_per_image: bool
+    ) -> Union[float, None]:
+    
+    """
+    Compute the quality flag (Q-flag) for a given day based on the provided records, location, and configuration parameters.
+
+    Parameters
+    ----------
+    records : List[Dict]
+        A list of records where each record is a dictionary containing various metadata, including a unique 'catalog_guid'.
+    latitude : float
+        The latitude of the location for which the Q-flag is to be computed, in decimal degrees.
+    longitude : float
+        The longitude of the location for which the Q-flag is to be computed, in decimal degrees.
+    default_temporal_resolution : bool
+        If True, uses the default temporal resolution for processing; if False, uses a custom temporal resolution.
+    is_per_image : bool
+        If True, computes the Q-flag for each image individually; if False, computes a single Q-flag for the day.
+
+    Returns
+    -------
+    Union[float, None]
+        The computed Q-flag as a float if successful, or None if the Q-flag could not be computed.
+
+    Notes
+    -----
+    This function consolidates the records into a dictionary indexed by 'catalog_guid', then calls `compute_qflag`
+    to calculate the Q-flag for the day based on the provided location and settings.
+    """
+    records_dict = {record['catalog_guid']: record for record in records}
+    return compute_qflag(
+        latitude_dd=latitude,
+        longitude_dd=longitude,
+        records_dict=records_dict,
+        timezone_str='Europe/Stockholm',
+        is_per_image=is_per_image,
+        default_temporal_resolution=default_temporal_resolution,
+    )
+    
+
+def process_records_for_roi(
+    records: List[Dict], roi: str, 
+    iflags_penalties_dict: Dict[str, float], 
+    overwrite_weight: bool, 
+    skip_iflags_list =['iflag_sunny', 'iflag_cloudy', 'iflag_full_overcast'],
+    ) -> Dict[str, Union[float, bool, int, Dict]]:
+    """
+    Processes a list of records for a specific Region of Interest (ROI) to calculate weighted means, standard deviations, and other metrics.
+
+    This method processes all records corresponding to a given ROI. It calculates weighted mean values for the red, green, and blue channels, 
+    along with their respective standard deviations. The method also computes the sum of weights, GCC (Green Chromatic Coordinates) value, 
+    RCC (Red Chromatic Coordinates) value, and additional metadata.
+
+    Parameters
+    ----------
+    records : List[Dict]
+        A list of records where each record is a dictionary containing various data fields including the ROI values.
+    roi : str
+        The name of the Region of Interest (ROI) to be processed (e.g., 'ROI_01', 'ROI_02').
+    iflags_penalties_dict : Dict[str, float]
+        A dictionary containing penalties (as weight modifiers) for various flags associated with the ROI. The keys are flag names, and the values are penalty weights.
+    overwrite_weight : bool
+        If True, the weight for each record is set to 1, ignoring the calculated final weights from the penalties. If False, the calculated weight is used.
+    skip_iflags_list : List[str], optional
+        A list of flags to skip when checking for the presence of flags in the ROI (default is ['iflag_sunny', 'iflag_cloudy', 'iflag_full_overcast']).
+
+    Returns
+    -------
+    Dict[str, Union[float, bool, int, Dict]]
+        A dictionary containing the following keys:
+            - 'weighted_mean_red': Weighted mean of the red channel for the ROI.
+            - 'weighted_mean_green': Weighted mean of the green channel for the ROI.
+            - 'weighted_mean_blue': Weighted mean of the blue channel for the ROI.
+            - 'sum_of_weights': The sum of weights used in the calculation.
+            - 'sum_of_weighted_means': The sum of the weighted means for red, green, and blue channels.
+            - 'GCC_value': Green Chromatic Coordinates value for the ROI.
+            - 'RCC_value': Red Chromatic Coordinates value for the ROI.
+            - 'total_pixels': Total number of pixels considered in the ROI.
+            - 'std_red': Standard deviation of the red channel values.
+            - 'std_green': Standard deviation of the green channel values.
+            - 'std_blue': Standard deviation of the blue channel values.
+            - 'weights_used': A dictionary mapping each `catalog_guid` to a dictionary containing 'weight' and 'roi' keys.
+            - 'num_valid_records': The number of valid records processed for the ROI.
+            - 'has_flags': Boolean indicating if any flags (excluding those in `skip_iflags_list`) were set for the ROI.
+            - 'has_snow_presence': Boolean indicating if snow presence was detected in the ROI.
+
+    Notes
+    -----
+    - The standard deviations ('std_red', 'std_green', 'std_blue') are calculated only if there is more than one valid record.
+    - The method skips any records where the ROI has `flag_disable_for_processing` set to True.
+    - The `calculate_final_weights_for_rois` function is used to determine the final weight for each record unless `overwrite_weight` is True.
+
+    Example
+    -------
+    ```python
+    roi_results = process_records_for_roi(
+        records=my_records,
+        roi='ROI_01',
+        iflags_penalties_dict={'flag_haze': 0.5, 'flag_clouds': 0.25},
+        overwrite_weight=False
+    )
+    ```
+    """
+    
+    
+    roi_results = {
+        "weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
+        "sum_of_weights": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
+        "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, 
+        "num_valid_records": 0, "has_flags": False, 'has_snow_presence': False,
+        'disable_for_processing': False, 'overwrite_weight': overwrite_weight,
+    }
+    
+    red_values, green_values, blue_values = [], [], []
+    red_weighted_sum, green_weighted_sum, blue_weighted_sum = 0, 0, 0
+    total_weight = 0
+    
+    for record in records:
+        disable_for_processing = record['disable_for_processing'] 
+        if not disable_for_processing: 
+                
+            weight = 1 if overwrite_weight else calculate_final_weights_for_rois(record, rois_list, iflags_penalties_dict).get(roi, 1)
+            num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
+            if num_pixels > 0:
+                red_mean = record.get(f"L2_{roi}_SUM_Red", 0) / num_pixels
+                green_mean = record.get(f"L2_{roi}_SUM_Green", 0) / num_pixels
+                blue_mean = record.get(f"L2_{roi}_SUM_Blue", 0) / num_pixels
+
+                # Accumulate weighted sums and weights for final weighted average calculation
+                red_weighted_sum += red_mean * weight
+                green_weighted_sum += green_mean * weight
+                blue_weighted_sum += blue_mean * weight
+                total_weight += weight
+
+                roi_results["total_pixels"] += num_pixels
+                roi_results["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi": roi}
+                roi_results["num_valid_records"] += 1
+                roi_results['has_flags'] = any([v for k, v in utils.extract_keys_with_prefix(input_dict=record, starts_with=roi).items() if k not in skip_iflags_list])
+                roi_results['has_snow_presence'] = record[f'L3_{roi}_has_snow_presence']
+                roi_results['disable_for_processing'] = disable_for_processing
+                
+                red_values.append(red_mean)
+                green_values.append(green_mean)
+                blue_values.append(blue_mean)
+
+    if total_weight > 0:
+        # Final weighted mean calculation
+        roi_results["weighted_mean_red"] = red_weighted_sum / total_weight
+        roi_results["weighted_mean_green"] = green_weighted_sum / total_weight
+        roi_results["weighted_mean_blue"] = blue_weighted_sum / total_weight
+
+        roi_results["sum_of_weights"] = total_weight
+        roi_results["sum_of_weighted_means"] = roi_results["weighted_mean_red"] + roi_results["weighted_mean_green"] + roi_results["weighted_mean_blue"]
+        
+        if roi_results["sum_of_weighted_means"] > 0:
+            roi_results["GCC_value"] = roi_results["weighted_mean_green"] / roi_results["sum_of_weighted_means"]
+            roi_results["RCC_value"] = roi_results["weighted_mean_red"] / roi_results["sum_of_weighted_means"]
+
+        if len(red_values) > 1:
+            roi_results["std_red"] = np.std(red_values)
+            roi_results["std_green"] = np.std(green_values)
+            roi_results["std_blue"] = np.std(blue_values)
+                        
+    return roi_results
+
+
+
 def calculate_roi_weighted_means_and_stds(
     records_dict: Dict[int, List[Dict[str, Union[int, float, bool, str]]]], 
     rois_list: List[str], 
@@ -648,147 +842,7 @@ def calculate_roi_weighted_means_and_stds(
         A dictionary where each key is a day of the year, and the corresponding value is a nested dictionary containing the calculated metrics for each ROI.
     """
     
-    def calculate_mean_datetime(records: List[Dict[str, Union[str, int, float]]]) -> str:
-        datetime_list = [item['creation_date'] for item in records]
-        return utils.mean_datetime_str(datetime_list=datetime_list)
-
-    def compute_qflag_for_day(
-        records: List[Dict], 
-        latitude: float, 
-        longitude: float,
-        default_temporal_resolution:bool,
-        is_per_image: bool,
-        ) -> Union[float, None]:
-        records_dict = {record['catalog_guid']: record for record in records}
-        return compute_qflag(
-            latitude_dd=latitude,
-            longitude_dd=longitude,
-            records_dict=records_dict,
-            timezone_str='Europe/Stockholm',
-            is_per_image=is_per_image,
-            default_temporal_resolution= default_temporal_resolution,
-            )
-
-    def process_records_for_roi(
-        records: List[Dict], roi: str, 
-        iflags_penalties_dict: Dict[str, float], 
-        overwrite_weight: bool, 
-        skip_iflags_list =['iflag_sunny', 'iflag_cloudy', 'iflag_full_overcast'],
-        ) -> Dict[str, Union[float, bool, int, Dict]]:
-        """
-        Processes a list of records for a specific Region of Interest (ROI) to calculate weighted means, standard deviations, and other metrics.
-
-        This method processes all records corresponding to a given ROI. It calculates weighted mean values for the red, green, and blue channels, 
-        along with their respective standard deviations. The method also computes the sum of weights, GCC (Green Chromatic Coordinates) value, 
-        RCC (Red Chromatic Coordinates) value, and additional metadata.
-
-        Parameters
-        ----------
-        records : List[Dict]
-            A list of records where each record is a dictionary containing various data fields including the ROI values.
-        roi : str
-            The name of the Region of Interest (ROI) to be processed (e.g., 'ROI_01', 'ROI_02').
-        iflags_penalties_dict : Dict[str, float]
-            A dictionary containing penalties (as weight modifiers) for various flags associated with the ROI. The keys are flag names, and the values are penalty weights.
-        overwrite_weight : bool
-            If True, the weight for each record is set to 1, ignoring the calculated final weights from the penalties. If False, the calculated weight is used.
-        skip_iflags_list : List[str], optional
-            A list of flags to skip when checking for the presence of flags in the ROI (default is ['iflag_sunny', 'iflag_cloudy', 'iflag_full_overcast']).
-
-        Returns
-        -------
-        Dict[str, Union[float, bool, int, Dict]]
-            A dictionary containing the following keys:
-                - 'weighted_mean_red': Weighted mean of the red channel for the ROI.
-                - 'weighted_mean_green': Weighted mean of the green channel for the ROI.
-                - 'weighted_mean_blue': Weighted mean of the blue channel for the ROI.
-                - 'sum_of_weights': The sum of weights used in the calculation.
-                - 'sum_of_weighted_means': The sum of the weighted means for red, green, and blue channels.
-                - 'GCC_value': Green Chromatic Coordinates value for the ROI.
-                - 'RCC_value': Red Chromatic Coordinates value for the ROI.
-                - 'total_pixels': Total number of pixels considered in the ROI.
-                - 'std_red': Standard deviation of the red channel values.
-                - 'std_green': Standard deviation of the green channel values.
-                - 'std_blue': Standard deviation of the blue channel values.
-                - 'weights_used': A dictionary mapping each `catalog_guid` to a dictionary containing 'weight' and 'roi' keys.
-                - 'num_valid_records': The number of valid records processed for the ROI.
-                - 'has_flags': Boolean indicating if any flags (excluding those in `skip_iflags_list`) were set for the ROI.
-                - 'has_snow_presence': Boolean indicating if snow presence was detected in the ROI.
-
-        Notes
-        -----
-        - The standard deviations ('std_red', 'std_green', 'std_blue') are calculated only if there is more than one valid record.
-        - The method skips any records where the ROI has `flag_disable_for_processing` set to True.
-        - The `calculate_final_weights_for_rois` function is used to determine the final weight for each record unless `overwrite_weight` is True.
-
-        Example
-        -------
-        ```python
-        roi_results = process_records_for_roi(
-            records=my_records,
-            roi='ROI_01',
-            iflags_penalties_dict={'flag_haze': 0.5, 'flag_clouds': 0.25},
-            overwrite_weight=False
-        )
-        ```
-        """       
-        # TODO: Add overwriteweight
-        roi_results = {
-            "weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
-            "sum_of_weights": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
-            "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, 
-            "num_valid_records": 0, "has_flags": False, 'has_snow_presence': False, 
-            
-        }
-        
-        red_values, green_values, blue_values = [], [], []
-        red_weighted_sum, green_weighted_sum, blue_weighted_sum = 0, 0, 0
-        total_weight = 0
-        
-        for record in records:
-            weight = 1 if overwrite_weight else calculate_final_weights_for_rois(record, rois_list, iflags_penalties_dict).get(roi, 1)
-            num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
-            if num_pixels > 0:
-                red_mean = record.get(f"L2_{roi}_SUM_Red", 0) / num_pixels
-                green_mean = record.get(f"L2_{roi}_SUM_Green", 0) / num_pixels
-                blue_mean = record.get(f"L2_{roi}_SUM_Blue", 0) / num_pixels
-
-                # Accumulate weighted sums and weights for final weighted average calculation
-                red_weighted_sum += red_mean * weight
-                green_weighted_sum += green_mean * weight
-                blue_weighted_sum += blue_mean * weight
-                total_weight += weight
-
-                roi_results["total_pixels"] += num_pixels
-                roi_results["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi": roi}
-                roi_results["num_valid_records"] += 1
-                roi_results['has_flags'] = any([v for k, v in utils.extract_keys_with_prefix(input_dict=record, starts_with=roi).items() if k not in skip_iflags_list])
-                roi_results['has_snow_presence'] = record[f'L3_{roi}_has_snow_presence']
-                
-                red_values.append(red_mean)
-                green_values.append(green_mean)
-                blue_values.append(blue_mean)
-
-        if total_weight > 0:
-            # Final weighted mean calculation
-            roi_results["weighted_mean_red"] = red_weighted_sum / total_weight
-            roi_results["weighted_mean_green"] = green_weighted_sum / total_weight
-            roi_results["weighted_mean_blue"] = blue_weighted_sum / total_weight
-
-            roi_results["sum_of_weights"] = total_weight
-            roi_results["sum_of_weighted_means"] = roi_results["weighted_mean_red"] + roi_results["weighted_mean_green"] + roi_results["weighted_mean_blue"]
-            
-            if roi_results["sum_of_weighted_means"] > 0:
-                roi_results["GCC_value"] = roi_results["weighted_mean_green"] / roi_results["sum_of_weighted_means"]
-                roi_results["RCC_value"] = roi_results["weighted_mean_red"] / roi_results["sum_of_weighted_means"]
-
-            if len(red_values) > 1:
-                roi_results["std_red"] = np.std(red_values)
-                roi_results["std_green"] = np.std(green_values)
-                roi_results["std_blue"] = np.std(blue_values)
-                           
-        return roi_results
-    
+    #################
     results = {}
     
     for day_of_year, records in records_dict.items():
@@ -825,45 +879,58 @@ def calculate_roi_weighted_means_and_stds(
 
 
 def calculate_roi_weighted_means_and_stds_per_record(
-    records_dict: dict, 
-    rois_list: list, 
-    iflags_penalties_dict: dict,
+    doy_dict_with_records_list: Dict[int, List[Dict[str, Any]]],
+    rois_list: List[str],
+    iflags_penalties_dict: Dict[str, Any],
     overwrite_weight: bool = True
-) -> dict:
+) -> Dict[int, Dict[str, Dict[str, Any]]]:
     """
-    Calculate the weighted means for each ROI individually for each valid record.
+    Calculate the weighted means for each Region of Interest (ROI) for each valid record grouped by day of year.
 
     Parameters
     ----------
-    records_dict : dict
-        Dictionary containing records grouped by day_of_year.
+    doy_dict_with_records_list : dict
+        Dictionary where the key is the day of the year (int) and the value is a list of records (each record being a dictionary).
     rois_list : list
-        List of ROI names to process.
+        List of ROI names to process (strings).
     iflags_penalties_dict : dict
-        Dictionary containing flags and_penalties values.
+        Dictionary containing flags and penalties values that influence the weights for each ROI.
     overwrite_weight : bool, optional
-        If True, the weight is set to 1 for all records, regardless of the calculated value. Defaults to True.
+        If True, sets the weight to 1 for all records, overriding any calculated weight. Defaults to True.
 
     Returns
     -------
     dict
-        Dictionary containing the weighted means for each ROI individually for each valid record.
+        A dictionary where each key is a day of the year (int) and the value is another dictionary that maps
+        record GUIDs to their corresponding ROI data, which includes weighted means for red, green, and blue values,
+        the total number of pixels, and the weight.
     """
     results = {}
 
-    for day_of_year, records in records_dict.items():
+    for day_of_year, records in doy_dict_with_records_list.items():
         day_results = {}
 
         for record in records:
             record_guid = record["catalog_guid"]
-            record_results = {roi: {"weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, "weight": 0, "total_pixels": 0} for roi in rois_list}
-            
+            # disable_for_processing = record['disable_for_processing'] 
+            record_results = {
+                roi: {
+                    "weighted_mean_red": None,
+                    "weighted_mean_green": None,
+                    "weighted_mean_blue": None,
+                    "weight": 1,
+                    "total_pixels": None,
+                    'disable_for_processing': record[f'{roi}_disable_for_processing'] 
+                } for roi in rois_list
+            }
+
+            # Calculate final weights for each ROI using the provided flags and penalties dictionary
             final_weights = calculate_final_weights_for_rois(record, rois_list, iflags_penalties_dict)
-            
+
             for roi, weight in final_weights.items():
-                # Overwrite weight if the overwrite_weight flag is set
+                # Override weight if overwrite_weight flag is set
                 weight = 1 if overwrite_weight else weight
-                
+
                 if weight > 0:
                     num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
                     if num_pixels > 0:
@@ -878,6 +945,7 @@ def calculate_roi_weighted_means_and_stds_per_record(
                         record_results[roi]["total_pixels"] = num_pixels
                         record_results[roi]["weight"] = weight
                     else:
+                        # Set values to zero if there are no pixels
                         record_results[roi]["weighted_mean_red"] = 0
                         record_results[roi]["weighted_mean_green"] = 0
                         record_results[roi]["weighted_mean_blue"] = 0

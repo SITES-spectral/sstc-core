@@ -1,5 +1,6 @@
 ## [0.18.0] 
 - Updated platform schema 0.5
+- updated `phenocams.calculate_roi_weighted_means_and_stds_per_record`
 
 ## [v0.17.1]
 - updates in schema for handling time_resolution 
