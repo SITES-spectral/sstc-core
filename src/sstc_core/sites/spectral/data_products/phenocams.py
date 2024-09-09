@@ -248,6 +248,8 @@ def compute_GCC_RCC(daily_rgb_filepath: str, products_dirpath: str, year: int) -
         print(f"Unexpected error: {e}")
         return {}
     
+    
+    
 def rois_mask_and_sum(image_path: str, phenocam_rois: dict) -> dict:
     """
     Masks an image based on the provided ROIs, calculates the sum of pixel values inside each ROI for R, G, and B channels,
