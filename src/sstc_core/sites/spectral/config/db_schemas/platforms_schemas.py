@@ -441,7 +441,7 @@ phenocams_core_schema = [
     {'field_name': 'meantime_resolution',
     'field_type': 'VARCHAR',
     'field_default_value': None},
-    {'field_name': 'flags_confirmed',
+    {'field_name': 'iflags_confirmed',
     'field_type': 'BOOLEAN',
     'field_default_value': False},
     {'field_name': 'has_snow_presence',
