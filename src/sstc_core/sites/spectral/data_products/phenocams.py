@@ -748,9 +748,8 @@ def process_records_for_roi(
         overwrite_weight=False
     )
     ```
-    """
-    
-    # TODO: rename has_iflags to has_iflags
+    """   
+   
     roi_results = {
         "weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
         "sum_of_weights": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
@@ -819,13 +818,14 @@ def calculate_roi_weighted_means_and_stds(
     iflags_penalties_dict: Dict[str, float],
     latitude_dd: float, 
     longitude_dd: float,
-    overwrite_weight: bool = True
+    overwrite_weight: bool = True,
 ) -> Dict[int, Dict[str, Union[float, Dict]]]:
     """    
     Calculate the weighted means, standard deviations, and derived records (GCC, RCC) per day of year for each ROI.
 
+    
     Parameters
-    ----------
+    ----------    
     records_dict : dict
         A dictionary where each key is a day of the year and the corresponding value is a list of records for that day. Each record contains pixel data and other relevant information.
     rois_list : list
@@ -849,25 +849,27 @@ def calculate_roi_weighted_means_and_stds(
     results = {}
     
     for day_of_year, records in records_dict.items():
-        # mean_datetime = calculate_mean_datetime(records)
+        mean_datetime = calculate_mean_datetime(records)
         
-        # r_list = [{'creation_date': record['creation_date']} for record in records]
+        r_list = [{'creation_date': record['creation_date']} for record in records]
         
-        # meantime_resolution = utils.calculate_mean_time_resolution(records_list=records)
+        meantime_resolution = utils.calculate_mean_time_resolution(records_list=records)
         
-        #default_temporal_resolution = False if meantime_resolution['hours'] > 0 or meantime_resolution['minutes'] > 30 else True 
-        # qflag_dict = compute_qflag_for_day(
-        #    records, 
-        #    latitude_dd,
-        #    longitude_dd, 
-        #    default_temporal_resolution=default_temporal_resolution,
-        #    is_per_image=False)
-        #day_xtras = {
-        #    'mean_datetime': mean_datetime, 
-        #    'QFLAG_value': qflag_dict['QFLAG'] , 
-        #    'meantime_resolution':  f"{str(meantime_resolution["hours"]).zfill(2)}:{str(meantime_resolution["hours"]).zfill(2)}",
-        #    'default_temporal_resolution': default_temporal_resolution, 
-        #    }
+        default_temporal_resolution = False if meantime_resolution['hours'] > 0 or meantime_resolution['minutes'] > 30 else True 
+        
+        qflag_dict = compute_qflag_for_day(
+            records, 
+            latitude_dd,
+            longitude_dd, 
+            default_temporal_resolution=default_temporal_resolution,
+            is_per_image=False)
+        
+        day_xtras = {
+            'mean_datetime': mean_datetime, 
+            'QFLAG_value': qflag_dict['QFLAG'] , 
+            'meantime_resolution':  f"{str(meantime_resolution["hours"]).zfill(2)}:{str(meantime_resolution["hours"]).zfill(2)}",
+            'default_temporal_resolution': default_temporal_resolution, 
+            }
          
             
         #day_xtras_per_roi ={ roi:{**day_xtras} for roi in rois_list} 
