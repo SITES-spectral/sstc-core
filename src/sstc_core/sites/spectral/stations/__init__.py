@@ -1821,8 +1821,7 @@ class Station(DuckDBManager):
                                        table_name: str, 
                                        year: int, 
                                        filters_dict: Optional[Dict[str, Any]] ={
-                                           'is_ready_for_products_use': True,
-                                           'is_data_processing_disabled': False,
+                                           'is_ready_for_products_use': True,                                           
                                            } ) -> Dict[str, Optional[str]]:
         """
         Retrieves the minimum and maximum values of the `creation_date` field for the given year,

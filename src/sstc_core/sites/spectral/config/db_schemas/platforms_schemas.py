@@ -19,13 +19,13 @@ def build_phenocams_rois_flags_schema(station: Station, platform_id: str,  pheno
         for r in phenocam_rois_dict.keys():
             for suffix in suffixes:
                 field_name = f'{r}_{suffix}'            
-                field_default_vale = False
+                field_default_value = False
                 field_type = 'BOOLEAN'
 
                 fields_list.append({
                     'field_name': field_name,
                     'field_type': field_type,
-                    'field_default_vale': field_default_vale
+                    'field_default_value': field_default_value
                 })                
     return fields_list
  
@@ -84,7 +84,7 @@ def __build_phenocams_rois_parameters_schema(
     ...     custom_field_types={'num_pixels': 'INTEGER'}
     ... )
     >>> print(schema)
-    [{'field_name': 'phenocam_1_num_pixels', 'field_type': 'INTEGER', 'field_default_vale': 0}, ...]
+    [{'field_name': 'phenocam_1_num_pixels', 'field_type': 'INTEGER', 'field_default_value': 0}, ...]
     """
     if not platform_id:
         raise ValueError("The 'platform_id' must be provided.")
@@ -113,7 +113,7 @@ def __build_phenocams_rois_parameters_schema(
             fields_list.append({
                 'field_name': field_name,
                 'field_type': field_type,
-                'field_default_vale': field_value 
+                'field_default_value': field_value 
             })
     
     return fields_list
@@ -183,7 +183,7 @@ def build_phenocams_rois_L2_parameters(
     ...     custom_field_types={'num_pixels': 'INTEGER'}
     ... )
     >>> print(L2_schema)
-    [{'field_name': 'L2_1_num_pixels', 'field_type': 'INTEGER', 'field_default_vale': 0}, ...]
+    [{'field_name': 'L2_1_num_pixels', 'field_type': 'INTEGER', 'field_default_value': 0}, ...]
     """
     return __build_phenocams_rois_parameters_schema(
         station=station,
@@ -202,8 +202,7 @@ def build_phenocams_rois_L3_parameters(
     platforms_type: str = 'PhenoCams',
     prefix: str = 'L3',  
     parameters_dict: dict = {
-        'has_snow_presence': False,
-        'is_data_processing_disabled': False,
+        'has_snow_presence': False,        
         'QFLAG_value': None,
         'QFLAG_weight': None,
         'num_pixels': None,
@@ -222,14 +221,15 @@ def build_phenocams_rois_L3_parameters(
         'weighted_MEAN_Red': None,
         'weighted_MEAN_Green': None,
         'weighted_MEAN_Blue': None, 
-        'has_flags': False,
-    },   
+        'has_iflags': False,      
+    },
+       
     default_field_type: str = 'DOUBLE',  # Options: 'BOOLEAN', 'VARCHAR', 'INTEGER', 'DOUBLE'
     custom_field_types: dict = {
         'num_pixels': 'INTEGER',
         'QFLAG_value': 'INTEGER',
         'has_snow_presence': 'BOOLEAN',
-        'is_data_processing_disabled': 'BOOLEAN',        
+        'has_iflags': 'BOOLEAN',                
     }
 ) -> List[dict]:
     """
@@ -252,8 +252,7 @@ def build_phenocams_rois_L3_parameters(
     parameters_dict : dict, optional
         A dictionary of parameters and their default values, by default:
         {
-            'has_snow_presence': False,
-            'is_data_processing_disabled': False,
+            'has_snow_presence': False,            
             'QFLAG_value': None,
             'QFLAG_weight': None,
             'num_pixels': None,
@@ -279,7 +278,7 @@ def build_phenocams_rois_L3_parameters(
             'num_pixels': 'INTEGER',
             'QFLAG_value': 'INTEGER',
             'has_snow_presence': 'BOOLEAN',
-            'is_data_processing_disabled': 'BOOLEAN'
+            
         }
 
     Returns
@@ -296,7 +295,6 @@ def build_phenocams_rois_L3_parameters(
     ...     prefix='L3',
     ...     parameters_dict={
     ...         'has_snow_presence': False,
-    ...         'is_data_processing_disabled': False,
     ...         'QFLAG_value': 0,
     ...         'QFLAG_weight': 1.0,
     ...         'num_pixels': 100,
@@ -318,11 +316,10 @@ def build_phenocams_rois_L3_parameters(
     ...         'num_pixels': 'INTEGER',
     ...         'QFLAG_value': 'INTEGER',
     ...         'has_snow_presence': 'BOOLEAN',
-    ...         'is_data_processing_disabled': 'BOOLEAN'
     ...     }
     ... )
     >>> print(L3_schema)
-    [{'field_name': 'L3_1_has_snow_presence', 'field_type': 'BOOLEAN', 'field_default_vale': False}, ...]
+    [{'field_name': 'L3_1_has_snow_presence', 'field_type': 'BOOLEAN', 'field_default_value': False}, ...]
     """
     return __build_phenocams_rois_parameters_schema(
         station=station,
@@ -416,10 +413,7 @@ phenocams_core_schema = [
      'field_default_value': False},
     {'field_name': 'is_ready_for_products_use',
     'field_type': 'BOOLEAN',
-    'field_default_value': False},
-    {'field_name': 'is_data_processing_disabled',
-    'field_type': 'BOOLEAN',
-    'field_default_value': False},
+    'field_default_value': False},    
     {'field_name': 'catalog_filepath',
     'field_type': 'VARCHAR',
     'field_default_value': None},

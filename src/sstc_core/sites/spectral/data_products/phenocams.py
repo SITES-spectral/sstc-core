@@ -684,7 +684,8 @@ def compute_qflag_for_day(
     
 
 def process_records_for_roi(
-    records: List[Dict], roi: str, 
+    records: List[Dict], 
+    roi: str, 
     iflags_penalties_dict: Dict[str, float], 
     overwrite_weight: bool, 
     skip_iflags_list =['iflag_sunny', 'iflag_cloudy', 'iflag_full_overcast'],
@@ -726,13 +727,13 @@ def process_records_for_roi(
             - 'std_blue': Standard deviation of the blue channel values.
             - 'weights_used': A dictionary mapping each `catalog_guid` to a dictionary containing 'weight' and 'roi' keys.
             - 'num_valid_records': The number of valid records processed for the ROI.
-            - 'has_flags': Boolean indicating if any flags (excluding those in `skip_iflags_list`) were set for the ROI.
+            - 'has_iflags': Boolean indicating if any flags (excluding those in `skip_iflags_list`) were set for the ROI.
             - 'has_snow_presence': Boolean indicating if snow presence was detected in the ROI.
 
     Notes
     -----
     - The standard deviations ('std_red', 'std_green', 'std_blue') are calculated only if there is more than one valid record.
-    - The method skips any records where the ROI has `flag_disable_for_processing` set to True.
+    - The method skips any records where the ROI has `iflag_disable_for_processing` set to True.
     - The `calculate_final_weights_for_rois` function is used to determine the final weight for each record unless `overwrite_weight` is True.
 
     Example
@@ -747,13 +748,13 @@ def process_records_for_roi(
     ```
     """
     
-    
+    # TODO: rename has_iflags to has_iflags
     roi_results = {
         "weighted_mean_red": 0, "weighted_mean_green": 0, "weighted_mean_blue": 0, 
         "sum_of_weights": 0, "GCC_value": 0, "RCC_value": 0, "total_pixels": 0, 
         "std_red": 0, "std_green": 0, "std_blue": 0, "weights_used": {}, 
-        "num_valid_records": 0, "has_flags": False, 'has_snow_presence': False,
-        'disable_for_processing': False, 'overwrite_weight': overwrite_weight,
+        "num_valid_records": 0, "has_iflags": False, 'has_snow_presence': False,
+        'iflag_disable_for_processing': False, 'overwrite_weight': overwrite_weight,
     }
     
     red_values, green_values, blue_values = [], [], []
@@ -761,7 +762,7 @@ def process_records_for_roi(
     total_weight = 0
     
     for record in records:
-        disable_for_processing = record['disable_for_processing'] 
+        disable_for_processing = record[f'{roi}_iflag_disable_for_processing'] 
         if not disable_for_processing: 
                 
             weight = 1 if overwrite_weight else calculate_final_weights_for_rois(record, rois_list, iflags_penalties_dict).get(roi, 1)
@@ -780,9 +781,9 @@ def process_records_for_roi(
                 roi_results["total_pixels"] += num_pixels
                 roi_results["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi": roi}
                 roi_results["num_valid_records"] += 1
-                roi_results['has_flags'] = any([v for k, v in utils.extract_keys_with_prefix(input_dict=record, starts_with=roi).items() if k not in skip_iflags_list])
+                roi_results['has_iflags'] = any([v for k, v in utils.extract_keys_with_prefix(input_dict=record, starts_with=roi).items() if k not in skip_iflags_list])
                 roi_results['has_snow_presence'] = record[f'L3_{roi}_has_snow_presence']
-                roi_results['disable_for_processing'] = disable_for_processing
+                roi_results['iflag_disable_for_processing'] = disable_for_processing
                 
                 red_values.append(red_mean)
                 green_values.append(green_mean)
@@ -920,7 +921,7 @@ def calculate_roi_weighted_means_and_stds_per_record(
                     "weighted_mean_blue": None,
                     "weight": 1,
                     "total_pixels": None,
-                    'disable_for_processing': record[f'{roi}_disable_for_processing'] 
+                    'iflag_disable_for_processing': record[f'{roi}_iflag_disable_for_processing'] 
                 } for roi in rois_list
             }
 

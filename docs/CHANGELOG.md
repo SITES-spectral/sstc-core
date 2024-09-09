@@ -1,3 +1,6 @@
+## [0.19.0]
+- Introduced `iflag_initial_` for `green_up`, `peak_greeness`, `leaf_discoloration`, `iflag_initial_leaf_fall`
+
 ## [0.18.0] 
 - Updated platform schema 0.5
 - updated `phenocams.calculate_roi_weighted_means_and_stds_per_record`
