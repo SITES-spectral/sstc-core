@@ -643,6 +643,9 @@ def extract_keys_with_all_words(input_dict, words_list):
     return {key: value for key, value in input_dict.items() if contains_all_words(value, words_list)}
 
 
+from datetime import datetime, timedelta
+import numpy as np
+
 def calculate_mean_time_resolution(records_list: list) -> dict:
     """
     Calculate the mean time resolution between records in a list of dictionaries.
@@ -678,8 +681,18 @@ def calculate_mean_time_resolution(records_list: list) -> dict:
     # Calculate the time differences between consecutive dates
     time_diffs = np.diff(creation_dates)
 
+    # Convert time differences to timedelta objects
+    time_diffs = [diff if isinstance(diff, timedelta) else timedelta(seconds=diff.total_seconds()) for diff in time_diffs]
+
     # Calculate the mean time difference
     mean_diff = np.mean(time_diffs)
+
+    # Ensure mean_diff is a timedelta object, not a numpy float
+    if isinstance(mean_diff, (np.float64, float)):
+        # Handle the case where mean_diff is a numpy float (number of seconds)
+        mean_diff = timedelta(seconds=float(mean_diff))
+    elif not isinstance(mean_diff, timedelta):
+        raise ValueError(f"mean_diff ={mean_diff} -- is not a recognized type for time difference calculation.")
 
     # Convert mean_diff to a human-readable format
     total_seconds = mean_diff.total_seconds()
@@ -687,9 +700,6 @@ def calculate_mean_time_resolution(records_list: list) -> dict:
     minutes = (total_seconds % 3600) // 60
 
     # Create a dictionary to return the mean time resolution
-    if hours > 0:
-        meantime_resolution = {'hours': int(hours), 'minutes': int(minutes)}
-    else:
-        meantime_resolution = {'hours': 0, 'minutes': int(minutes)}
+    meantime_resolution = {'hours': int(hours), 'minutes': int(minutes)}
 
     return meantime_resolution

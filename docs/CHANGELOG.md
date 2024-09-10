@@ -1,3 +1,6 @@
+## [0.19.1]
+- Improved `calculate_mean_time_resolution` 
+
 ## [0.19.0]
 - Introduced `iflag_initial_` for `green_up`, `peak_greeness`, `leaf_discoloration`, `iflag_initial_leaf_fall`
 
