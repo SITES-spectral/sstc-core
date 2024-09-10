@@ -688,7 +688,7 @@ def calculate_mean_time_resolution(records_list: list) -> dict:
 
     # Check if mean_diff is NaN
     if isinstance(mean_diff, (np.float64, float)) and math.isnan(mean_diff):
-        raise ValueError("Mean time difference calculation resulted in NaN. Check input records for valid dates.")
+        raise ValueError(f"Mean time difference calculation resulted in NaN. Check input records for valid dates.{creation_dates} ")
 
     # Ensure mean_diff is a timedelta object, not a numpy float
     if isinstance(mean_diff, (np.float64, float)):
