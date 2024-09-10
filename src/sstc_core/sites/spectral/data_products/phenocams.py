@@ -584,14 +584,18 @@ def calculate_final_weights_for_rois(record: dict, rois_list: list, iflags_penal
     """
     Calculate the final weights to be applied for each ROI in a valid record.
 
-    Parameters:
-    - record (dict): The record containing the ROI data.
-    - rois_list (list): List of ROI names to process.
-    - iflags_penalties_dict (dict): Dictionary containing flags and_penalties values.
+    Parameters
+    ----------
+        - record (dict): The record containing the ROI data.
+        - rois_list (list): List of ROI names to process.
+        - iflags_penalties_dict (dict): Dictionary containing flags and_penalties values.
 
-    Returns:
-    - dict: Dictionary containing the final weights for each ROI.
+    Returns
+    -------
+        - dict: Dictionary containing the final weights for each ROI.
     """
+    
+    
     final_weights = {}
 
     for roi in rois_list:
@@ -636,6 +640,8 @@ def calculate_mean_datetime(records: List[Dict[str, Union[str, int, float]]]) ->
     This function extracts the 'creation_date' from each record, computes the mean datetime using the utility function
     `utils.mean_datetime_str`, and returns the result as a string.
     """
+    
+    
     datetime_list = [item['creation_date'] for item in records]
     return utils.mean_datetime_str(datetime_list=datetime_list)
 
@@ -686,7 +692,8 @@ def compute_qflag_for_day(
     
 
 def process_records_for_roi(
-    records: List[Dict], 
+    records: List[Dict],
+    rois_list: list, 
     roi: str, 
     iflags_penalties_dict: Dict[str, float], 
     overwrite_weight: bool, 
@@ -872,9 +879,10 @@ def calculate_roi_weighted_means_and_stds(
             }
          
             
-        #day_xtras_per_roi ={ roi:{**day_xtras} for roi in rois_list} 
+        #day_xtras_per_roi ={ roi:{**day_xtras} for roi in rois_list}
+        #TODO: fill process_records_for_rois with all parameters 
         
-        day_results = {roi: {**process_records_for_roi(records, roi, iflags_penalties_dict, overwrite_weight)} for roi in rois_list}
+        day_results = {roi: {**process_records_for_roi(records, roi=roi, rois_list=rois_list, iflags_penalties_dict, overwrite_weight)} for roi in rois_list}
         
         
         results[day_of_year] =  day_results  #{**day_results, **day_xtras_per_roi}  
