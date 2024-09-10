@@ -671,6 +671,10 @@ def calculate_mean_time_resolution(records_list: list) -> dict:
     >>> calculate_mean_time_resolution(records_list)
     {'hours': 0, 'minutes': 30}
     """
+    # Check if the records_list is too short to calculate a difference
+    if len(records_list) <= 1:
+        return {'hours': 0, 'minutes': 0}
+
     # Extract the creation dates and convert them to datetime objects
     creation_dates = sorted(
         [datetime.strptime(record['creation_date'], '%Y-%m-%d %H:%M:%S')
@@ -688,7 +692,7 @@ def calculate_mean_time_resolution(records_list: list) -> dict:
 
     # Check if mean_diff is NaN
     if isinstance(mean_diff, (np.float64, float)) and math.isnan(mean_diff):
-        raise ValueError(f"Mean time difference calculation resulted in NaN. Check input records for valid dates.{creation_dates} ")
+        raise ValueError("Mean time difference calculation resulted in NaN. Check input records for valid dates.")
 
     # Ensure mean_diff is a timedelta object, not a numpy float
     if isinstance(mean_diff, (np.float64, float)):
