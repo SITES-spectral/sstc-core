@@ -697,7 +697,15 @@ def process_records_for_roi(
     roi: str, 
     iflags_penalties_dict: Dict[str, float], 
     overwrite_weight: bool, 
-    skip_iflags_list =['iflag_sunny', 'iflag_cloudy', 'iflag_full_overcast'],
+    skip_iflags_list = [
+                'iflag_sunny', 
+                'iflag_cloudy',
+                'iflag_full_overcast', 
+                'iflag_initial_green_up',
+                'iflag_initial_peek_greeness',
+                'iflag_initial_lead_discoloration',
+                'iflag_initial_leaf_fall', 
+                ],
     ) -> Dict[str, Union[float, bool, int, Dict]]:
     """
     Processes a list of records for a specific Region of Interest (ROI) to calculate weighted means, standard deviations, and other metrics.
@@ -882,7 +890,22 @@ def calculate_roi_weighted_means_and_stds(
         #day_xtras_per_roi ={ roi:{**day_xtras} for roi in rois_list}
         #TODO: fill process_records_for_rois with all parameters 
         
-        day_results = {roi: {**process_records_for_roi(records, roi=roi, rois_list=rois_list, iflags_penalties_dict, overwrite_weight)} for roi in rois_list}
+        day_results = {roi: {**process_records_for_roi(
+            records=records,  
+            rois_list=rois_list,
+            roi=roi, 
+            iflags_penalties_dict= iflags_penalties_dict,
+            overwrite_weight=overwrite_weight,
+            skip_iflags_list = [
+                'iflag_sunny', 
+                'iflag_cloudy',
+                'iflag_full_overcast', 
+                'iflag_initial_green_up',
+                'iflag_initial_peek_greeness',
+                'iflag_initial_lead_discoloration',
+                'iflag_initial_leaf_fall', 
+                ]
+            )} for roi in rois_list}
         
         
         results[day_of_year] =  day_results  #{**day_results, **day_xtras_per_roi}  
