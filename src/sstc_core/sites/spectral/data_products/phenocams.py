@@ -823,9 +823,9 @@ def process_records_for_roi(
             roi_results["RCC_value"] = roi_results["weighted_mean_red"] / roi_results["sum_of_weighted_means"]
 
         if len(red_values) > 1:
-            roi_results["std_red"] = np.std(red_values)
-            roi_results["std_green"] = np.std(green_values)
-            roi_results["std_blue"] = np.std(blue_values)
+            roi_results["std_red"] = float(np.std(red_values))
+            roi_results["std_green"] = float(np.std(green_values))
+            roi_results["std_blue"] = float(np.std(blue_values))
                         
     return roi_results
 
@@ -1087,10 +1087,10 @@ def create_l3_parameters_dataframe(data_dict, year):
                          
                         # weight_column_name = f"L3_{roi_name}_weight__{catalog_guid}"
                         #data[day][weight_column_name] = weight_info.get('weight')
-                elif 'QFLAG' in param_name:
-                    QFLAG = param_value['QFLAG']
-                    column_name = f"L3_{roi_name}_{'QFLAG_value'}"
-                    data[day][column_name] = QFLAG
+                #elif 'QFLAG' in param_name:
+                #    QFLAG = param_value['QFLAG']
+                #    column_name = f"L3_{roi_name}_{'QFLAG_value'}"
+                #    data[day][column_name] = QFLAG
                       
                     
                 # else:
