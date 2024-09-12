@@ -600,22 +600,26 @@ def calculate_final_weights_for_rois(record: dict, rois_list: list, iflags_penal
 
     for roi in rois_list:
         total_iflag_penality_value = 0
+        iflag_disable_for_processing = record[f'{roi}_iflag_disable_for_processing'] 
+        if not iflag_disable_for_processing:
+                
+            # Iterate over all flags for the ROI and sum their weights if the flag is True
+            for flag, data in iflags_penalties_dict.items():
+                flag_key = f"{roi}_{flag}"
+                if record.get(flag_key, False):
+                    total_iflag_penality_value += data.get('penalty_value', 0)
 
-        # Iterate over all flags for the ROI and sum their weights if the flag is True
-        for flag, data in iflags_penalties_dict.items():
-            flag_key = f"{roi}_{flag}"
-            if record.get(flag_key, False):
-                total_iflag_penality_value += data.get('penalty_value', 0)
+            # Calculate the final weight
+            final_weight = 1 - total_iflag_penality_value
 
-        # Calculate the final weight
-        final_weight = 1 - total_iflag_penality_value
-
-        # If the final weight is less than 0, set it to 0
-        if final_weight < 0:
+            # If the final weight is less than 0, set it to 0
+            if final_weight < 0:
+                final_weight = 0
+            elif final_weight >1:
+                final_weight = 1        
+        else:
             final_weight = 0
-        elif final_weight >1:
-            final_weight = 1        
-
+            
         final_weights[roi] = final_weight
 
     return final_weights
@@ -798,12 +802,12 @@ def process_records_for_roi(
                 roi_results["weights_used"][record["catalog_guid"]] = {"weight": weight, "roi": roi}
                 roi_results["num_valid_records"] += 1
                 roi_results['has_iflags'] = any([v for k, v in utils.extract_keys_with_prefix(input_dict=record, starts_with=roi).items() if k not in skip_iflags_list])
-                roi_results['has_snow_presence'] = record[f'L3_{roi}_has_snow_presence']
-                roi_results['iflag_disable_for_processing'] = disable_for_processing
+                roi_results['has_snow_presence'] = record[f'L3_{roi}_has_snow_presence']                
                 
                 red_values.append(red_mean)
                 green_values.append(green_mean)
-                blue_values.append(blue_mean)
+                blue_values.append(blue_mean)              
+            
 
     if total_weight > 0:
         # Final weighted mean calculation
@@ -834,6 +838,15 @@ def calculate_roi_weighted_means_and_stds(
     latitude_dd: float, 
     longitude_dd: float,
     overwrite_weight: bool = True,
+    skip_iflags_list = [
+                'iflag_sunny', 
+                'iflag_cloudy',
+                'iflag_full_overcast', 
+                'iflag_initial_green_up',
+                'iflag_initial_peek_greeness',
+                'iflag_initial_lead_discoloration',
+                'iflag_initial_leaf_fall', 
+                ]
 ) -> Dict[int, Dict[str, Union[float, Dict]]]:
     """    
     Calculate the weighted means, standard deviations, and derived records (GCC, RCC) per day of year for each ROI.
@@ -896,15 +909,7 @@ def calculate_roi_weighted_means_and_stds(
             roi=roi, 
             iflags_penalties_dict= iflags_penalties_dict,
             overwrite_weight=overwrite_weight,
-            skip_iflags_list = [
-                'iflag_sunny', 
-                'iflag_cloudy',
-                'iflag_full_overcast', 
-                'iflag_initial_green_up',
-                'iflag_initial_peek_greeness',
-                'iflag_initial_lead_discoloration',
-                'iflag_initial_leaf_fall', 
-                ]
+            skip_iflags_list = skip_iflags_list,
             )} for roi in rois_list}
         
         
@@ -956,7 +961,9 @@ def calculate_roi_weighted_means_and_stds_per_record(
                     "weighted_mean_blue": None,
                     "weight": 1,
                     "total_pixels": None,
-                    'iflag_disable_for_processing': record[f'{roi}_iflag_disable_for_processing'] 
+                    # We do not need the disable flag here as this is calculated by the image based. 
+                    # Better use the `is_ready_for_products_use` so here we commented the line
+                    # 'iflag_disable_for_processing': record[f'{roi}_iflag_disable_for_processing'] 
                 } for roi in rois_list
             }
 
