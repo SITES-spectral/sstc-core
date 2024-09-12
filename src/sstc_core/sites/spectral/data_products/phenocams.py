@@ -1087,15 +1087,18 @@ def create_l3_parameters_dataframe(data_dict, year):
                          
                         # weight_column_name = f"L3_{roi_name}_weight__{catalog_guid}"
                         #data[day][weight_column_name] = weight_info.get('weight')
-                #elif 'QFLAG' in param_name:
-                #    QFLAG = param_value['QFLAG']
-                #    column_name = f"L3_{roi_name}_{'QFLAG_value'}"
-                #    data[day][column_name] = QFLAG
+                elif 'QFLAG' in param_name:
+                    QFLAG = param_value['QFLAG']
+                    column_name = f"L3_{roi_name}_{'QFLAG_value'}"
+                    data[day][column_name] = QFLAG
                       
                     
                 # else:
-                if 'weighted' in param_name:
-                    param_name = param_name.replace('weighted_', '')
+                #----------------------
+                ## HERE CHANGED v0.19.1 commented
+                #if 'weighted' in param_name:
+                #    param_name = param_name.replace('weighted_', '')
+                #------------------------------
                 # Form the column name based on ROI and parameter
                 column_name = f"L3_{roi_name}_{param_name}"
                 # Store the parameter value in the data dictionary
