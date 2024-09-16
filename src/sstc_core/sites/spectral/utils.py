@@ -713,7 +713,7 @@ def calculate_mean_time_resolution(records_list: list) -> dict:
     return meantime_resolution
 
 
-def select_columns_by_strings(df: pd.DataFrame, substrings: list, exclude_columns: list) -> List[str]:
+def select_dataframe_columns_by_strings(df: pd.DataFrame, substrings: list, exclude_columns: list) -> List[str]:
     """
     Select columns from a DataFrame whose names contain any of the specified substrings,
     with the option to exclude certain columns from the final selection.
