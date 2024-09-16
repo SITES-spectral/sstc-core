@@ -11,6 +11,7 @@ import pytz
 import re
 import math
 import numpy as np
+import pandas as pd
 from pysolar.solar import get_altitude, get_azimuth
 
 
@@ -710,3 +711,60 @@ def calculate_mean_time_resolution(records_list: list) -> dict:
     meantime_resolution = {'hours': int(hours), 'minutes': int(minutes)}
 
     return meantime_resolution
+
+
+def select_columns_by_strings(df: pd.DataFrame, substrings: list, exclude_columns: list) -> List[str]:
+    """
+    Select columns from a DataFrame whose names contain any of the specified substrings,
+    with the option to exclude certain columns from the final selection.
+    
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        The input DataFrame from which columns are to be selected.
+        
+    substrings : list
+        A list of substrings. Columns containing any of these substrings in their names will be selected.
+        
+    exclude_columns : list
+        A list of column names to exclude from the final selected columns.
+    
+    Returns:
+    --------
+    List[str]
+        A list of column names that match the specified criteria.
+    
+    Description:
+    ------------
+    This function allows you to filter the columns of a pandas DataFrame based on the presence of
+    one or more substrings in the column names. It then gives you the flexibility to exclude specific
+    columns from the final selection if necessary.
+    
+    Notes:
+    ------
+    - If no columns match any of the substrings, the entire DataFrame's column list will be returned.
+    - The function handles cases where multiple substrings match the same column by removing duplicates.
+    - The function can also handle an empty `exclude_columns` list.
+    
+    """
+    
+    selected_columns = []
+    
+    # Iterate over the substring and filter columns containing any of them
+    for substring in substrings:
+        selected_columns.extend([col for col in df.columns if substring in col]) 
+    
+    # Remove duplicates in case a column matches multiple substrings
+    selected_columns = list(set(selected_columns))
+    
+    # If no columns were found, return the entire DataFrame
+    if not selected_columns:
+        selected_columns = df.columns.tolist()
+        
+    # Handle exclusion of columns
+    if exclude_columns:
+        selected_columns = [col for col in selected_columns if col not in exclude_columns]
+        
+    # Return the DataFrame with selected columns
+    return df[selected_columns]
+    
