@@ -1,3 +1,6 @@
+## [0.19.2]
+- prep for saving l3 products 
+
 ## [0.19.1]
 - Improved `calculate_mean_time_resolution` 
 

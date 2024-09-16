@@ -11,8 +11,8 @@ from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 
 # Get the absolute path of the current script
 __script_parent_path = os.path.dirname(os.path.abspath(__file__))
-
 config_flags_yaml_filepath = os.path.join( os.path.dirname(__script_parent_path), 'config', 'phenocam_flags.yaml')
+
 
 if not os.path.exists(config_flags_yaml_filepath):
     raise FileExistsError(f'{config_flags_yaml_filepath}')
@@ -1114,3 +1114,5 @@ def create_l3_parameters_dataframe(data_dict, year):
     df = df.reindex(range(1, days_in_year + 1)).fillna(pd.NA)
     
     return df
+
+
