@@ -100,7 +100,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     df_melted['variable'] = df_melted['roi_column'].str.replace(r'L3_ROI_\d+_', '', regex=True)
     
 	# Drop the original column name and keep only necessary columns 
-    df_melted = df_melted[['roi', 'variable']]
+    df_melted = df_melted[['roi', 'variable', 'value']]
 	
  	# Optional: Rename columns for clarity
 	# df_melted.rename(columns={'variable': 'metric'}, inplace=True)    
