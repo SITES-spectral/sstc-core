@@ -88,15 +88,28 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     if group_by and group_by in df.columns:
         id_vars.append(group_by)
 
-    df_melted = df_filtered.melt(id_vars=id_vars, value_vars=columns_to_plot, 
-                                 var_name='variable', value_name='value')
-
-    # Initialize the base chart
+	# Melt the DataFrame
+    df_melted = df_filtered.melt(
+        id_vars=id_vars,
+        value_vars=columns_to_plot, 
+        var_name='roi_column', value_name='value')
+    
+    # Extract the ROI number and create a new column
+    df_melted['roi'] = df_melted['roi_column'].str.extract(r'L3_ROI_(\d+)_')
+    # Remove the ROI prefix from the column names
+    df_melted['variable'] = df_melted['roi_column'].str.replace(r'L3_ROI_\d+_', '', regex=True)
+    
+	# Drop the original column name and keep only necessary columns 
+    df_melted = df_melted[['roi', 'variable']]
+	
+ 	# Optional: Rename columns for clarity
+	# df_melted.rename(columns={'variable': 'metric'}, inplace=True)    
+ 	# Initialize the base char
     base = alt.Chart(df_melted).encode(
         x='day_of_year:Q'
     )
 
-    # Container for layers
+	# Container for layers
     layers = []
 
     # Add each column with custom options (if provided)
