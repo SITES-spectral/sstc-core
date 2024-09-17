@@ -1,6 +1,6 @@
 ## [0.20.0]
 - Added module `sstc-core.sites.spectral.plots` 
-- added `sites.spectral.plots.plot_time_series`
+- added `sites.spectral.plots.plot_time_series_by_doy`
 
 ## [0.19.2]
 - prep for saving l3 products 

@@ -5,7 +5,7 @@ import altair as alt
 import pandas as pd
 import altair as alt
 
-def plot_time_series(df: pd.DataFrame, 
+def plot_time_series_by_doy(df: pd.DataFrame, 
                      columns_to_plot: list, 
                      plot_options: dict = None, 
                      title: str = 'Time Series Plot', 
@@ -13,7 +13,7 @@ def plot_time_series(df: pd.DataFrame,
                      height: int = 400, 
                      interactive: bool = True):
     """
-    Plots a time series using Altair from a pandas DataFrame, focusing on the range of day_of_year
+    Plots a time series using Altair from a pandas DataFrame, focusing on the range of `day_of_year` (doy)
     where data exists, with optional plot customizations and general properties.
     
     Parameters:
