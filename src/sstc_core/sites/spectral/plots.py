@@ -10,7 +10,9 @@ def plot_time_series_by_doy(df: pd.DataFrame,
                      height: int = 400, 
                      interactive: bool = True,
                      substrings: list = None,
-                     exclude_columns: list = None):
+                     exclude_columns: list = None,
+                     group_by: str = None,
+                     facet: bool = False):
     """
     Plots a time series using Altair from a pandas DataFrame, focusing on the range of day_of_year
     where data exists, with optional plot customizations and general properties.
@@ -33,6 +35,8 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     interactive (bool): Whether the chart should be interactive (zoomable, scrollable). Defaults to True.
     substrings (list): List of substrings to select columns by matching names containing any of them. Defaults to None.
     exclude_columns (list): List of columns to exclude from the selected columns. Defaults to None.
+    group_by (str): Optional column name to group the data by (e.g., 'year'). Defaults to None.
+    facet (bool): Whether to create a faceted plot by 'group_by'. Defaults to False.
 
     Returns:
     alt.Chart: The Altair chart object.
@@ -78,7 +82,13 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     df_filtered = df_filtered[(df_filtered['day_of_year'] >= min_day) & (df_filtered['day_of_year'] <= max_day)]
 
     # Melt the dataframe to long format for Altair plotting
-    df_melted = df_filtered.melt(id_vars=['day_of_year'], value_vars=columns_to_plot, 
+    id_vars = ['day_of_year']
+    
+    # If grouping by 'year' or another column, include it as an identifier
+    if group_by and group_by in df.columns:
+        id_vars.append(group_by)
+
+    df_melted = df_filtered.melt(id_vars=id_vars, value_vars=columns_to_plot, 
                                  var_name='variable', value_name='value')
 
     # Initialize the base chart
@@ -163,5 +173,19 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     # Add interactivity if specified
     if interactive:
         chart = chart.interactive()
+
+    # Group by the 'group_by' column if specified
+    if group_by and group_by in df.columns:
+        if facet:
+            # Create a faceted chart
+            chart = chart.facet(
+                facet=alt.Facet(f'{group_by}:N', columns=3),
+                columns=3
+            )
+        else:
+            # Overlay the lines and color by 'group_by'
+            chart = chart.encode(
+                color=f'{group_by}:N'
+            )
 
     return chart
