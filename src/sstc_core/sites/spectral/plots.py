@@ -63,12 +63,13 @@ def assign_colors_to_columns(rois_list, columns_list, is_gradient_hue: bool = Tr
                             gradient_color = generate_gradient_hue_color(i, len(rois_list))
                         else:
                             # Assign a gradient color based on the ROI index
-                                base_colors = {
+                            base_colors = {
 									'red': (1.0, 0.0, 0.0),
 									'green': (0.0, 1.0, 0.0),
 									'blue': (0.0, 0.0, 1.0)
 								}
-                        gradient_color = generate_gradient_color(i, len(rois_list)+2, base_colors[color_name])
+                            gradient_color = generate_gradient_color(i, len(rois_list)+2, base_colors[color_name])
+                        #
                         column_colors[column] = gradient_color
                         assigned = True
                         break
