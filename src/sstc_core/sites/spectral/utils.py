@@ -766,5 +766,5 @@ def select_dataframe_columns_by_strings(df: pd.DataFrame, substrings: list, excl
         selected_columns = [col for col in selected_columns if col not in exclude_columns]
         
     # Return the DataFrame with selected columns
-    return df[selected_columns]
+    return df[sorted(selected_columns)]
     

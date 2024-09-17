@@ -95,6 +95,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         var_name='variable', value_name='value')
     
     ## Extract the ROI number and create a new column
+    
     #df_melted['roi'] = df_melted['variable'].str.extract(r'L3_ROI_(\d+)_')
     ## Remove the ROI prefix from the column names
     #df_melted['variable'] = df_melted['roi_column'].str.replace(r'L3_ROI_\d+_', '', regex=True)
