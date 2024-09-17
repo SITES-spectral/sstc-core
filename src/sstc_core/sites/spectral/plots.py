@@ -1,6 +1,71 @@
 import pandas as pd
 import altair as alt
 
+import random
+# import colorsys   # converting between color spaces RGB to HSV
+
+
+def generate_gradient_color(index, total, color_base):
+    """
+    Generate a color based on the index in the gradient scale.
+    color_base is a tuple representing the base RGB color (0-1 scale).
+    """
+    fraction = index / (total - 1) if total > 1 else 0
+    r, g, b = [(1 - fraction) * base + fraction * 1.0 for base in color_base]  # Linear interpolation
+    return '#{:02x}{:02x}{:02x}'.format(int(r * 255), int(g * 255), int(b * 255))
+
+def generate_unique_color():
+    """Generate a random but unique hex color."""
+    r, g, b = [random.randint(0, 255) for _ in range(3)]
+    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+
+def assign_colors_to_columns(rois_list, columns_list):
+    """
+    Assign a color gradient for each roi and for each RGB parameter (red, green, blue).
+    If the column doesn't have ROI or RGB, assign a random unique color.
+    """
+    # Base RGB values for red, green, and blue
+    base_colors = {
+        'red': (1.0, 0.0, 0.0),
+        'green': (0.0, 1.0, 0.0),
+        'blue': (0.0, 0.0, 1.0)
+    }
+   
+    # Initialize the result dictionary
+    column_colors = {}
+   
+    # Keep track of unique random colors for non-RGB/ROI columns
+    used_colors = set()
+   
+    # Iterate through the column list
+    for column in columns_list:
+        # Check if the column corresponds to any ROI
+        assigned = False
+        for i, roi in enumerate(rois_list):
+            if roi in column:
+                # Check if it's related to red, green, or blue
+                for color_name in ['red', 'green', 'blue']:
+                    if color_name in column:
+                        # Assign a gradient color based on the ROI index
+                        gradient_color = generate_gradient_color(i, len(rois_list), base_colors[color_name])
+                        column_colors[column] = gradient_color
+                        assigned = True
+                        break
+            if assigned:
+                break
+       
+        # If the column doesn't match any ROI or RGB, assign a unique random color
+        if not assigned:
+            unique_color = generate_unique_color()
+            while unique_color in used_colors:
+                unique_color = generate_unique_color()
+            column_colors[column] = unique_color
+            used_colors.add(unique_color)
+   
+    return column_colors
+
+
+
 
 def plot_time_series_by_doy(df: pd.DataFrame, 
                      columns_to_plot: list = None, 
@@ -204,3 +269,27 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             )
 
     return chart
+
+
+def layer_altair_charts(charts, x_scale_type='shared'):
+    """ Layers multiple Altair charts and optionally allows for independent or shared x-axis. 
+    Parameters: 
+    	- charts (list): A list of Altair chart objects to layer. 
+     	- x_scale_type (str): Determines if the x-axes are 'shared' (default) or 'independent'.  
+      		Use 'independent' for separate x-axis scales on each chart. 
+    Returns: 
+      - alt.Chart: A layered Altair chart with the desired x-axis scale behavior. """
+    
+    if not charts or len(charts) == 0: 
+        raise ValueError("You must provide at least one chart to layer.") 
+    # Layer the charts together 
+    layered_chart = alt.layer(*charts) 
+    # Resolve x-axis scales based on the provided scale type 
+    if x_scale_type == 'independent': 
+        layered_chart = layered_chart.resolve_scale(x='independent') 
+    elif x_scale_type == 'shared': 
+        layered_chart = layered_chart.resolve_scale(x='shared') 
+    else: 
+        raise ValueError("Invalid x_scale_type. Use 'shared' or 'independent'.") 
+	
+    return layered_chart

@@ -1,3 +1,10 @@
+## [0.20.1]
+- Added  `plots.generate_gradient_color`
+- Added `plots.generate_unique_color`
+- Added `plots.assign_colors_to_columns`
+- Added `plots.layer_altair_charts`
+
+
 ## [0.20.0]
 - Added module `sstc-core.sites.spectral.plots` 
 - added `sites.spectral.plots.plot_time_series_by_doy`
