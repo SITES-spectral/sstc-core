@@ -65,12 +65,6 @@ def assign_colors_to_columns(rois_list, columns_list):
     return column_colors
 
 
-
-
-import pandas as pd
-import altair as alt
-import re
-
 def plot_time_series_by_doy(df: pd.DataFrame, 
                             columns_to_plot: list = None, 
                             plot_options: dict = None, 
@@ -131,7 +125,6 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         # If no columns were found, or substrings list is empty, use all columns in columns_to_plot
         if not selected_columns:
             selected_columns = columns_to_plot if columns_to_plot else df.columns.tolist()
-            selected_columns.remove('day_of_year')
             
         # Handle exclusion of columns
         if exclude_columns:
@@ -140,11 +133,14 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     else:
         # If substrings is None or empty, use all columns_to_plot
         selected_columns = columns_to_plot if columns_to_plot else df.columns.tolist()
-        selected_columns.remove('day_of_year')
 
         # Handle exclusion of columns
         if exclude_columns:
             selected_columns = [col for col in selected_columns if col not in exclude_columns]
+
+    # Ensure 'day_of_year' is not part of the selected columns
+    if 'day_of_year' in selected_columns:
+        selected_columns.remove('day_of_year')
 
     # If no columns were specified after processing, raise an error
     if not selected_columns:
@@ -160,7 +156,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     df_filtered = df_filtered[(df_filtered['day_of_year'] >= min_day) & (df_filtered['day_of_year'] <= max_day)]
 
     # Melt the dataframe to long format for Altair plotting
-    id_vars = ['year', 'day_of_year']
+    id_vars = ['day_of_year']
     
     # If grouping by 'year' or another column, include it as an identifier
     if group_by and group_by in df.columns:
@@ -172,13 +168,19 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         value_vars=selected_columns, 
         var_name='variable', value_name='value')
 
-    # Extract ROI numbers from the variable names
-    df_melted['roi'] = df_melted['variable'].str.extract(r'L3_ROI_(\d+)_')
-    
+    # Extract ROI numbers from the variable names, format as ROI_01, ROI_02, etc.
+    df_melted['roi'] = df_melted['variable'].str.extract(r'(ROI_\d+)')
+
     # Optionally filter by rois_list
-    if rois_list:
-        df_melted = df_melted[df_melted['roi'].isin(rois_list)]
+    #if rois_list:
+    #    df_melted = df_melted[df_melted['roi'].isin([f'ROI_{roi:02}' for roi in rois_list])]
     
+    # Remove the 'L3_ROI_{roi}_' prefix from the variable names
+    # For each row, remove the prefix corresponding to the ROI number
+    if rois_list:        	
+        for roi in rois_list:
+            df_melted['variable'] = df_melted['variable'].str.replace(f'L3_{roi}_', '', regex=True)
+
     # Initialize the base chart
     base = alt.Chart(df_melted).encode(
         x='day_of_year:Q'
@@ -277,8 +279,6 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             )
 
     return chart
-
-
 
 
 def layer_altair_charts(charts, x_scale_type='shared'):
