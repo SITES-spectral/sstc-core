@@ -67,17 +67,22 @@ def assign_colors_to_columns(rois_list, columns_list):
 
 
 
+import pandas as pd
+import altair as alt
+import re
+
 def plot_time_series_by_doy(df: pd.DataFrame, 
-                     columns_to_plot: list = None, 
-                     plot_options: dict = None, 
-                     title: str = 'Time Series Plot', 
-                     width: int = 600, 
-                     height: int = 400, 
-                     interactive: bool = True,
-                     substrings: list = None,
-                     exclude_columns: list = None,
-                     group_by: str = None,
-                     facet: bool = False):
+                            columns_to_plot: list = None, 
+                            plot_options: dict = None, 
+                            title: str = 'Time Series Plot', 
+                            width: int = 600, 
+                            height: int = 400, 
+                            interactive: bool = True,
+                            substrings: list = None,
+                            exclude_columns: list = None,
+                            group_by: str = None,
+                            facet: bool = False,
+                            rois_list: list = None):
     """
     Plots a time series using Altair from a pandas DataFrame, focusing on the range of day_of_year
     where data exists, with optional plot customizations and general properties.
@@ -102,6 +107,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     exclude_columns (list): List of columns to exclude from the selected columns. Defaults to None.
     group_by (str): Optional column name to group the data by (e.g., 'year'). Defaults to None.
     facet (bool): Whether to create a faceted plot by 'group_by'. Defaults to False.
+    rois_list (list): List of ROI numbers to filter and plot. Defaults to None (plot all ROIs).
 
     Returns:
     alt.Chart: The Altair chart object.
@@ -112,7 +118,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         raise ValueError("'day_of_year' column is required in the DataFrame")
 
     # Handle column selection based on substrings and exclusions
-    if columns_to_plot is None and substrings:
+    if substrings:
         selected_columns = []
         
         # Iterate over the substrings and filter columns containing any of them
@@ -122,23 +128,30 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         # Remove duplicates in case a column matches multiple substrings
         selected_columns = list(set(selected_columns))
         
-        # If no columns were found, return the entire DataFrame columns excluding 'day_of_year'
+        # If no columns were found, or substrings list is empty, use all columns in columns_to_plot
         if not selected_columns:
-            selected_columns = df.columns.tolist()
+            selected_columns = columns_to_plot if columns_to_plot else df.columns.tolist()
             selected_columns.remove('day_of_year')
             
         # Handle exclusion of columns
         if exclude_columns:
             selected_columns = [col for col in selected_columns if col not in exclude_columns]
+        
+    else:
+        # If substrings is None or empty, use all columns_to_plot
+        selected_columns = columns_to_plot if columns_to_plot else df.columns.tolist()
+        selected_columns.remove('day_of_year')
 
-        columns_to_plot = selected_columns
-    
-    # If no columns were specified and no substrings provided, raise an error
-    if columns_to_plot is None:
+        # Handle exclusion of columns
+        if exclude_columns:
+            selected_columns = [col for col in selected_columns if col not in exclude_columns]
+
+    # If no columns were specified after processing, raise an error
+    if not selected_columns:
         raise ValueError("No columns specified for plotting.")
 
     # Filter out rows where all selected columns are NaN
-    df_filtered = df.dropna(subset=columns_to_plot, how='all')
+    df_filtered = df.dropna(subset=selected_columns, how='all')
 
     # Focus only on the range of day_of_year where data exists
     min_day = df_filtered['day_of_year'].min()
@@ -147,40 +160,35 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     df_filtered = df_filtered[(df_filtered['day_of_year'] >= min_day) & (df_filtered['day_of_year'] <= max_day)]
 
     # Melt the dataframe to long format for Altair plotting
-    id_vars = ['day_of_year']
+    id_vars = ['year', 'day_of_year']
     
     # If grouping by 'year' or another column, include it as an identifier
     if group_by and group_by in df.columns:
         id_vars.append(group_by)
 
-	# Melt the DataFrame
+    # Melt the DataFrame
     df_melted = df_filtered.melt(
         id_vars=id_vars,
-        value_vars=columns_to_plot, 
+        value_vars=selected_columns, 
         var_name='variable', value_name='value')
+
+    # Extract ROI numbers from the variable names
+    df_melted['roi'] = df_melted['variable'].str.extract(r'L3_ROI_(\d+)_')
     
-    ## Extract the ROI number and create a new column
+    # Optionally filter by rois_list
+    if rois_list:
+        df_melted = df_melted[df_melted['roi'].isin(rois_list)]
     
-    #df_melted['roi'] = df_melted['variable'].str.extract(r'L3_ROI_(\d+)_')
-    ## Remove the ROI prefix from the column names
-    #df_melted['variable'] = df_melted['roi_column'].str.replace(r'L3_ROI_\d+_', '', regex=True)
-    
-	## Drop the original column name and keep only necessary columns 
-    #df_melted = df_melted[['roi', 'variable', 'value']]
-	
- 	# Optional: Rename columns for clarity
-	# df_melted.rename(columns={'variable': 'metric'}, inplace=True)   
-  
- 	# Initialize the base char
+    # Initialize the base chart
     base = alt.Chart(df_melted).encode(
         x='day_of_year:Q'
     )
 
-	# Container for layers
+    # Container for layers
     layers = []
 
     # Add each column with custom options (if provided)
-    for column in columns_to_plot:
+    for column in selected_columns:
         # Default options
         mark_type = 'line'  # Default to line
         color = 'variable:N'  # Default to Altair's color scheme
@@ -269,6 +277,8 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             )
 
     return chart
+
+
 
 
 def layer_altair_charts(charts, x_scale_type='shared'):
