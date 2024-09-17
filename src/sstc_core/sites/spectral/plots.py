@@ -2,7 +2,7 @@ import pandas as pd
 import altair as alt
 
 
-def plot_time_series(df: pd.DataFrame, 
+def plot_time_series_by_doy(df: pd.DataFrame, 
                      columns_to_plot: list = None, 
                      plot_options: dict = None, 
                      title: str = 'Time Series Plot', 
