@@ -2,23 +2,23 @@ import pandas as pd
 import altair as alt
 
 
-import pandas as pd
-import altair as alt
-
-def plot_time_series_by_doy(df: pd.DataFrame, 
-                     columns_to_plot: list, 
+def plot_time_series(df: pd.DataFrame, 
+                     columns_to_plot: list = None, 
                      plot_options: dict = None, 
                      title: str = 'Time Series Plot', 
                      width: int = 600, 
                      height: int = 400, 
-                     interactive: bool = True):
+                     interactive: bool = True,
+                     substrings: list = None,
+                     exclude_columns: list = None):
     """
-    Plots a time series using Altair from a pandas DataFrame, focusing on the range of `day_of_year` (doy)
+    Plots a time series using Altair from a pandas DataFrame, focusing on the range of day_of_year
     where data exists, with optional plot customizations and general properties.
     
     Parameters:
     df (pd.DataFrame): DataFrame containing the data.
-    columns_to_plot (list): List of column names to plot on the y-axis.
+    columns_to_plot (list): List of column names to plot on the y-axis. 
+                            If None, columns are selected based on `substrings`.
     plot_options (dict): Optional dictionary with customization for each column. The keys are the column names, 
                          and the values are dictionaries with Altair properties like:
                          - 'mark_type' (str): Mark type for the chart (e.g., 'line', 'point', 'bar').
@@ -31,13 +31,42 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     width (int): Width of the chart. Defaults to 600.
     height (int): Height of the chart. Defaults to 400.
     interactive (bool): Whether the chart should be interactive (zoomable, scrollable). Defaults to True.
+    substrings (list): List of substrings to select columns by matching names containing any of them. Defaults to None.
+    exclude_columns (list): List of columns to exclude from the selected columns. Defaults to None.
 
     Returns:
     alt.Chart: The Altair chart object.
     """
+    
     # Ensure that 'day_of_year' is in the DataFrame
     if 'day_of_year' not in df.columns:
         raise ValueError("'day_of_year' column is required in the DataFrame")
+
+    # Handle column selection based on substrings and exclusions
+    if columns_to_plot is None and substrings:
+        selected_columns = []
+        
+        # Iterate over the substrings and filter columns containing any of them
+        for substring in substrings:
+            selected_columns.extend([col for col in df.columns if substring in col]) 
+        
+        # Remove duplicates in case a column matches multiple substrings
+        selected_columns = list(set(selected_columns))
+        
+        # If no columns were found, return the entire DataFrame columns excluding 'day_of_year'
+        if not selected_columns:
+            selected_columns = df.columns.tolist()
+            selected_columns.remove('day_of_year')
+            
+        # Handle exclusion of columns
+        if exclude_columns:
+            selected_columns = [col for col in selected_columns if col not in exclude_columns]
+
+        columns_to_plot = selected_columns
+    
+    # If no columns were specified and no substrings provided, raise an error
+    if columns_to_plot is None:
+        raise ValueError("No columns specified for plotting.")
 
     # Filter out rows where all selected columns are NaN
     df_filtered = df.dropna(subset=columns_to_plot, how='all')
@@ -81,10 +110,11 @@ def plot_time_series_by_doy(df: pd.DataFrame,
                 color = alt.value(plot_options[column]['color'])
             
             # Set y-axis (left or right)
-            if plot_options[column]['axis'] == 'right':
-               y_axis = alt.Y('value:Q', axis=alt.Axis(title=column, orient='right'))
-            else:
-               y_axis = alt.Y('value:Q', axis=alt.Axis(title=column, orient='left'))
+            if 'axis' in plot_options[column]:
+                if plot_options[column]['axis'] == 'right':
+                    y_axis = alt.Y('value:Q', axis=alt.Axis(title=column, orient='right'))
+                else:
+                    y_axis = alt.Y('value:Q', axis=alt.Axis(title=column, orient='left'))
             
             # Set size (for point marks)
             if 'size' in plot_options[column]:
@@ -98,7 +128,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             if 'strokeWidth' in plot_options[column]:
                 strokeWidth = plot_options[column]['strokeWidth']
 
-        # Create the chart for the current column based on mark_type
+        # Create the chart for the current column
         if mark_type == 'line':
             layer = base.mark_line(strokeWidth=strokeWidth, opacity=opacity).encode(
                 y=y_axis,
@@ -113,7 +143,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             ).transform_filter(
                 alt.datum.variable == column
             )
-        else:  # Fallback to line for unsupported mark types
+        else:  # Fallback for unsupported marks
             layer = base.mark_line().encode(
                 y=y_axis,
                 color=color
