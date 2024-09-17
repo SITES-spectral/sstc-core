@@ -2,8 +2,26 @@ import pandas as pd
 import altair as alt
 
 import random
-# import colorsys   # converting between color spaces RGB to HSV
+import colorsys   # converting between color spaces RGB to HSV
 
+
+
+def generate_gradient_hue_color(index, total):
+    """
+    Generate a gradient color by varying the hue in HSV color space.
+    - index: Position of the current color in the gradient.
+    - total: Total number of colors to generate.
+    Returns: Hex color string.
+    """
+    # Ensure index is between 0 and total - 1
+    fraction = index / total if total > 0 else 0
+    hue = fraction * 360  # Vary hue between 0° and 360°
+   
+    # Convert HSV to RGB (saturation and value are set to 1.0 for vibrant colors)
+    r, g, b = colorsys.hsv_to_rgb(hue / 360.0, 1.0, 1.0)
+   
+    # Convert the RGB values to hex format
+    return '#{:02x}{:02x}{:02x}'.format(int(r * 255), int(g * 255), int(b * 255))
 
 def generate_gradient_color(index, total, color_base):
     """
@@ -19,18 +37,12 @@ def generate_unique_color():
     r, g, b = [random.randint(0, 255) for _ in range(3)]
     return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
-def assign_colors_to_columns(rois_list, columns_list):
+
+def assign_colors_to_columns(rois_list, columns_list, is_gradient_hue: bool = True):
     """
-    Assign a color gradient for each roi and for each RGB parameter (red, green, blue).
+    Assign a color gradient for each ROI and RGB parameter (red, green, blue).
     If the column doesn't have ROI or RGB, assign a random unique color.
     """
-    # Base RGB values for red, green, and blue
-    base_colors = {
-        'red': (1.0, 0.0, 0.0),
-        'green': (0.0, 1.0, 0.0),
-        'blue': (0.0, 0.0, 1.0)
-    }
-   
     # Initialize the result dictionary
     column_colors = {}
    
@@ -46,8 +58,17 @@ def assign_colors_to_columns(rois_list, columns_list):
                 # Check if it's related to red, green, or blue
                 for color_name in ['red', 'green', 'blue']:
                     if color_name in column:
-                        # Assign a gradient color based on the ROI index
-                        gradient_color = generate_gradient_color(i, len(rois_list), base_colors[color_name])
+                        if is_gradient_hue:
+                            # Assign a gradient hue color based on the ROI index                        
+                            gradient_color = generate_gradient_hue_color(i, len(rois_list))
+                        else:
+                            # Assign a gradient color based on the ROI index
+                                base_colors = {
+									'red': (1.0, 0.0, 0.0),
+									'green': (0.0, 1.0, 0.0),
+									'blue': (0.0, 0.0, 1.0)
+								}
+                        gradient_color = generate_gradient_color(i, len(rois_list)+2, base_colors[color_name])
                         column_colors[column] = gradient_color
                         assigned = True
                         break
@@ -156,7 +177,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     df_filtered = df_filtered[(df_filtered['day_of_year'] >= min_day) & (df_filtered['day_of_year'] <= max_day)]
 
     # Melt the dataframe to long format for Altair plotting
-    id_vars = ['day_of_year']
+    id_vars = ['year', 'day_of_year']
     
     # If grouping by 'year' or another column, include it as an identifier
     if group_by and group_by in df.columns:
@@ -177,9 +198,10 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     
     # Remove the 'L3_ROI_{roi}_' prefix from the variable names
     # For each row, remove the prefix corresponding to the ROI number
-    if rois_list:        	
-        for roi in rois_list:
-            df_melted['variable'] = df_melted['variable'].str.replace(f'L3_{roi}_', '', regex=True)
+    #if rois_list:        	
+    #    for roi in rois_list:
+    #        df_melted['variable'] = df_melted['variable'].str.replace(f'L3_{roi}_', '', regex=True)
+            # selected_columns = [col.replace(f'L3_{roi}_', '') for col in selected_columns] 
 
     # Initialize the base chart
     base = alt.Chart(df_melted).encode(
@@ -195,7 +217,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         mark_type = 'line'  # Default to line
         color = 'variable:N'  # Default to Altair's color scheme
         y_axis = alt.Y('value:Q')  # Default to single y-axis
-        size = None
+        size = 30 # default size for points marks see 
         opacity = 1.0
         strokeWidth = 2.0  # Default line width for line marks
 
@@ -204,6 +226,8 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             # Set mark_type (e.g., line, point, bar)
             if 'mark_type' in plot_options[column]:
                 mark_type = plot_options[column]['mark_type']
+            else:
+                mark_type = None
 
             # Set color
             if 'color' in plot_options[column]:
@@ -228,7 +252,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             if 'strokeWidth' in plot_options[column]:
                 strokeWidth = plot_options[column]['strokeWidth']
 
-        # Create the chart for the current column
+        # Create the chart for the current column        
         if mark_type == 'line':
             layer = base.mark_line(strokeWidth=strokeWidth, opacity=opacity).encode(
                 y=y_axis,
@@ -243,6 +267,21 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             ).transform_filter(
                 alt.datum.variable == column
             )
+        elif  mark_type is None:
+            
+            layer = base.mark_line(strokeWidth=strokeWidth, opacity=opacity).encode(
+                y=y_axis,
+                color=color
+            ).transform_filter(
+                alt.datum.variable == column
+            )
+            layer2 = base.mark_point(size=size, opacity=opacity).encode(
+                y=y_axis,
+                color=color
+            ).transform_filter(
+                alt.datum.variable == column
+            )
+			
         else:  # Fallback for unsupported marks
             layer = base.mark_line().encode(
                 y=y_axis,
@@ -252,6 +291,9 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             )
         
         layers.append(layer)
+        if mark_type is None:
+            layers.append(layer2)
+            
 
     # Combine all layers into one chart
     chart = alt.layer(*layers).properties(
