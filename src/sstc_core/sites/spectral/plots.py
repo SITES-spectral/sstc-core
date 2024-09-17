@@ -92,18 +92,19 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     df_melted = df_filtered.melt(
         id_vars=id_vars,
         value_vars=columns_to_plot, 
-        var_name='roi_column', value_name='value')
+        var_name='variable', value_name='value')
     
-    # Extract the ROI number and create a new column
-    df_melted['roi'] = df_melted['roi_column'].str.extract(r'L3_ROI_(\d+)_')
-    # Remove the ROI prefix from the column names
-    df_melted['variable'] = df_melted['roi_column'].str.replace(r'L3_ROI_\d+_', '', regex=True)
+    ## Extract the ROI number and create a new column
+    #df_melted['roi'] = df_melted['variable'].str.extract(r'L3_ROI_(\d+)_')
+    ## Remove the ROI prefix from the column names
+    #df_melted['variable'] = df_melted['roi_column'].str.replace(r'L3_ROI_\d+_', '', regex=True)
     
-	# Drop the original column name and keep only necessary columns 
-    df_melted = df_melted[['roi', 'variable', 'value']]
+	## Drop the original column name and keep only necessary columns 
+    #df_melted = df_melted[['roi', 'variable', 'value']]
 	
  	# Optional: Rename columns for clarity
-	# df_melted.rename(columns={'variable': 'metric'}, inplace=True)    
+	# df_melted.rename(columns={'variable': 'metric'}, inplace=True)   
+  
  	# Initialize the base char
     base = alt.Chart(df_melted).encode(
         x='day_of_year:Q'
