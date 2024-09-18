@@ -5,25 +5,41 @@ import random
 import colorsys   # converting between color spaces RGB to HSV
 
 
-
-def generate_gradient_hue_color(index, total):
+def rgb_to_hsv(r, g, b):
     """
-    Generate a gradient color by varying the hue in HSV color space.
+    Convert an RGB color to HSV.
+    Input: r, g, b - values between 0 and 255.
+    Output: Corresponding hue, saturation, and value in the range [0, 1].
+    """
+    return colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+
+def generate_gradient_hue_color(index, total, color_base_rgb):
+    """
+    Generate a gradient color by varying the hue in HSV color space, starting from a base RGB color.
     - index: Position of the current color in the gradient.
     - total: Total number of colors to generate.
+    - color_base_rgb: A tuple (R, G, B) for the base color in the RGB space.
+   
     Returns: Hex color string.
     """
+    # Convert the RGB color base to HSV
+    base_r, base_g, base_b = color_base_rgb
+    base_hue, base_saturation, base_value = rgb_to_hsv(base_r, base_g, base_b)
+   
     # Ensure index is between 0 and total - 1
     fraction = index / total if total > 0 else 0
-    hue = fraction * 360  # Vary hue between 0° and 360°
    
-    # Convert HSV to RGB (saturation and value are set to 1.0 for vibrant colors)
-    r, g, b = colorsys.hsv_to_rgb(hue / 360.0, 1.0, 1.0)
+    # Adjust the hue to create a gradient (varying hue)
+    hue = (base_hue * 360 + fraction * 360) % 360  # Keep hue in the range [0, 360]
+   
+    # Convert HSV to RGB
+    r, g, b = colorsys.hsv_to_rgb(hue / 360.0, base_saturation, base_value)
    
     # Convert the RGB values to hex format
     return '#{:02x}{:02x}{:02x}'.format(int(r * 255), int(g * 255), int(b * 255))
 
-def generate_gradient_color(index, total, color_base):
+
+def generate_gradient_rgb_color(index, total, color_base):
     """
     Generate a color based on the index in the gradient scale.
     color_base is a tuple representing the base RGB color (0-1 scale).
@@ -38,10 +54,23 @@ def generate_unique_color():
     return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
 
-def assign_colors_to_columns(rois_list, columns_list, is_gradient_hue: bool = True):
+def assign_hue_colors_to_columns(
+    rois_list:list,     
+    columns_list:list, 
+    color_base_rgb: dict = {'red':  (255, 0, 0),
+                         'green': (0, 255, 0),
+                         'blue': (0, 0, 255),                         
+                         } ):
     """
     Assign a color gradient for each ROI and RGB parameter (red, green, blue).
     If the column doesn't have ROI or RGB, assign a random unique color.
+   
+    Parameters:
+    - rois_list: List of regions of interest (ROIs).
+    - columns_list: List of column names.
+    - color_base_rgb: Dictionary with the base colors (R, G, B) for gradient generation.
+   
+    Returns: Dictionary mapping column names to hex color strings.
     """
     # Initialize the result dictionary
     column_colors = {}
@@ -58,18 +87,8 @@ def assign_colors_to_columns(rois_list, columns_list, is_gradient_hue: bool = Tr
                 # Check if it's related to red, green, or blue
                 for color_name in ['red', 'green', 'blue']:
                     if color_name in column:
-                        if is_gradient_hue:
-                            # Assign a gradient hue color based on the ROI index                        
-                            gradient_color = generate_gradient_hue_color(i, len(rois_list))
-                        else:
-                            # Assign a gradient color based on the ROI index
-                            base_colors = {
-									'red': (1.0, 0.0, 0.0),
-									'green': (0.0, 1.0, 0.0),
-									'blue': (0.0, 0.0, 1.0)
-								}
-                            gradient_color = generate_gradient_color(i, len(rois_list)+2, base_colors[color_name])
-                        #
+                        # Assign a gradient hue color based on the ROI index                        
+                        gradient_color = generate_gradient_hue_color(i, len(rois_list), color_base_rgb[color_name] )
                         column_colors[column] = gradient_color
                         assigned = True
                         break
