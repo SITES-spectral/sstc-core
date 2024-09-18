@@ -105,7 +105,6 @@ def assign_hue_colors_to_columns(
    
     return column_colors
 
-
 import altair as alt
 import pandas as pd
 
@@ -131,23 +130,30 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     df (pd.DataFrame): DataFrame containing the data.
     columns_to_plot (list): List of column names to plot on the y-axis. 
                             If None, columns are selected based on `substrings`.
-    plot_options (dict): Optional dictionary with customization for each column.
-    title (str): Title of the chart.
-    width (int): Width of the chart.
-    height (int): Height of the chart.
-    interactive (bool): Whether the chart should be interactive (zoomable, scrollable).
-    substrings (list): List of substrings to select columns by matching names containing any of them.
-    exclude_columns (list): List of columns to exclude from the selected columns.
-    group_by (str): Optional column name to group the data by.
-    facet (bool): Whether to create a faceted plot by 'group_by'.
-    rois_list (list): List of ROI substrings to filter and plot.
-    show_legend (bool): Whether to show the legend.
-    legend_position (str): Position of the legend.
+    plot_options (dict): Optional dictionary with customization for each column. The keys are the column names, 
+                         and the values are dictionaries with Altair properties like:
+                         - 'mark_type' (str): Mark type for the chart (e.g., 'line', 'point', 'bar').
+                         - 'color' (str): Color of the line or points.
+                         - 'axis' (str): Either 'left' or 'right' to specify which y-axis to use.
+                         - 'size' (float): Size of the points (if using points).
+                         - 'opacity' (float): Opacity level for the mark.
+                         - 'strokeWidth' (float): Width of the line if using line marks.
+    title (str): Title of the chart. Defaults to 'Time Series Plot'.
+    width (int): Width of the chart. Defaults to 600.
+    height (int): Height of the chart. Defaults to 400.
+    interactive (bool): Whether the chart should be interactive (zoomable, scrollable). Defaults to True.
+    substrings (list): List of substrings to select columns by matching names containing any of them. Defaults to None.
+    exclude_columns (list): List of columns to exclude from the selected columns. Defaults to None.
+    group_by (str): Optional column name to group the data by (e.g., 'year'). Defaults to None.
+    facet (bool): Whether to create a faceted plot by 'group_by'. Defaults to False.
+    rois_list (list): List of ROI substrings to identify and plot. Defaults to None (plot all ROIs).
+    show_legend (bool): Whether to show the legend. Defaults to True.
+    legend_position (str): Position of the legend on the chart. Defaults to 'right'.
 
     Returns:
     alt.Chart: The Altair chart object.
     """
-
+    
     # Ensure that 'day_of_year' is in the DataFrame
     if 'day_of_year' not in df.columns:
         raise ValueError("'day_of_year' column is required in the DataFrame")
@@ -212,22 +218,31 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     # Extract ROI numbers from the variable names, format as ROI_01, ROI_02, etc.
     df_melted['roi'] = df_melted['variable'].str.extract(r'(ROI_\d+)')
 
-    # If rois_list is provided, filter the data to include only the ROIs in the list
-    if rois_list:
-        df_melted = df_melted[df_melted['roi'].isin(rois_list)]
+    # Extract color substrings from variable names (e.g., red, green, blue)
+    df_melted['color_group'] = df_melted['variable'].apply(lambda x: 'red' if 'red' in x.lower() else ('green' if 'green' in x.lower() else 'blue'))
 
-    # Define symbols for each ROI
-    roi_symbols = {
-        'ROI_01': 'circle',
-        'ROI_02': 'square',
-        'ROI_03': 'triangle',
-        'ROI_04': 'cross',
-        'ROI_05': 'diamond',
-        # Add more symbols as needed for additional ROIs
-    }
+    # Set color palettes for each color group (red, green, blue)
+    red_palette = ['#ff9999', '#ff4d4d', '#b30000']  # lighter to darker shades of red
+    green_palette = ['#99ff99', '#4dff4d', '#00b300']  # lighter to darker shades of green
+    blue_palette = ['#9999ff', '#4d4dff', '#0000b3']  # lighter to darker shades of blue
 
-    # Map symbols to the roi column
-    df_melted['symbol'] = df_melted['roi'].map(roi_symbols)
+    # Map colors based on roi and color group
+    def get_color(roi, color_group):
+        roi_index = rois_list.index(roi) if roi in rois_list else 0
+        if color_group == 'red':
+            return red_palette[roi_index % len(red_palette)]
+        elif color_group == 'green':
+            return green_palette[roi_index % len(green_palette)]
+        elif color_group == 'blue':
+            return blue_palette[roi_index % len(blue_palette)]
+        return '#000000'  # fallback to black if no color group found
+
+    # Apply the color assignment
+    df_melted['color'] = df_melted.apply(lambda row: get_color(row['roi'], row['color_group']), axis=1)
+
+    # Define ROI shapes for point markers
+    roi_symbols = ['circle', 'square', 'triangle', 'diamond', 'cross', 'star']  # Example shapes for ROIs
+    df_melted['shape'] = df_melted['roi'].apply(lambda roi: roi_symbols[rois_list.index(roi) % len(roi_symbols)] if roi in rois_list else 'circle')
 
     # Initialize the base chart
     base = alt.Chart(df_melted).encode(
@@ -243,7 +258,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         mark_type = 'line'  # Default to line
         color = 'variable:N'  # Default to Altair's color scheme
         y_axis = alt.Y('value:Q')  # Default to single y-axis
-        size = 30  # default size for points marks
+        size = 30 # default size for points marks
         opacity = 1.0
         strokeWidth = 2.0  # Default line width for line marks
 
@@ -255,17 +270,6 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             else:
                 mark_type = None
 
-            # Set color
-            if 'color' in plot_options[column]:
-                color = alt.value(plot_options[column]['color'])
-            
-            # Set y-axis (left or right)
-            if 'axis' in plot_options[column]:
-                if plot_options[column]['axis'] == 'right':
-                    y_axis = alt.Y('value:Q', axis=alt.Axis(title=column, orient='right'))
-                else:
-                    y_axis = alt.Y('value:Q', axis=alt.Axis(title=column, orient='left'))
-            
             # Set size (for point marks)
             if 'size' in plot_options[column]:
                 size = plot_options[column]['size']
@@ -282,59 +286,80 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         if mark_type == 'line':
             layer = base.mark_line(strokeWidth=strokeWidth, opacity=opacity).encode(
                 y=y_axis,
-                color=alt.Color('variable:N', legend=alt.Legend(title="Variables", orient=legend_position) if show_legend else None)
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
         elif mark_type == 'point':
             layer = base.mark_point(size=size, opacity=opacity).encode(
                 y=y_axis,
-                color=alt.Color('variable:N', legend=alt.Legend(title="Variables", orient=legend_position) if show_legend else None),
-                shape=alt.Shape('roi:N', scale=alt.Scale(domain=rois_list, range=[roi_symbols[roi] for roi in rois_list]), 
-                                legend=alt.Legend(title="ROI", orient=legend_position) if show_legend else None)
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
         elif mark_type is None:
-            # Create both line and point charts if mark_type is None
-            line_layer = base.mark_line(strokeWidth=strokeWidth, opacity=opacity).encode(
+            layer = base.mark_line(strokeWidth=strokeWidth, opacity=opacity).encode(
                 y=y_axis,
-                color=alt.Color('variable:N', legend=alt.Legend(title="Variables", orient=legend_position) if show_legend else None)
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
-            point_layer = base.mark_point(size=size, opacity=opacity).encode(
+            layer2 = base.mark_point(size=size, opacity=opacity).encode(
                 y=y_axis,
-                color=alt.Color('variable:N', legend=alt.Legend(title="Variables", orient=legend_position) if show_legend else None),
-                shape=alt.Shape('roi:N', scale=alt.Scale(domain=rois_list, range=[roi_symbols[roi] for roi in rois_list]),
-                                legend=alt.Legend(title="ROI", orient=legend_position) if show_legend else None)
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
-            layers.append(line_layer)
-            layers.append(point_layer)
-        else:
-            # Fallback for unsupported marks
+            layers.append(layer2)
+        else:  # Fallback for unsupported marks
             layer = base.mark_line().encode(
                 y=y_axis,
-                color=alt.Color('variable:N', legend=alt.Legend(title="Variables", orient=legend_position) if show_legend else None)
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
-            layers.append(layer)
+        
+        layers.append(layer)
 
-    # Combine layers
+    # Combine all layers into one chart
     chart = alt.layer(*layers).properties(
         width=width,
         height=height,
         title=title
     )
 
-    # Add interactivity if required
+    # Add interactivity if specified
     if interactive:
         chart = chart.interactive()
 
+    # Group by the 'group_by' column if specified
+    if group_by and group_by in df.columns:
+        if facet:
+            # Create a faceted chart
+            chart = chart.facet(
+                facet=alt.Facet(f'{group_by}:N', columns=3),
+                columns=3
+            )
+        else:
+            # Overlay the lines and color by 'group_by'
+            chart = chart.encode(
+                color=f'{group_by}:N'
+            )
+
+    # Adjust legend position if required
+    if show_legend:
+        chart = chart.configure_legend(
+            orient=legend_position
+        )
+
     return chart
+
+
 
 
 
