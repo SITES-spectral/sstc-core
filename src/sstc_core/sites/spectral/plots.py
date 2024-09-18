@@ -106,6 +106,8 @@ def assign_hue_colors_to_columns(
     return column_colors
 
 
+import altair as alt
+import pandas as pd
 
 def plot_time_series_by_doy(df: pd.DataFrame, 
                             columns_to_plot: list = None, 
@@ -120,11 +122,12 @@ def plot_time_series_by_doy(df: pd.DataFrame,
                             facet: bool = False,
                             rois_list: list = None,
                             show_legend: bool = True,
-                            legend_position: str = 'right'):
+                            legend_position: str = 'right',
+                            use_gradient: bool = True):
     """
     Plots a time series using Altair from a pandas DataFrame, focusing on the range of day_of_year
     where data exists, with optional plot customizations and general properties.
-    
+
     Parameters:
     df (pd.DataFrame): DataFrame containing the data.
     columns_to_plot (list): List of column names to plot on the y-axis. 
@@ -148,6 +151,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     rois_list (list): List of ROI numbers to filter and plot. Defaults to None (plot all ROIs).
     show_legend (bool): Whether to show the legend. Defaults to True.
     legend_position (str): Position of the legend. Defaults to 'right'.
+    use_gradient (bool): Whether to use gradient colors based on ROIs. Defaults to True.
 
     Returns:
     alt.Chart: The Altair chart object.
@@ -202,7 +206,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     df_filtered = df_filtered[(df_filtered['day_of_year'] >= min_day) & (df_filtered['day_of_year'] <= max_day)]
 
     # Melt the dataframe to long format for Altair plotting
-    id_vars = ['day_of_year']
+    id_vars = ['year', 'day_of_year']
     
     # If grouping by 'year' or another column, include it as an identifier
     if group_by and group_by in df.columns:
@@ -220,7 +224,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
     
     # Create gradient color scales
     color_scales = {
-        'red': alt.Scale(domain=rois_list, range=['lightred', 'darkred']),
+        'red': alt.Scale(domain=rois_list, range=['lightcoral', 'darkred']),
         'green': alt.Scale(domain=rois_list, range=['lightgreen', 'darkgreen']),
         'blue': alt.Scale(domain=rois_list, range=['lightblue', 'darkblue'])
     }
@@ -253,6 +257,8 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             # Set color
             if 'color' in plot_options[column]:
                 color = alt.value(plot_options[column]['color'])
+            else:
+                color = None  # Default to None if not specified
             
             # Set y-axis (left or right)
             if 'axis' in plot_options[column]:
@@ -275,14 +281,23 @@ def plot_time_series_by_doy(df: pd.DataFrame,
 
         # Determine color scale based on the variable's color
         variable_color = df_melted[df_melted['variable'] == column]['color'].iloc[0]
-        color_scale = color_scales.get(variable_color, alt.value('gray'))
 
-        # Create the chart for the current column        
+        if use_gradient:
+            color_scale = color_scales.get(variable_color, alt.value('gray'))
+        else:
+            # Use plain colors if gradients are not used
+            color_map = {
+                'red': 'red',
+                'green': 'green',
+                'blue': 'blue'
+            }
+            color_scale = alt.value(color_map.get(variable_color, 'gray'))
+        
+        # Add layer based on mark type
         if mark_type == 'line':
             layer = base.mark_line(strokeWidth=strokeWidth, opacity=opacity).encode(
                 y=y_axis,
-                color=alt.Color('roi:N', scale=color_scale, legend=None if not show_legend else alt.Legend(orient=legend_position)),
-                shape=alt.Shape('roi:N', legend=None if not show_legend else alt.Legend(orient=legend_position))
+                color=alt.Color('roi:N', scale=color_scale, legend=None if not show_legend else alt.Legend(orient=legend_position))
             ).transform_filter(
                 alt.datum.variable == column
             )
@@ -295,7 +310,7 @@ def plot_time_series_by_doy(df: pd.DataFrame,
                 alt.datum.variable == column
             )
         else:  # Fallback for unsupported marks
-            layer = base.mark_line().encode(
+            layer = base.mark_line(strokeWidth=strokeWidth).encode(
                 y=y_axis,
                 color=alt.Color('roi:N', scale=color_scale, legend=None if not show_legend else alt.Legend(orient=legend_position)),
                 shape=alt.Shape('roi:N', legend=None if not show_legend else alt.Legend(orient=legend_position))
@@ -337,7 +352,6 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         )
 
     return chart
-
 
 
 
