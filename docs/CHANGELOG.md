@@ -1,3 +1,6 @@
+## [0.20.2]
+- WIP
+ 
 ## [0.20.1]
 - Added  `plots.generate_gradient_color`
 - Added `plots.generate_unique_color`

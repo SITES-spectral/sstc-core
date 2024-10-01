@@ -1,5 +1,6 @@
 import pandas as pd
 import altair as alt
+
 import random
 import colorsys   # converting between color spaces RGB to HSV
 
@@ -104,7 +105,6 @@ def assign_hue_colors_to_columns(
    
     return column_colors
 
-
 import altair as alt
 import pandas as pd
 
@@ -121,12 +121,11 @@ def plot_time_series_by_doy(df: pd.DataFrame,
                             facet: bool = False,
                             rois_list: list = None,
                             show_legend: bool = True,
-                            legend_position: str = 'right',
-                            use_gradient: bool = True):
+                            legend_position: str = 'right'):
     """
     Plots a time series using Altair from a pandas DataFrame, focusing on the range of day_of_year
     where data exists, with optional plot customizations and general properties.
-
+    
     Parameters:
     df (pd.DataFrame): DataFrame containing the data.
     columns_to_plot (list): List of column names to plot on the y-axis. 
@@ -221,19 +220,15 @@ def plot_time_series_by_doy(df: pd.DataFrame,
 
     # Extract color substrings from variable names (e.g., red, green, blue)
     df_melted['color_group'] = df_melted['variable'].apply(lambda x: 'red' if 'red' in x.lower() else ('green' if 'green' in x.lower() else 'blue'))
-
-    # Create gradient color scales
-    color_scales = {
-        'red':  ['#890200',  '#c60200', '#ff0605', '#ff4242'],   
-        'green': ['#33691e', '#4ebe21', '#78f047', '#b1ff91'],   
-        'blue': ['#020873', '#0648b8', '#13adf4', "#5bf5f5"],   
-    }
-    
-    
+    #df_melted['color'] = df_melted['variable'].apply(lambda x: 'red' if 'red' in x.lower() else ('green' if 'green' in x.lower() else 'blue'))
+  
+	
+ 
+ 
     # Set color palettes for each color group (red, green, blue)
-    red_palette = ['#890200',  '#c60200', '#ff0605', '#ff4242']  # darker to lighter shades of red
-    green_palette = ['#33691e', '#4ebe21', '#78f047', '#b1ff91']  # lighter to darker shades of green
-    blue_palette = ['#020873', '#0648b8', '#13adf4', "#5bf5f5"]  # lighter to darker shades of blue
+    red_palette = ['#ff9999', '#ff4d4d', '#b30000']  # lighter to darker shades of red
+    green_palette = ['#99ff99', '#4dff4d', '#00b300']  # lighter to darker shades of green
+    blue_palette = ['#9999ff', '#4d4dff', '#0000b3']  # lighter to darker shades of blue
 
     # Map colors based on roi and color group
     def get_color(roi, color_group):
@@ -270,27 +265,15 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         size = 30 # default size for points marks
         opacity = 1.0
         strokeWidth = 2.0  # Default line width for line marks
-        shape = 'circle'  # Default shape for points
 
         # Apply custom options if available
         if plot_options and column in plot_options:
             # Set mark_type (e.g., line, point, bar)
             if 'mark_type' in plot_options[column]:
                 mark_type = plot_options[column]['mark_type']
-            
-            # Set color
-            if 'color' in plot_options[column]:
-                color = alt.value(plot_options[column]['color'])
             else:
-                color = None  # Default to None if not specified
-            
-            # Set y-axis (left or right)
-            if 'axis' in plot_options[column]:
-                if plot_options[column]['axis'] == 'right':
-                    y_axis = alt.Y('value:Q', axis=alt.Axis(title=column, orient='right'))
-                else:
-                    y_axis = alt.Y('value:Q', axis=alt.Axis(title=column, orient='left'))
-            
+                mark_type = None
+
             # Set size (for point marks)
             if 'size' in plot_options[column]:
                 size = plot_options[column]['size']
@@ -303,62 +286,48 @@ def plot_time_series_by_doy(df: pd.DataFrame,
             if 'strokeWidth' in plot_options[column]:
                 strokeWidth = plot_options[column]['strokeWidth']
 
-        # Determine color scale based on the variable's color
-        variable_color = df_melted[df_melted['variable'] == column]['color'].iloc[0]
-
-        if use_gradient:
-            color_scale = color_scales.get(variable_color, alt.value('gray'))
-        else:
-            # Use plain colors if gradients are not used
-            color_map = {
-                'red': 'red',
-                'green': 'green',
-                'blue': 'blue'
-            }
-            color_scale = alt.value(color_map.get(variable_color, 'gray'))
-        
-        # Add layer based on mark type
+        # Create the chart for the current column        
         if mark_type == 'line':
             layer = base.mark_line(strokeWidth=strokeWidth, opacity=opacity).encode(
                 y=y_axis,
-                color=alt.Color('color:N', legend=alt.Legend(title='Color', orient=legend_position) if show_legend else None, title='Color'),
-                shape=alt.Shape('shape:N', legend=alt.Legend(title='ROI', orient=legend_position) if show_legend else None, title='ROI'),
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
         elif mark_type == 'point':
             layer = base.mark_point(size=size, opacity=opacity).encode(
                 y=y_axis,
-                color=alt.Color('color:N', legend=alt.Legend(title='Color', orient=legend_position) if show_legend else None, title='Color'),
-                shape=alt.Shape('shape:N', legend=alt.Legend(title='ROI', orient=legend_position) if show_legend else None, title='ROI'),
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
         elif mark_type is None:
             layer = base.mark_line(strokeWidth=strokeWidth, opacity=opacity).encode(
                 y=y_axis,
-                color=alt.Color('color:N', legend=alt.Legend(title='Color', orient=legend_position) if show_legend else None, title='Color'),
-                shape=alt.Shape('shape:N', legend=alt.Legend(title='ROI', orient=legend_position) if show_legend else None, title='ROI'),
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
             layer2 = base.mark_point(size=size, opacity=opacity).encode(
                 y=y_axis,
-                color=alt.Color('color:N', legend=alt.Legend(title='Color', orient=legend_position) if show_legend else None, title='Color'),
-                shape=alt.Shape('shape:N', legend=alt.Legend(title='ROI', orient=legend_position) if show_legend else None, title='ROI'),
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
             layers.append(layer2)
         else:  # Fallback for unsupported marks
-            layer = base.mark_line(strokeWidth=strokeWidth).encode(
+            layer = base.mark_line().encode(
                 y=y_axis,
-                color=alt.Color('roi:N', scale=color_scale, legend=None if not show_legend else alt.Legend(orient=legend_position)),
-                shape=alt.Shape('roi:N', legend=None if not show_legend else alt.Legend(orient=legend_position))
+                color=alt.Color('color:N', legend=show_legend, title='Color'),
+                shape=alt.Shape('shape:N', legend=show_legend, title='ROI')
             ).transform_filter(
                 alt.datum.variable == column
             )
-
+        
         layers.append(layer)
 
     # Combine all layers into one chart
@@ -393,6 +362,9 @@ def plot_time_series_by_doy(df: pd.DataFrame,
         )
 
     return chart
+
+
+
 
 
 
