@@ -6,11 +6,11 @@ Install dependencies
 
 `mamba update mamba
 
-mamba create -n JB-core python=03.12 streamlit pandas gdal duckdb pyyaml pysolar keyring poetry paramiko numpy jupyterlab mkdocs mkdocs-material mkdocstrings matplotlib plotly altair pydeck geopandas shapely xarray ipyleaflet geospatial nodejs
+mamba create -n JB-core python=03.12 streamlit pandas gdal duckdb pyyaml pysolar keyring poetry paramiko numpy jupyterlab mkdocs mkdocs-material mkdocstrings matplotlib plotly altair pydeck geopandas shapely xarray ipyleaflet geospatial nodejs 
 `
 
 `pip install opencv-python`
-`pip install mkdocstrings mkdocstrings-python`
+`pip install mkdocstrings mkdocstrings-python twine`
 
 
 To install **sstc-core**, use pip:

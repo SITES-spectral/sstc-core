@@ -1,6 +1,13 @@
+## [0.21.1]
+- added `utils.ensure_directory_exists`
+- Added asa.locations and asa.platforms
+
+## [0.21.0]
+- Locations and new platforms
+
 ## [0.20.2]
-- WIP
- 
+- tested data extractions for reporting and metadata.
+
 ## [0.20.1]
 - Added  `plots.generate_gradient_color`
 - Added `plots.generate_unique_color`

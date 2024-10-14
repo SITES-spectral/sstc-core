@@ -1,46 +1,40 @@
 PhenoCams:
-  P_RTBH_1:
-    aoi: Forest in Alpine Montain - Abiskojaure at Abisko National Park
+  P_NYB_FOR_1: 
+    aoi: 
     backups:
       aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/abisko/locations/RTBH_FOR/platforms/PhenoCam/P_RTBH_1/
-    description: Rooftop (RT) Building H (BH) at ANS. Lars Eklundh custom optical camera.
+    description: 
     ecosystem_of_interest: FOR
     geolocation:
       point:
           epsg: "epsg:4326"
-          latitude_dd: 68.353729
-          longitude_dd: 18.816522
+          latitude_dd:  57.149750 
+          longitude_dd: 14.738164
     height_in_meters_above_ground: 4.5
-    legacy_acronym: ANS-FOR-P01
-    location_id: RTBH_FOR
-    maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Abisko-RTBH_FOR-P_RTBH_1-mantainance_log.yaml'
+    legacy_acronym: 
+    location_id: 
+    maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/-P_NYB_FOR_1-mantainance_log.yaml'
     status: Active
-    phenocam_rois:
-      ROI_01: {'points': [[100, 1800], [2700, 1550], [2500, 2700], [100, 2700]],
+    phenocam_rois:    
+      ROI_01: {'points': [[100, 1200], [100, 400], [2500, 400], [2500, 1200]],
         'color': [0, 255, 0],
-        'thickness': 7}
-      ROI_02: {'points': [[100, 930], [3700, 1050], [3700, 1150], [100, 1300]],   # + 50
-        'color': [0, 0, 255],
-        'thickness': 7}
-      ROI_03: {'points': [[750, 600], [3700, 650], [3500, 950], [100, 830]],
-        'color': [255, 0, 0],
-        'thickness': 7}
-    platform_id: P_RTBH_1
+        'thickness': 7}      
+    platform_id: P_NYB_FOR_1
     platform_type: PhenoCam    
-    sftp_dirpath: abisko/data/PhenoCam/ANS-FOR-P01/
-    station_acronym: ANS
-    station_name: Abisko
-    viewing_direction': West (270 degrees)
+    sftp_dirpath: asa/data/PhenoCam/ANS-FOR-P01/
+    station_acronym: ASA
+    station_name: Asa
+    viewing_direction': 
     metadata:
-      'TITLE': 'Phenocamera RGB image collection from Abisko Observatory, north-western Sweden.'
-      'SITES STATION': 'Abisko Scientific Research Station'
+      'TITLE': 'Phenocamera RGB image collection from Asa Research Station, Sweden.'
+      'SITES STATION': 'Asa'
       'TIME PERIOD': null
       'TIME RESOLUTION': null
       'TIME ZONE': 'UTC+1'
-      'SAMPLING POINT': 'Abisko Scientific Research Station, on rooftop of Building H at 4.5m, Phenocam 01 :  platform_id=P_RTBH_1'
-      'LATITUDE': '68.353729'
-      'LONGITUDE': '18.816522'
-      'ALTITUDE': '381 m.a.s.l'
+      'SAMPLING POINT': ''
+      'LATITUDE': '57.149750'
+      'LONGITUDE': '14.738164'
+      'ALTITUDE': 'm.a.s.l'
       'FILE RETRIEVED FROM': 'https://data.fieldsites.se Link to metadata landing page is available in separate file in the downloaded zip.'
       'DATA POLICY': 'SITES data is licensed under a Creative Commons Attribution 4.0 international license (http://creativecommons.org/licenses/by/4.0/).'
       'PARAMETERS & UNITS': 'Digital Numbers (DN)'

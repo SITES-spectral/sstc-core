@@ -15,6 +15,48 @@ import pandas as pd
 from pysolar.solar import get_altitude, get_azimuth
 
 
+def ensure_directory_exists(directory_path):
+    """
+    Ensure that a directory exists. If the directory (or any intermediate subdirectories)
+    does not exist, it is created.
+
+    Parameters:
+    -----------
+    directory_path : str
+        The path to the directory that needs to be checked or created. This can include
+        a full path to nested subdirectories.
+
+    Returns:
+    --------
+    None
+
+    Behavior:
+    ---------
+    - If the directory exists, nothing is done and a message is printed.
+    - If the directory does not exist, it and any necessary intermediate directories
+      are created, and a message is printed to confirm creation.
+
+    Example usage:
+    --------------
+    directory = 'path/to/subdirectory'
+    ensure_directory_exists(directory)
+    
+    Notes:
+    ------
+    - This function uses `os.makedirs()` to create directories, which will create 
+      intermediate directories as needed, making it a recursive directory creation function.
+    - If the directory already exists, no error is raised.
+    """
+
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+        print(f"Directory '{directory_path}' created.")
+    else:
+        print(f"Directory '{directory_path}' already exists.")
+
+
+        
+
 def copy_file_with_new_name(source_filepath, destination_directory, new_name)->str:
     """
     Copies a file from the source filepath to the destination directory with a new name while preserving the file format extension.
