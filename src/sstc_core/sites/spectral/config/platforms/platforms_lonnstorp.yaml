@@ -16,8 +16,23 @@ PhenoCams:
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Lonnstorp-P_SAFEA_AGR_1-mantainance_log.yaml'
     status: Active
     phenocam_rois:
-      ROI_01: {'points': [[], [], [], []],
+      ROI_01: {'points': [[100, 2000], [100, 900], [1600, 750], [3000, 1350], [3000, 2000]],
+        'color': [0, 0, 255],
+        'thickness': 7}
+      ROI_02: {'points': [[50, 810], [50, 720], [1200, 615], [1400, 670]],
         'color': [0, 255, 0],
+        'thickness': 7}
+      ROI_03: {'points': [[50, 660], [50, 630], [1000, 545], [1140, 560]],
+        'color': [255, 0, 0],
+        'thickness': 7}
+      ROI_04: {'points': [[50, 600], [50, 590], [870, 510], [980, 515]],
+        'color': [0, 255, 255],
+        'thickness': 7}
+      ROI_05: {'points': [[50, 558], [50, 545], [800, 468], [900, 470]],
+        'color': [255, 255, 0],
+        'thickness': 7}
+      ROI_06: {'points': [[1380, 460], [1850, 450], [3000, 655], [3000, 850]],
+        'color': [255, 0, 255],
         'thickness': 7}    
     platform_id: P_SAFEA_AGR_1
     platform_type: PhenoCam    
@@ -66,9 +81,18 @@ PhenoCams:
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Lonnstorp-P_SAFEA_AGR_1-mantainance_log.yaml'
     status: Active
     phenocam_rois:
-      ROI_01: {'points': [[], [], [], []],
+      ROI_01: {'points': [[100, 950], [350, 720], [820, 670], [950, 880]],
+        'color': [0, 0, 255],
+        'thickness': 7}
+      ROI_02: {'points': [[1100, 880], [930, 650], [1450, 630], [2000, 830]],
         'color': [0, 255, 0],
-        'thickness': 7}    
+        'thickness': 7}
+      ROI_03: {'points': [[2150, 800], [1630, 620], [2000, 615], [2700, 790]],
+        'color': [255, 0, 0],
+        'thickness': 7}
+      ROI_04: {'points': [[2150, 600], [2400, 600], [3035, 740], [2950, 780]],
+        'color': [0, 255, 255],
+        'thickness': 7}
     platform_id: P_SAFEA_AGR_2
     platform_type: PhenoCam    
     sftp_dirpath: lonnstorp/data/PhenoCam/SFA-AGR-P02/
@@ -116,8 +140,8 @@ PhenoCams:
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Lonnstorp-P_SAFEA_AGR_3-mantainance_log.yaml'
     status: Active
     phenocam_rois:
-      ROI_01: {'points': [[], [], [], []],
-        'color': [0, 255, 0],
+      ROI_01: {'points': [[250, 1800], [250, 900], [2850, 900], [2850, 1800]],
+        'color': [0, 0, 255],
         'thickness': 7}    
     platform_id: P_SAFEA_AGR_3
     platform_type: PhenoCam    

@@ -1,27 +1,28 @@
 PhenoCams:
   P_GRI_FOR_1:
-    aoi: 
+    aoi: Spruce and pine forest
     backups:
       aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/grimso/locations/GRI_FOR/platforms/PhenoCam/P_GRI_FOR_1/
-    description: 
+    description:  Mix of hemi-boreal and boreal, spruce and pine forest
     ecosystem_of_interest: FOR
     geolocation:
       point:
           epsg: "epsg:4326"
-          latitude_dd: 
-          longitude_dd: 
+          latitude_dd: 59.72868
+          longitude_dd: 15.47249
     height_in_meters_above_ground: 
-    legacy_acronym: 
+    legacy_acronym: GRI-FOR-P01
     location_id: GRI_FOR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Grimso-GRI_FOR_1-mantainance_log.yaml'
     status: Active
     phenocam_rois:
-      ROI_01: {'points': [[], [], [], []],
-        'color': [0, 255, 0],
+      # ROI is all the image extent
+      ROI_01: {'points': [[0, 0], [1024, 0], [1024, 768], [0, 768]],
+        'color': [0, 0, 255],
         'thickness': 7}    
-    platform_id: P_RTBH_1
+    platform_id: P_GRI_FOR_1
     platform_type: PhenoCam    
-    sftp_dirpath: grimso/data/PhenoCam/GRI_FOR/
+    sftp_dirpath: grimso/data/PhenoCam/GRI-FOR/
     station_acronym: GRI
     station_name: Grimsö
     viewing_direction': 
@@ -38,7 +39,7 @@ PhenoCams:
       'FILE RETRIEVED FROM': 'https://data.fieldsites.se Link to metadata landing page is available in separate file in the downloaded zip.'
       'DATA POLICY': 'SITES data is licensed under a Creative Commons Attribution 4.0 international license (http://creativecommons.org/licenses/by/4.0/).'
       'PARAMETERS & UNITS': 'Digital Numbers (DN)'
-      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:30 UTC+1. The phenocamera pointed to Mount Nuolja. The ecosystems in the images are subalpine birch forest (Betula pubescens var. czerepan) and alpine shrubland (mainly Salix spp., Empetrum nigrum, and Vaccinium vitis–idaea) in the upper slope of Mount Nuolja.'
+      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:30 UTC+1.'
       'SENSOR DESCRIPTION': 'Images stored in JPG format.'
       'DATA ACQUISITION': ""
       'PROCESSING METHODS': 
