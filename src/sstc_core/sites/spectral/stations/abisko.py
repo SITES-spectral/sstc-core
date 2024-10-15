@@ -27,7 +27,7 @@ meta = {
 
 def load_configurations():
     """
-    Loads configurations for the Abisko station from YAML files.
+    Loads configurations for the research station from YAML files.
 
     Returns:
       tuple: A tuple containing locations and platforms configuration data.

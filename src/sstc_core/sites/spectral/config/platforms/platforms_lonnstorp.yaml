@@ -4,14 +4,14 @@ PhenoCams:
     backups:
       aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/lonnstorp/locations/SAFEA_AGR/platforms/PhenoCam/P_SAFEA_AGR_1/
     description: 
-    ecosystem_of_interest: 
+    ecosystem_of_interest: cropland
     geolocation:
       point:
           epsg: "epsg:4326"
           latitude_dd: 55.668731
           longitude_dd: 13.108632
     height_in_meters_above_ground: 10 m
-    legacy_acronym: SFA-AGR
+    legacy_acronym: SFA-AGR-P01
     location_id: SAFEA_AGR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Lonnstorp-P_SAFEA_AGR_1-mantainance_log.yaml'
     status: Active
@@ -21,7 +21,7 @@ PhenoCams:
         'thickness': 7}    
     platform_id: P_SAFEA_AGR_1
     platform_type: PhenoCam    
-    sftp_dirpath: lonnstorp/data/PhenoCam/
+    sftp_dirpath: lonnstorp/data/PhenoCam/SFA-AGR-P01/
     station_acronym: 
     station_name: Lönnstorp
     viewing_direction': west-north-west (293 degrees) and an off-nadir angle of 58 degrees.
@@ -61,7 +61,7 @@ PhenoCams:
           latitude_dd: 55.669186
           longitude_dd: 13.110360
     height_in_meters_above_ground: 10 m
-    legacy_acronym: SFA-AGR
+    legacy_acronym: SFA-AGR-P02
     location_id: SAFEA_AGR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Lonnstorp-P_SAFEA_AGR_1-mantainance_log.yaml'
     status: Active
@@ -71,7 +71,7 @@ PhenoCams:
         'thickness': 7}    
     platform_id: P_SAFEA_AGR_2
     platform_type: PhenoCam    
-    sftp_dirpath: lonnstorp/data/PhenoCam/
+    sftp_dirpath: lonnstorp/data/PhenoCam/SFA-AGR-P02/
     station_acronym: 
     station_name: Lönnstorp
     viewing_direction': Looking north (12 degrees) and an off-nadir angle of 58 degrees.
@@ -111,7 +111,7 @@ PhenoCams:
           latitude_dd: 55.668549    # 55.669186
           longitude_dd: 13.110535   # 13.110360
     height_in_meters_above_ground: 10 m
-    legacy_acronym: SFA-AGR
+    legacy_acronym: SFA-AGR-P03
     location_id: SAFEA_AGR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Lonnstorp-P_SAFEA_AGR_3-mantainance_log.yaml'
     status: Active
@@ -121,7 +121,7 @@ PhenoCams:
         'thickness': 7}    
     platform_id: P_SAFEA_AGR_3
     platform_type: PhenoCam    
-    sftp_dirpath: lonnstorp/data/PhenoCam/
+    sftp_dirpath: lonnstorp/data/PhenoCam/SFA-AGR-P03/
     station_acronym: 
     station_name: Lönnstorp
     viewing_direction': East (85 degrees), off-nadir angle of 58 degrees.
