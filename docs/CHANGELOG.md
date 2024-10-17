@@ -1,3 +1,6 @@
+## [0.21.2]
+- Added updated locations and platforms
+
 ## [0.21.1]
 - added `utils.ensure_directory_exists`
 - Added asa.locations and asa.platforms
