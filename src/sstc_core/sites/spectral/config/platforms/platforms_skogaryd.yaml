@@ -1,5 +1,5 @@
 PhenoCams:
-  P_XXXX_1:
+  P_CEM_FOR_1:
     aoi: 
     backups:
       aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/XXXX/locations/SKC_FOR/platforms/PhenoCam/P_XXXX_1/
@@ -11,8 +11,8 @@ PhenoCams:
           latitude_dd: 
           longitude_dd: 
     height_in_meters_above_ground: 
-    legacy_acronym: 
-    location_id: 
+    legacy_acronym: CEM01-FOR-P01
+    location_id: CEM_FOR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Skogaryd-XXXX_1-mantainance_log.yaml'
     status: Active
     phenocam_rois:
@@ -21,7 +21,7 @@ PhenoCams:
         'thickness': 7}    
     platform_id: P_XXXX_1
     platform_type: PhenoCam    
-    sftp_dirpath: skogaryd/data/PhenoCam/
+    sftp_dirpath: /skogaryd/data/PhenoCam/CEM01-FOR-P01
     station_acronym: SKC
     station_name: Skogaryd
     viewing_direction': 

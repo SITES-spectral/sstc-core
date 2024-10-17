@@ -1,6 +1,9 @@
 iflag_disable_for_processing: 
   value: False
   penalty_value: 1
+iflag_bluish_dominated:
+  value: False
+  penalty_value: 1
 iflag_sunny: 
   value: False
   penalty_value: 0.0

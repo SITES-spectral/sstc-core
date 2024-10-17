@@ -22,7 +22,7 @@ PhenoCams:
         'thickness': 7}    
     platform_id: P_GRI_FOR_1
     platform_type: PhenoCam    
-    sftp_dirpath: grimso/data/PhenoCam/GRI-FOR/
+    sftp_dirpath: /grimso/data/PhenoCam/GRI-FOR-P01/
     station_acronym: GRI
     station_name: Grimsö
     viewing_direction': 

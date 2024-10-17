@@ -549,4 +549,15 @@ def build_phenocams_schema(
     phenocams_core_schema += phenocams_rois_L2_parameters
     phenocams_core_schema += phenocams_rois_L3_parameters
     
-    return phenocams_core_schema
+    # quickfix to avoid duplicated fields coming in
+    in_dict = {}
+    curated_schema = []
+    for record in phenocams_core_schema:
+        field_name = record['field_name'] 
+        if field_name not in in_dict:
+            in_dict[field_name] = {}
+            curated_schema.append(record)
+        
+    
+    
+    return curated_schema

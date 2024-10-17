@@ -1231,11 +1231,11 @@ class Station(DuckDBManager):
                 return {'min': None, 'max': None}
 
             # Convert the day_of_year strings to integers
-            day_of_year_ints = [int(row[0]) for row in result]
+            day_of_year_ints = sorted(list(set([int(row[0]) for row in result])))
             min_day_of_year = min(day_of_year_ints)
             max_day_of_year = max(day_of_year_ints)
 
-            return {'min': min_day_of_year, 'max': max_day_of_year}
+            return {'min': min_day_of_year, 'max': max_day_of_year, 'doys': day_of_year_ints}
         
         except duckdb.Error as e:
             print(f"An error occurred while retrieving min and max day_of_year from table '{table_name}': {e}")
