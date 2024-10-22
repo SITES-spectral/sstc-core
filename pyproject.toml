@@ -23,7 +23,6 @@ duckdb = "^1.0"
 paramiko = "^3.4"
 keyring = "^25.2.1"
 mkdocs_material = "^9.5.30"
-opencv-python = "^4.10.0.84"
 pysolar = "^0.11"
 importlib-metadata = "^8.5.0"
 pyperclip= "^1.9.0"
@@ -31,6 +30,7 @@ reportlab= "^4.2.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.3.3"
+opencv-python = "^4.10.0"
 
 [build-system]
 requires = ["poetry-core"]

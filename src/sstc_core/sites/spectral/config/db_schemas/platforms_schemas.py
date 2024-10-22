@@ -426,7 +426,7 @@ phenocams_core_schema = [
     {'field_name': 'version_code_sstc_core',
     'field_type': 'VARCHAR',
     'field_default_value': None},
-    {'field_name': 'version_platform_flags',
+    {'field_name': 'version_platform_iflags',
     'field_type': 'VARCHAR',
     'field_default_value': None},
     {'field_name': 'version_qflag',

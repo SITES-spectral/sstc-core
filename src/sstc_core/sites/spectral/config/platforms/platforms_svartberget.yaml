@@ -11,7 +11,7 @@ PhenoCams:
           latitude_dd: 64.256342
           longitude_dd: 19.771621
     height_in_meters_above_ground: 70 meters
-    legacy_acronym: 
+    legacy_acronym: SVB-FOR-P01
     location_id: SVB_FOR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Svartverget-P_SVB_FOR_1-mantainance_log.yaml'
     status: Active
