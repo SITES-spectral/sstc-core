@@ -2,7 +2,7 @@ PhenoCams:
   P_CEM01_FOR_1:
     aoi: Skogaryd Central, western Sweden
     backups:
-      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/XXXX/locations/SKC_FOR/platforms/PhenoCam/P_CEM01_FOR_1/
+      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/skogaryd/locations/SKC_FOR/platforms/PhenoCam/P_CEM01_FOR_1/
     description: spruce forest
     ecosystem_of_interest: FOR
     geolocation:
@@ -55,7 +55,7 @@ PhenoCams:
   P_CEM02_FOR_1:
     aoi: Skogaryd Central, western Sweden
     backups:
-      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/XXXX/locations/SKC_FOR/platforms/PhenoCam/P_CEM02_FOR_1/
+      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/skogaryd/locations/SKC_FOR/platforms/PhenoCam/P_CEM02_FOR_1/
     description: understory of a spruce forest
     ecosystem_of_interest: FOR
     geolocation:
@@ -105,7 +105,7 @@ PhenoCams:
   P_CEM03_FOR_1:
     aoi: Skogaryd Central, western Sweden
     backups:
-      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/XXXX/locations/SKC_FOR/platforms/PhenoCam/P_CEM03_FOR_1/
+      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/skogaryd/locations/SKC_FOR/platforms/PhenoCam/P_CEM03_FOR_1/
     description: mature spruce forest with a few species of grasses and herbaceous plants
     ecosystem_of_interest: FOR
     geolocation:
