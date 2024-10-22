@@ -972,7 +972,7 @@ class Station(DuckDBManager):
         record_dict['origin_filepath'] = origin_filepath
         record_dict['version_data_processing'] = version.version_data_processing
         record_dict['version_code_sstc_core'] = version.version_code_sstc_core
-        record_dict['version_platform_flags'] = version.version_platform_flags
+        record_dict['version_platform_iflags'] = version.version_platform_iflags
         record_dict['version_qflag'] = version.version_qflag
         record_dict['version_schema_platform_phenocams'] = version.version_schema_platform_phenocams 
         record_dict['has_snow_presence'] = has_snow_presence
