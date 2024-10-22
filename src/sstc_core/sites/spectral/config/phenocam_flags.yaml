@@ -28,6 +28,9 @@ iflag_clouds:
 iflag_fog:
   value: False
   penalty_value: 1
+iflag_burned:
+  value: False
+  penalty_value: 1
 iflag_heavy_rain: 
   value: False
   penalty_value: 1
@@ -46,6 +49,9 @@ iflag_lens_ice:
 iflag_lens_dirt: 
   value: False
   penalty_value: 1
+iflag_fallen_trees:
+  value: False
+  penalty_value: 0.75
 iflag_initial_green_up: 
   value: False
   penalty_value: 0.0
