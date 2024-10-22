@@ -1,12 +1,22 @@
 # Ensure you do not use hyppens "-" better to use `double__underscore`
 
-RTBH_FOR:
-  location_id: 'RTBH_FOR'
-  description: 'ANS Rooftop (RT) Building H (BH). Observatorium and Meteorology building'
-  legacy_acronym: 'ANS-FOR'
+SVB_FOR:
+  location_id: ''
+  description: ''
+  legacy_acronym: 'SVB-FOR'
   is_active: True
   mantainance_status: active
   platforms: 
     PhenoCams:
-      - 'P_RTBH_1'
+      - 'P_SVB_FOR_1'
+DEG_MIR:
+  location_id: ''
+  description: ''
+  legacy_acronym: 'DEG-MIR'
+  is_active: True
+  mantainance_status: active
+  platforms: 
+    PhenoCams:
+      - 'P_DEG_MIR_1'
+      - 'P_DEG_MIR_2'
     

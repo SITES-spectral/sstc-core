@@ -1,3 +1,4 @@
+sstc-image-viewer/
 *.db
 *.duckdb 
 duckdb/

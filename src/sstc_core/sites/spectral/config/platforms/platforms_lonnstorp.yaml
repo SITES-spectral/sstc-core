@@ -25,15 +25,15 @@ PhenoCams:
       ROI_03: {'points': [[50, 660], [50, 630], [1000, 545], [1140, 560]],
         'color': [255, 0, 0],
         'thickness': 7}
-      ROI_04: {'points': [[50, 600], [50, 590], [870, 510], [980, 515]],
-        'color': [0, 255, 255],
-        'thickness': 7}
-      ROI_05: {'points': [[50, 558], [50, 545], [800, 468], [900, 470]],
-        'color': [255, 255, 0],
-        'thickness': 7}
-      ROI_06: {'points': [[1380, 460], [1850, 450], [3000, 655], [3000, 850]],
-        'color': [255, 0, 255],
-        'thickness': 7}    
+      #ROI_04: {'points': [[50, 600], [50, 590], [870, 510], [980, 515]],
+      #  'color': [0, 255, 255],
+      #  'thickness': 7}
+      #ROI_05: {'points': [[50, 558], [50, 545], [800, 468], [900, 470]],
+      #  'color': [255, 255, 0],
+      #  'thickness': 7}
+      #ROI_06: {'points': [[1380, 460], [1850, 450], [3000, 655], [3000, 850]],
+      #  'color': [255, 0, 255],
+      #  'thickness': 7}    
     platform_id: P_SAFEA_AGR_1
     platform_type: PhenoCam    
     sftp_dirpath: lonnstorp/data/PhenoCam/SFA-AGR-P01/

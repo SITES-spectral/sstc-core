@@ -1,46 +1,46 @@
 PhenoCams:
   P_RBD_AGR_1:
-    aoi: 
+    aoi: Röbäcksdalen North, 10m mast
     backups:
       aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/robacksdalen/locations/RBD_AGR/platforms/PhenoCam/P_RBD_AGR_1/
-    description: 
-    ecosystem_of_interest: 
+    description: traditional 5-year crop rotation 
+    ecosystem_of_interest: AGR
     geolocation:
       point:
           epsg: "epsg:4326"
-          latitude_dd: 
-          longitude_dd: 
-    height_in_meters_above_ground: 
-    legacy_acronym: 
-    location_id: 
+          latitude_dd: 63.806642
+          longitude_dd: 20.229243
+    height_in_meters_above_ground: 10 m
+    legacy_acronym: RBD-AGR-P01
+    location_id: RBD_AGR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/robacksdalen-P_RBD_AGR_1-mantainance_log.yaml'
     status: Active
     phenocam_rois:
-      ROI_01: {'points': [[], [], [], []],
+      ROI_01: {'points': [[50, 120], [50, 500], [750, 500], [750, 120]],
         'color': [0, 255, 0],
         'thickness': 7}    
     platform_id: P_RBD_AGR_1
     platform_type: PhenoCam    
     sftp_dirpath: /robacksdalen/data/PhenoCam/RBD-AGR-P01
-    station_acronym: 
+    station_acronym: RBD
     station_name: Röbäcksdalen
-    viewing_direction': 
+    viewing_direction': looking west (265 degrees) and an off-nadir angle of 59 degrees
     metadata:
       'TITLE': ''
-      'SITES STATION': ''
+      'SITES STATION': 'Röbäcksdalen Field Research Station'
       'TIME PERIOD': null
-      'TIME RESOLUTION': null
-      'TIME ZONE': 'UTC+1'
+      'TIME RESOLUTION': 30 MINUTES
+      'TIME ZONE': 'UTC +1'
       'SAMPLING POINT': 'Phenocam 01 :  platform_id=P_RBD_AGR_1'
-      'LATITUDE': ''
-      'LONGITUDE': ''
-      'ALTITUDE': 'm.a.s.l'
+      'LATITUDE': '63.806642'
+      'LONGITUDE': '20.229243'
+      'ALTITUDE': '6.5 m.a.s.l'
       'FILE RETRIEVED FROM': 'https://data.fieldsites.se Link to metadata landing page is available in separate file in the downloaded zip.'
       'DATA POLICY': 'SITES data is licensed under a Creative Commons Attribution 4.0 international license (http://creativecommons.org/licenses/by/4.0/).'
       'PARAMETERS & UNITS': 'Digital Numbers (DN)'
-      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:30 UTC+1.'
-      'SENSOR DESCRIPTION': 'Images stored in JPG format.'
-      'DATA ACQUISITION': ""
+      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:00 UTC+1. The phenocamera pointed to a traditional 5-year crop rotation of one year of barley, another year of barley and undersown ley (a mix of Phleum pratense, Festuca pratensis, Trifolium pratense), and 3 more years of ley. Occasional years other crops, such as wheat, oats, peas, can be cultivated as well.'
+      'SENSOR DESCRIPTION': 'Data acquired with Mobotix M25 RGB phenology camera, with wide field of view (FOV) angle of 60 degrees. Images stored in JPG format.'
+      'DATA ACQUISITION': "The original images were acquired with a phenology camera on an observation mast, at a height of 10 m above ground, looking west (265 degrees) and an off-nadir angle of 59 degrees. The phenocamera acquired images from 9 a.m. to 3 p.m. every half an hour. The phenocamera operates between April and November. The area surveyed by the phenocamera projects a footprint on the ground, the centroid of which is defined by the following coordinate (latitude, longitude in GCS WGS84, decimal degrees): 63.806642, 20.229243."
       'PROCESSING METHODS': 
         L1_QFI: 'Data processing Level 1 Quality Filtered Images (QFI) were selected by filtered out manually from the original image collection. Individual flags were used to flag regions of interest (ROIs) that contain haze, shadows, sun glare, rain droplets, fog, or represent low-light, blurry conditions or obstacles in the image regions of interest.'
         L2_RGB_CIMV: 'Data processing level 2 Red Green Blue (RGB) Composite Image Mean Values, daily'
@@ -50,47 +50,47 @@ PhenoCams:
       'DATA PRODUCT TYPE': 'L1_QFI'
       'DATA PRODUCT DESCRIPTION': 'Data Processing Level 1 Quality Filtered Images'
   P_RBD_AGR_2:
-    aoi: 
+    aoi: Röbäcksdalen North, 4 m mast
     backups:
-      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/robacksdalen/locations/RBD_AGR/platforms/PhenoCam/P_RBD_AGR_1/
-    description: 
-    ecosystem_of_interest: 
+      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/robacksdalen/locations/RBD_AGR/platforms/PhenoCam/P_RBD_AGR_2/
+    description: intensively managed pasture
+    ecosystem_of_interest: AGR
     geolocation:
       point:
           epsg: "epsg:4326"
-          latitude_dd: 
-          longitude_dd: 
-    height_in_meters_above_ground: 
-    legacy_acronym: 
-    location_id: 
-    maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/robacksdalen-P_RBD_AGR_1-mantainance_log.yaml'
+          latitude_dd: 63.809992
+          longitude_dd: 20.238822
+    height_in_meters_above_ground: 4 m
+    legacy_acronym: RBD-AGR-P02
+    location_id: RBD_AGR
+    maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/robacksdalen-P_RBD_AGR_2-mantainance_log.yaml'
     status: Active
     phenocam_rois:
-      ROI_01: {'points': [[], [], [], []],
+      ROI_01: {'points': [[100, 200], [100, 500], [700, 500], [700, 200]],
         'color': [0, 255, 0],
         'thickness': 7}    
     platform_id: P_RBD_AGR_2
     platform_type: PhenoCam    
     sftp_dirpath: /robacksdalen/data/PhenoCam/RBD-AGR-P02
-    station_acronym: 
+    station_acronym: RBD
     station_name: Röbäcksdalen
-    viewing_direction': 
+    viewing_direction': West (305 degrees) and an off-nadir angle of 59 degrees
     metadata:
       'TITLE': ''
-      'SITES STATION': ''
+      'SITES STATION': 'Röbäcksdalen Field Research Station'
       'TIME PERIOD': null
-      'TIME RESOLUTION': null
-      'TIME ZONE': 'UTC+1'
+      'TIME RESOLUTION': 30 MINUTES
+      'TIME ZONE': 'UTC +1'
       'SAMPLING POINT': 'Phenocam 02 :  platform_id=P_RBD_AGR_2'
-      'LATITUDE': ''
-      'LONGITUDE': ''
-      'ALTITUDE': 'm.a.s.l'
+      'LATITUDE': '63.809992'
+      'LONGITUDE': '20.238822'
+      'ALTITUDE': '9.5 m.a.s.l'
       'FILE RETRIEVED FROM': 'https://data.fieldsites.se Link to metadata landing page is available in separate file in the downloaded zip.'
       'DATA POLICY': 'SITES data is licensed under a Creative Commons Attribution 4.0 international license (http://creativecommons.org/licenses/by/4.0/).'
       'PARAMETERS & UNITS': 'Digital Numbers (DN)'
-      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:30 UTC+1.'
-      'SENSOR DESCRIPTION': 'Images stored in JPG format.'
-      'DATA ACQUISITION': ""
+      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:00 UTC+1. The phenocamera pointed to an intensively managed pasture (a mix of Phleum pratense, Festuca pratensis, Trifolium repens) for high-yielding dairy cows, typically renewed every 6-8 year. The occasional year in between renewal of the pasture crop is a year with barley.'
+      'SENSOR DESCRIPTION': 'Data acquired with Mobotix M25 RGB phenology camera, with wide field of view (FOV) angle of 60 degrees. Images stored in JPG format.'
+      'DATA ACQUISITION': "The original images were acquired with a phenology camera on an observation mast, at a height of 4 m above ground, looking west (305 degrees) and an off-nadir angle of 59 degrees. The phenocamera acquired images from 9 a.m. to 3 p.m. every half an hour. The phenocamera operates between April and November. The area surveyed by the phenocamera projects a footprint on the ground, the centroid of which is defined by the following coordinate (latitude, longitude in GCS WGS84, decimal degrees): 63.809992, 20.238822."
       'PROCESSING METHODS': 
         L1_QFI: 'Data processing Level 1 Quality Filtered Images (QFI) were selected by filtered out manually from the original image collection. Individual flags were used to flag regions of interest (ROIs) that contain haze, shadows, sun glare, rain droplets, fog, or represent low-light, blurry conditions or obstacles in the image regions of interest.'
         L2_RGB_CIMV: 'Data processing level 2 Red Green Blue (RGB) Composite Image Mean Values, daily'

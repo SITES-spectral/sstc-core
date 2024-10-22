@@ -1,16 +1,33 @@
 # Ensure you do not use hyppens "-" better to use `double__underscore`
 
-CEM_FOR:
-  location_id: 'CEM_FOR'
-  description: ''
-  legacy_acronym: 'CEM01-FOR, CEM02-FOR, CEM03-FOR'  
+CEM01_FOR:
+  location_id: 'CEM01_FOR'
+  description: 'Skogaryd Central, Mast 1'
+  legacy_acronym: 'CEM01-FOR'  
   is_active: True
   mantainance_status: active
   platforms: 
     PhenoCams:
       - 'P_CEM01_FOR_1'
-      - 'P_CEM02_FOR_2'
-      - 'P_CEM03_FOR_3'
+CEM02_FOR:
+  location_id: 'CEM02_FOR'
+  description: 'Skogaryd Central, Mast 2'
+  legacy_acronym: 'CEM02-FOR'  
+  is_active: True
+  mantainance_status: active
+  platforms: 
+    PhenoCams:
+      - 'P_CEM02_FOR_1'
+CEM03_FOR:
+  location_id: 'CEM03_FOR'
+  description: 'Skogaryd Central, Mast 3'
+  legacy_acronym: 'CEM03-FOR'  
+  is_active: True
+  mantainance_status: active
+  platforms: 
+    PhenoCams:
+      - 'P_CEM03_FOR_1'
+      
 ERS_LAK:
   location_id: 'ERS_LAK'
   description: ''
