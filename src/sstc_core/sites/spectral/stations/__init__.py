@@ -893,7 +893,7 @@ class Station(DuckDBManager):
         
         # Extract creation date and format it
         timestamp_dict = utils.get_image_dates(catalog_filepath)
-        creation_date = timestamp_dict['datetime'] 
+        creation_date = timestamp_dict['creation_date'] 
         formatted_date = creation_date.strftime('%Y-%m-%d %H:%M:%S')
         normalized_date = creation_date.strftime('%Y%m%d%H%M%S')
         year = timestamp_dict['year']   #creation_date.year

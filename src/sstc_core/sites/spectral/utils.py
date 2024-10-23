@@ -164,12 +164,18 @@ def extract_creation_date(filepath:str)->dict:
                 tag_name = TAGS.get(tag, tag)
                 if tag_name == 'DateTimeOriginal':
                     # Extract creation date from EXIF data
-                    creation_date = datetime.strptime(value, '%Y:%m:%d %H:%M:%S')
+                    _creation_date = datetime.strptime(value, '%Y:%m:%d %H:%M:%S')
+                    formatted_date = _creation_date.strftime('%Y-%m-%d %H:%M:%S')
+                    normalized_date = _creation_date.strftime('%Y%m%d%H%M%S')
+                    day_of_year = f"{_creation_date.timetuple().tm_yday:03d}"   # {day_of_year:03d}
+                    creation_date = _creation_date.strftime('%Y-%m-%dT%H:%M:%S')     
                     return {
                         'datetime': creation_date,
-                        'year': creation_date.year,
-                        'day_of_year': f"{creation_date.timetuple().tm_yday:03d}",   # {day_of_year:03d} ,
-                        'creation_date': creation_date.strftime('%Y-%m-%dT%H:%M:%S'), 
+                        'year': _creation_date.year,
+                        'day_of_year': day_of_year,
+                        'creation_date': creation_date,
+                        'formatted_date': formatted_date,
+                        'normalized_date': normalized_date, 
                         'extension_coordinates': extension_coordinates
                     }
     except (AttributeError, IOError, ValueError) as e:
@@ -194,20 +200,30 @@ def extract_creation_date(filepath:str)->dict:
                     # Handle patterns with date and time parts separately
                     date_str, time_str = match.groups()
                     if '-' in date_str:
-                        creation_date = datetime.strptime(date_str + time_str, '%Y-%m-%d%H%M')
+                        _creation_date = datetime.strptime(date_str + time_str, '%Y-%m-%d%H%M')
                     else:
-                        creation_date = datetime.strptime(date_str + time_str, '%y%m%d%H%M')
+                        _creation_date = datetime.strptime(date_str + time_str, '%y%m%d%H%M')
                 elif len(match.groups()) == 4:
                     # Handle pattern with full timestamp including hours, minutes, and seconds
                     date_str, hour, minute, second = match.groups()
-                    creation_date = datetime.strptime(f"{date_str} {hour}:{minute}:{second}", '%Y-%m-%d %H:%M:%S')
+                    _creation_date = datetime.strptime(f"{date_str} {hour}:{minute}:{second}", '%Y-%m-%d %H:%M:%S')
+                    
+            
+                formatted_date = _creation_date.strftime('%Y-%m-%d %H:%M:%S')
+                normalized_date = _creation_date.strftime('%Y%m%d%H%M%S')
+                day_of_year = f"{_creation_date.timetuple().tm_yday:03d}"   # {day_of_year:03d} 
+                creation_date = _creation_date.strftime('%Y-%m-%dT%H:%M:%S')
+                     
                 return {
                     'datetime': creation_date,
-                    'year': creation_date.year,
-                    'day_of_year': f"{creation_date.timetuple().tm_yday:03d}",  # creation_date.timetuple().tm_yday,
-                    'creation_date': creation_date.strftime('%Y-%m-%dT%H:%M:%S'),
+                    'year': _creation_date.year,
+                    'day_of_year': day_of_year,
+                    'creation_date': creation_date,
+                    'formatted_date': formatted_date,
+                    'normalized_date': normalized_date, 
                     'extension_coordinates': extension_coordinates
                 }
+                    
             except ValueError as ve:
                 print(f"Error parsing filename for date: {ve}")
                 continue
