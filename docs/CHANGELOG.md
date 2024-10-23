@@ -1,3 +1,7 @@
+## [0.22.0]
+- added `extract_creation_date` replacing `get_image_dates`
+- Intruduced `sites.spectral.agents` module
+
 ## [0.21.2]
 - Added updated locations and platforms
 

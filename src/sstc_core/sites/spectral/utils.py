@@ -119,18 +119,98 @@ def day_of_year_to_month_day(year, day_of_year):
     # Format the date as "MMM DD"
     return date.strftime('%b %d')
 
-def extract_year(creation_date:str):
-    """
-    Extracts the year from the creation date.
 
-    Parameters:
-        creation_date (str): The creation date in 'YYYY-MM-DD HH:MM:SS' format.
+
+
+def extract_creation_date(filepath:str)->dict:
+    """
+    Extract the creation date of an image from its EXIF data or filename.
+
+    The function attempts to retrieve the creation date of an image in the following order:
+    1. Extracts EXIF data from the image file to get the 'DateTimeOriginal' tag.
+    2. If EXIF data is not available or does not contain 'DateTimeOriginal', it attempts to parse the filename.
+       The filename is expected to contain a date in one of several specific formats.
+
+    Args:
+        filepath (str): The file path to the image whose creation date needs to be extracted.
 
     Returns:
-        int: The year extracted from the creation date.
+        dict or None: A dictionary containing the following keys if a creation date is found:
+            - 'year': The year of the creation date.
+            - 'day_of_year': The day of the year (1-366).
+            - 'creation_date': The creation date formatted as 'YYYY-MM-DDTHH:MM'.
+            - 'extension_coordinates': A list of pixel coordinates representing the image extension.
+        Returns None if no creation date can be determined.
+
+    Example:
+        filepath = "example_2023-04-15T1402.jpg"
+        creation_date = extract_creation_date(filepath)
+        if creation_date:
+            print(f"Creation Date: {creation_date}")
+        else:
+            print("Creation Date not found")
     """
-    date_obj = datetime.strptime(creation_date, '%Y-%m-%d %H:%M:%S')
-    return date_obj.year
+    creation_date = None
+    extension_coordinates = []
+    try:
+        # Open image and extract EXIF data
+        image = Image.open(filepath)
+        exif_data = image._getexif()
+        width, height = image.size
+        extension_coordinates = [[0, 0], [width, 0] ,[width, height] , [0, height]]
+        if exif_data is not None:
+            for tag, value in exif_data.items():
+                tag_name = TAGS.get(tag, tag)
+                if tag_name == 'DateTimeOriginal':
+                    # Extract creation date from EXIF data
+                    creation_date = datetime.strptime(value, '%Y:%m:%d %H:%M:%S')
+                    return {
+                        'year': creation_date.year,
+                        'day_of_year': creation_date.timetuple().tm_yday,
+                        'creation_date': creation_date.strftime('%Y-%m-%dT%H:%M'), 
+                        'extension_coordinates': extension_coordinates
+                    }
+    except (AttributeError, IOError, ValueError) as e:
+        print(f"Error reading EXIF data: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+    
+    # If EXIF data is unavailable, attempt to parse filename
+    filename = os.path.basename(filepath)
+    patterns = [
+        r'(\d{4}-\d{2}-\d{2})T(\d{4})\.jpg$',                # Pattern: <text_and_numbers>YYYY-MM-DDTHHMM.jpg
+        r'_(\d{4}-\d{2}-\d{2})_(\d{4})\.jpg$',                # Pattern: <alfanumerical>_YYYY-MM-DD_HHMM.jpg
+        r'_(\d{6})(\d{4})\.jpg$',                               # Pattern: <alfanumerical-prefix>_YYMMDDHHMM.jpg
+        r'_(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})_.*\.jpg$'  # Pattern: <alfa_numerical-prefix>_YYYY-MM-DDTHH:MM:SS_<text>.jpg
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, filename)
+        if match:
+            try:
+                if len(match.groups()) == 2:
+                    # Handle patterns with date and time parts separately
+                    date_str, time_str = match.groups()
+                    if '-' in date_str:
+                        creation_date = datetime.strptime(date_str + time_str, '%Y-%m-%d%H%M')
+                    else:
+                        creation_date = datetime.strptime(date_str + time_str, '%y%m%d%H%M')
+                elif len(match.groups()) == 4:
+                    # Handle pattern with full timestamp including hours, minutes, and seconds
+                    date_str, hour, minute, second = match.groups()
+                    creation_date = datetime.strptime(f"{date_str} {hour}:{minute}:{second}", '%Y-%m-%d %H:%M:%S')
+                return {
+                    'year': creation_date.year,
+                    'day_of_year': creation_date.timetuple().tm_yday,
+                    'creation_date': creation_date.strftime('%Y-%m-%dT%H:%M'),
+                    'extension_coordinates': extension_coordinates
+                }
+            except ValueError as ve:
+                print(f"Error parsing filename for date: {ve}")
+                continue
+    
+    # Return None if no creation date is found
+    return None
 
 
 def get_image_dates(filepath:str)->str:
