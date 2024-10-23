@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from PIL import Image
 from PIL.ExifTags import TAGS
 from shutil import copy2
@@ -137,9 +137,10 @@ def extract_creation_date(filepath:str)->dict:
     Returns:
         dict or None: A dictionary containing the following keys if a creation date is found:
             - 'year': The year of the creation date.
-            - 'day_of_year': The day of the year (1-366).
+            - 'day_of_year': A string with the day of the year (1-366) filled with zeros.
             - 'creation_date': The creation date formatted as 'YYYY-MM-DDTHH:MM'.
             - 'extension_coordinates': A list of pixel coordinates representing the image extension.
+            - 'datetime': the datetime object.
         Returns None if no creation date can be determined.
 
     Example:
@@ -165,9 +166,10 @@ def extract_creation_date(filepath:str)->dict:
                     # Extract creation date from EXIF data
                     creation_date = datetime.strptime(value, '%Y:%m:%d %H:%M:%S')
                     return {
+                        'datetime': creation_date,
                         'year': creation_date.year,
-                        'day_of_year': creation_date.timetuple().tm_yday,
-                        'creation_date': creation_date.strftime('%Y-%m-%dT%H:%M'), 
+                        'day_of_year': f"{creation_date.timetuple().tm_yday:03d}",   # {day_of_year:03d} ,
+                        'creation_date': creation_date.strftime('%Y-%m-%dT%H:%M:%S'), 
                         'extension_coordinates': extension_coordinates
                     }
     except (AttributeError, IOError, ValueError) as e:
@@ -200,9 +202,10 @@ def extract_creation_date(filepath:str)->dict:
                     date_str, hour, minute, second = match.groups()
                     creation_date = datetime.strptime(f"{date_str} {hour}:{minute}:{second}", '%Y-%m-%d %H:%M:%S')
                 return {
+                    'datetime': creation_date,
                     'year': creation_date.year,
-                    'day_of_year': creation_date.timetuple().tm_yday,
-                    'creation_date': creation_date.strftime('%Y-%m-%dT%H:%M'),
+                    'day_of_year': f"{creation_date.timetuple().tm_yday:03d}",  # creation_date.timetuple().tm_yday,
+                    'creation_date': creation_date.strftime('%Y-%m-%dT%H:%M:%S'),
                     'extension_coordinates': extension_coordinates
                 }
             except ValueError as ve:
@@ -890,3 +893,47 @@ def select_dataframe_columns_by_strings(df: pd.DataFrame, substrings: list, excl
     # Return the DataFrame with selected columns
     return df[sorted(selected_columns)]
     
+def generate_roi_dict(image_path: str) -> dict:
+    """
+    Function that takes a JPEG image, calculates the pixel coordinates for a polygon (based on the image size),
+    and returns a dictionary containing Region of Interest (ROI) data with color and thickness attributes.
+
+    Args:
+    - image_path (str): Path to the JPEG image.
+
+    Returns:
+    - dict: A dictionary with ROI information including points, color, and thickness.
+    """
+    # Open the image using PIL
+    with Image.open(image_path) as img:
+        width, height = img.size
+
+    # Define the polygon points as a rectangle covering the entire image (clockwise or counterclockwise)
+    roi_points = [
+        [0, 0],           # Top-left corner
+        [width, 0],       # Top-right corner
+        [width, height],  # Bottom-right corner
+        [0, height]       # Bottom-left corner
+    ]
+
+    # Construct the dictionary with ROI data
+    roi_dict = {
+        'ROI_01': {
+            'points': roi_points,
+            'color': [0, 0, 255],  # Blue color in BGR format
+            'thickness': 7         # Line thickness
+        }
+    }
+
+    return roi_dict
+
+
+
+def get_current_timestamp():
+    """
+    Returns the current date and time in the format YYYY-MM-DDTHH:MM:SS'Z'.
+
+    Returns:
+    str: The current timestamp in the specified format.
+    """
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")

@@ -1,5 +1,15 @@
+## [0.22.1]
+- Added Machine learning for the `agents.SnowDetectionAgent`
+- Added `io_tools.filter_with_substring`  # decorator
+- Added `io_tools.list_image_files`
+- Added `io_tools.list_jpg_files_with_substring`
+- Added `tools.generate_roi_dict`
+- Added `tools.get_current_timestamp`
+- Added `io_tools.get_csv_filepaths`
+- Added `io_tools.organize_and_copy_images_with_paths_by_year`
+
 ## [0.22.0]
-- added `extract_creation_date` replacing `get_image_dates`
+- added `utils.extract_creation_date` replacing `get_image_dates`
 - Intruduced `sites.spectral.agents` module
 
 ## [0.21.2]

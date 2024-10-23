@@ -892,11 +892,12 @@ class Station(DuckDBManager):
             record_dict = schema_dict
         
         # Extract creation date and format it
-        creation_date = utils.get_image_dates(catalog_filepath)
+        timestamp_dict = utils.get_image_dates(catalog_filepath)
+        creation_date = timestamp_dict['datetime'] 
         formatted_date = creation_date.strftime('%Y-%m-%d %H:%M:%S')
         normalized_date = creation_date.strftime('%Y%m%d%H%M%S')
-        year = creation_date.year
-        day_of_year = utils.get_day_of_year(formatted_date)
+        year = timestamp_dict['year']   #creation_date.year
+        day_of_year =  timestamp_dict['day_of_year']   #utils.get_day_of_year(formatted_date)
         
         latitude_dd = self.platforms[platforms_type][platform_id]['geolocation']['point']['latitude_dd']
         longitude_dd = self.platforms[platforms_type][platform_id]['geolocation']['point']['longitude_dd']
