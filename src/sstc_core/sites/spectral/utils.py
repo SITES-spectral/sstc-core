@@ -185,13 +185,15 @@ def extract_creation_date(filepath:str)->dict:
     
     # If EXIF data is unavailable, attempt to parse filename
     filename = os.path.basename(filepath)
+    #
     patterns = [
-        r'(\d{4}-\d{2}-\d{2})T(\d{4})\.jpg$',                # Pattern: <text_and_numbers>YYYY-MM-DDTHHMM.jpg
-        r'_(\d{4}-\d{2}-\d{2})_(\d{4})\.jpg$',                # Pattern: <alfanumerical>_YYYY-MM-DD_HHMM.jpg
-        r'_(\d{6})(\d{4})\.jpg$',                               # Pattern: <alfanumerical-prefix>_YYMMDDHHMM.jpg
-        r'_(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})_.*\.jpg$'  # Pattern: <alfa_numerical-prefix>_YYYY-MM-DDTHH:MM:SS_<text>.jpg
+        r'(\d{4}-\d{2}-\d{2})T(\d{4})\.jpg$',                    # Pattern: <text_and_numbers>YYYY-MM-DDTHHMM.jpg
+        r'_(\d{4}-\d{2}-\d{2})_(\d{4})\.jpg$',                    # Pattern: <alfanumerical>_YYYY-MM-DD_HHMM.jpg
+        r'_(\d{6})(\d{4})\.jpg$',                                 # Pattern: <alfanumerical-prefix>_YYMMDDHHMM.jpg
+        r'_(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})_.*\.jpg$', # Pattern: <alfa_numerical-prefix>_YYYY-MM-DDTHH:MM:SS_<text>.jpg
+        r'_([A-Za-z0-9]+)_(\d{8})(\d{4})_[A-Za-z0-9]+\.jpg$',      # New Pattern: <alfa-numeric_prefix>_YYYYMMDDHHMM_<alfanumeric>.jpg
     ]
-    
+
     for pattern in patterns:
         match = re.search(pattern, filename)
         if match:
@@ -201,14 +203,18 @@ def extract_creation_date(filepath:str)->dict:
                     date_str, time_str = match.groups()
                     if '-' in date_str:
                         _creation_date = datetime.strptime(date_str + time_str, '%Y-%m-%d%H%M')
+                     
                     else:
                         _creation_date = datetime.strptime(date_str + time_str, '%y%m%d%H%M')
+                elif len(match.groups()) == 3:
+                    # Handle new pattern with date and time format YYYYMMDDHHMM
+                    prefix, date_str, time_str = match.groups()
+                    _creation_date = datetime.strptime(date_str + time_str, '%Y%m%d%H%M')
                 elif len(match.groups()) == 4:
                     # Handle pattern with full timestamp including hours, minutes, and seconds
                     date_str, hour, minute, second = match.groups()
                     _creation_date = datetime.strptime(f"{date_str} {hour}:{minute}:{second}", '%Y-%m-%d %H:%M:%S')
                     
-            
                 formatted_date = _creation_date.strftime('%Y-%m-%d %H:%M:%S')
                 normalized_date = _creation_date.strftime('%Y%m%d%H%M%S')
                 day_of_year = f"{_creation_date.timetuple().tm_yday:03d}"   # {day_of_year:03d} 
@@ -227,6 +233,7 @@ def extract_creation_date(filepath:str)->dict:
             except ValueError as ve:
                 print(f"Error parsing filename for date: {ve}")
                 continue
+
     
     # Return None if no creation date is found
     return None
