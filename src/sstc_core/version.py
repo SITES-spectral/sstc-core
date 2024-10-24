@@ -1,4 +1,4 @@
-__version__ = '0.22.1'
+__version__ = '0.22.1.04'
 version_code_sstc_core = __version__
 version_data_processing = '2.0-2024'
 version_platform_iflags = '0.6-2024'
