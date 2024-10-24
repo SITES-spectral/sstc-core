@@ -165,10 +165,11 @@ def extract_creation_date(filepath:str)->dict:
                 if tag_name == 'DateTimeOriginal':
                     # Extract creation date from EXIF data
                     _creation_date = datetime.strptime(value, '%Y:%m:%d %H:%M:%S')
-                    formatted_date = _creation_date.strftime('%Y-%m-%d %H:%M:%S')
-                    normalized_date = _creation_date.strftime('%Y%m%d%H%M%S')
+                    
                     day_of_year = f"{_creation_date.timetuple().tm_yday:03d}"   # {day_of_year:03d}
-                    creation_date = _creation_date.strftime('%Y-%m-%dT%H:%M:%S')     
+                    creation_date = _creation_date.strftime('%Y-%m-%dT%H:%M:%S')
+                    formatted_date = creation_date.replace('T', ' ')       #.strftime('%Y-%m-%d %H:%M:%S')
+                    normalized_date = _creation_date.strftime('%Y%m%d%H%M%S')     
                     return {
                         'datetime': creation_date,
                         'year': _creation_date.year,
