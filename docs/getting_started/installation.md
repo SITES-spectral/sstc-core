@@ -11,7 +11,7 @@ mamba create -n JB-core python=03.12 streamlit pandas gdal duckdb pyyaml pysolar
 
 `pip install opencv-python`
 `pip install mkdocstrings mkdocstrings-python twine`
-
+`mamba install zipfile-deflate64`    # 0.2.0
 
 To install **sstc-core**, use pip:
 ```bash
