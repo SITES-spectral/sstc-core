@@ -370,22 +370,26 @@ class DuckDBManager:
         finally:
             self.close_connection()
             
+            
 class Station(DuckDBManager):
-    def __init__(self, db_dirpath: Optional[str], station_name: str, config_filepath: str = config_filepath):
+    def __init__(self, station_name: str, db_dirpath: Optional[str] = None, config_filepath:Optional[str] = config_filepath):
         """
         Initializes the Station class with the directory path of the database and the station name.
         If db_dirpath is not provided, it loads the configuration from a YAML file.
 
         Parameters:
+            station_name (str): The name of the station.
             db_dirpath (Optional[str]): The directory path where the DuckDB database is located. 
                                          If None, it will be loaded from the YAML configuration.
-            station_name (str): The name of the station.
             config_filepath (str): Path to the configuration YAML file.
         """
         self.station_name = station_name
         self.normalized_station_name = self.normalize_string(station_name)
+        
+        # Load db_dirpath from config file if it’s not provided
         self.db_dirpath = Path(db_dirpath) if db_dirpath else self._load_db_dirpath_from_config(config_filepath)
         self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_catalog.db"
+        
         self.station_module = self._load_station_module()
         self.meta = getattr(self.station_module, 'meta', {})
         self.locations = getattr(self.station_module, 'locations', {})
