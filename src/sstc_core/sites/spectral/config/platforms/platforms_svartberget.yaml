@@ -14,11 +14,24 @@ PhenoCams:
     legacy_acronym: SVB-FOR-P01
     location_id: SVB_FOR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Svartverget-P_SVB_FOR_1-mantainance_log.yaml'
+    image_dimensions: 3072 x 2048
+    shared_infrastructure: SITES Spectral  # ICOS
     status: Active
+    deployment_date: 20XX
     phenocam_rois:
-      ROI_01: {'points': [[300, 1500], [300, 600], [2800, 600], [2800, 1500]],
+      ROI_01: {'points': [[700, 2048], [300, 600], [3072, 600], [3072, 2048]],
         'color': [0, 255, 0],
-        'thickness': 7}    
+        'thickness': 7,
+        'updated': '2024-10-29',
+        }
+    legacy_rois:
+      ROI_01: {'points': [[300, 1500], [300, 600], [2800, 600], [2800, 1500]],
+          'color': [0, 255, 0],
+          'thickness': 7, 
+          'updated': '2024-10-29',
+          'comment':'',
+          'legacy_platform': 'SVB-FOR-P01'
+          }    
     platform_id: P_SVB-FOR-1
     platform_type: PhenoCam    
     sftp_dirpath: /svartberget/data/PhenoCam/SVB-FOR-P01
@@ -38,7 +51,7 @@ PhenoCams:
       'FILE RETRIEVED FROM': 'https://data.fieldsites.se Link to metadata landing page is available in separate file in the downloaded zip.'
       'DATA POLICY': 'SITES data is licensed under a Creative Commons Attribution 4.0 international license (http://creativecommons.org/licenses/by/4.0/).'
       'PARAMETERS & UNITS': 'Digital Numbers (DN)'
-      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:30 UTC+1. The phenocamera pointed to an experimental forest which covers 1076 ha of boreal forest land and governs a manifold of research activities since 1923. It is situated on a slope in a 100 years old mixed forest with Scots pine Pinus sylvestris, Norway spruce Picea abies and birch Betula pendula.'
+      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:30 UTC+1. The phenocamera pointed to an experimental forest which covers 1076 ha of boreal forest land and governs a manifold of research activities since 1923. It is situated on a slope in a 100 years old mixed forest with Scots pine Pinus sylvestris, Norway spruce Picea abies and birch Betula pendula. See: https://www.icos-sweden.se/Svartberget'
       'SENSOR DESCRIPTION': 'Data acquired with Mobotix M25 RGB phenology camera, with wide field of view (FOV) angle of 60 degrees. Images stored in JPG format.'
       'DATA ACQUISITION': "The original images were acquired with a phenology camera on an observation mast, at a height of 70 m above ground, looking north-west (280 degrees) and an off-nadir angle of 45 degrees. The phenocamera acquired images from 6 a.m. to 7 p.m. every half an hour. The phenocamera operates all year long. The area surveyed by the phenocamera projects a footprint on the ground, the centroid of which is approximately defined by the following coordinate (latitude, longitude in GCS WGS84, decimal degrees): 64.256342, 19.771621."
       'PROCESSING METHODS': 
@@ -50,33 +63,57 @@ PhenoCams:
       'DATA PRODUCT TYPE': 'L1_QFI'
       'DATA PRODUCT DESCRIPTION': 'Data Processing Level 1 Quality Filtered Images'
       'REFERENCES': 'Richardson, Andrew D., Koen Hufkens, Tom Milliman, Donald M. Aubrecht, Min Chen, Josh M. Gray, Miriam R. Johnston et al. "Tracking vegetation phenology across diverse North American biomes using PhenoCam imagery." Scientific data 5 (2018): 180028.'
-
   P_DEG_MIR_1:
     aoi: Svartberget
     backups:
       aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/svartberget/locations/DEG_MIR/platforms/PhenoCam/P_DEG_MIR_1/
     description: Degerö, north-eastern Sweden
-    ecosystem_of_interest: Mire
+    ecosystem_of_interest: Mire    
+    location_id: DEG_MIR
+    maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Svartverget-P_DEG_MIR_1-mantainance_log.yaml'    
+    phenocam_rois:
+      ROI_01: {'points': [[0, 800], [950,870], [3072, 1550], [3072, 2048], [0, 2048]],
+        'color': [0, 255, 0],
+        'thickness': 7,
+        'updated': '2024-10-29',
+        'comment': 'below boardwalk'}
+      ROI_02: {'points': [[900, 600], [3072,800], [3072, 1110], [1950, 1100], [900, 750]],
+        'color': [0, 255, 0],
+        'thickness': 7,
+        'updated': '2024-10-29',
+        'comment': 'above boardwalk'
+        }
+    legacy_rois:
+      ROI_01: {'points': [],
+          'color': [0, 255, 0],
+          'thickness': 7, 
+          'updated': '2024-10-29',
+          'comment':'',
+          'legacy_platform': ''
+          }
+    shared_infrastructure: SITES Spectral
+    platform_id: P_DEG_MIR_1
+    deployment_date: 20XX
+    status: Active
+    legacy_acronym: DEG-MIR-P01    
+    image_dimensions: 3072x2048
+    platform_brand: Mobotix
+    platform_model: M26B-6D061
+    platform_serial_number: '10.28.107.16'
+    # viewing_direction'
+    platform_azimuth_in_degrees: 317
+    platform_degrees_from_nadir: 81
+    platform_field_of_view_in_degrees: 60x45
+    platform_mounting_structure: Flagpole
+    platform_height_in_meters_above_ground: 17.5 m
     geolocation:
       point:
           epsg: "epsg:4326"
-          latitude_dd: 64.182459
-          longitude_dd: 19.556249
-    height_in_meters_above_ground: 3.3 m
-    legacy_acronym: DEG-MIR-P01
-    location_id: DEG_MIR
-    maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Svartverget-P_DEG_MIR_1-mantainance_log.yaml'
-    status: Active
-    phenocam_rois:
-      ROI_01: {'points': [[100, 400], [280, 800], [1200, 800], [900, 350]],
-        'color': [0, 255, 0],
-        'thickness': 7}    
-    platform_id: P_DEG_MIR_1
-    platform_type: PhenoCam    
+          latitude_dd: 64.182536
+          longitude_dd: 19.558045
     sftp_dirpath: /svartberget/data/PhenoCam/DEG-MIR-P01
     station_acronym: SVB
-    station_name: Svartberget
-    viewing_direction': north-west (343 degrees) and an off-nadir angle of 45 degrees
+    station_name: Svartberget    
     metadata:
       'TITLE': ''
       'SITES STATION': 'Svartberget Research Station'
@@ -90,7 +127,7 @@ PhenoCams:
       'FILE RETRIEVED FROM': 'https://data.fieldsites.se Link to metadata landing page is available in separate file in the downloaded zip.'
       'DATA POLICY': 'SITES data is licensed under a Creative Commons Attribution 4.0 international license (http://creativecommons.org/licenses/by/4.0/).'
       'PARAMETERS & UNITS': 'Digital Numbers (DN)'
-      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:00 UTC+1. The phenocamera pointed to a nutrient poor minerogenic mire. The area around the sensors is dominated by flat mire lawn plant communities with bog mosses (Sphagnum balticum, Sphagnum majus and Sphagnum Lindbergii) dominating the bottom layer. The field layer is dominated by the cottongrass (Eriophorum vaginatum) and the dwraf- shrubs: cranberry (Vaccinium oxycoccos L.), bog-rosemary (Andromeda polifolia), deergrass (Trichophorum cespitosum). Sedges (Carex spp.) occur more sparsely.'
+      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:00 UTC+1. The phenocamera pointed to a nutrient poor minerogenic mire. The area around the sensors is dominated by flat mire lawn plant communities with bog mosses (Sphagnum balticum, Sphagnum majus and Sphagnum Lindbergii) dominating the bottom layer. The field layer is dominated by the cottongrass (Eriophorum vaginatum) and the dwraf- shrubs: cranberry (Vaccinium oxycoccos L.), bog-rosemary (Andromeda polifolia), deergrass (Trichophorum cespitosum). Sedges (Carex spp.) occur more sparsely. See: https://www.icos-sweden.se/degero'
       'SENSOR DESCRIPTION': 'Data acquired with StarDot RGB phenology camera, with wide field of view (FOV) angle of 86 degrees. Images stored in JPG format.'
       'DATA ACQUISITION': "The original images were acquired with a phenology camera on an observation mast, at a height of 3.3 m above ground, looking north-west (343 degrees) and an off-nadir angle of 45 degrees. The phenocamera acquired images from 5 a.m. to 8 p.m. every hour. The phenocamera operates all year long. The area surveyed by the phenocamera projects a footprint on the ground, the centroid of which is approximately defined by the following coordinate (latitude, longitude in GCS WGS84, decimal degrees): 64.182459, 19.556249."
       'PROCESSING METHODS': 
@@ -106,27 +143,47 @@ PhenoCams:
     backups:
       aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/svartberget/locations/DEG_MIR/platforms/PhenoCam/P_DEG_MIR_2/
     description: Svartberget
-    ecosystem_of_interest: 
-    geolocation:
-      point:
-          epsg: "epsg:4326"
-          latitude_dd: 64.182459   # Not confirmed
-          longitude_dd: 19.556249   # Not confirmed
-    height_in_meters_above_ground: 3.3 m
-    legacy_acronym: DEG-MIR-P02
+    ecosystem_of_interest:     
     location_id: DEG_MIR
     maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Svartverget-P_DEG_MIR_2-mantainance_log.yaml'
-    status: Active
     phenocam_rois:
       ROI_01: {'points': [[100, 400], [280, 800], [1200, 800], [900, 350]],
         'color': [0, 255, 0],
-        'thickness': 7}    
+        'thickness': 7, 
+        'updated': '2024-10-29',
+        'comment':'same ROI as in DEG-MIR-02-legacy,  but resized to match the higher resolution (*1.25)'
+        }
+    legacy_rois:
+      ROI_01: {'points': [[80, 320], [224, 640], [960, 640], [720, 280]],
+          'color': [0, 255, 0],
+          'thickness': 7, 
+          'updated': '2024-10-29',
+          'comment':'Lower image_dimensions so roi does not match anylonger. ICOS phenocam, 1024x768',
+          'legacy_platform': 'DEG-MIR-02-legacy'
+          }
+    shared_infrastructure: ICOS
     platform_id: P_DEG_MIR_2
-    platform_type: PhenoCam    
+    status: Active
+    deployment_date: 2016    
+    legacy_acronym: DEG-MIR-P02
+    image_dimensions: 1024x768
+    platform_brand: Stardot
+    platform_model: 
+    platform_serial_number: 
+    # viewing_direction'
+    platform_azimuth_in_degrees: 343
+    platform_degrees_from_nadir: 82
+    platform_field_of_view_in_degrees: 60x45
+    platform_mounting_structure: ICOS Tower
+    platform_height_in_meters_above_ground: 3.3 m
+    geolocation:
+      point:
+          epsg: "epsg:4326"
+          latitude_dd: 64.18201
+          longitude_dd: 19.556576
     sftp_dirpath: /svartberget/data/PhenoCam/DEG-MIR-P02
     station_acronym: SVB
-    station_name: Svartberget
-    viewing_direction': 
+    station_name: Svartberget    
     metadata:
       'TITLE': ''
       'SITES STATION': 'Svartberget Research Station'
@@ -140,9 +197,9 @@ PhenoCams:
       'FILE RETRIEVED FROM': 'https://data.fieldsites.se Link to metadata landing page is available in separate file in the downloaded zip.'
       'DATA POLICY': 'SITES data is licensed under a Creative Commons Attribution 4.0 international license (http://creativecommons.org/licenses/by/4.0/).'
       'PARAMETERS & UNITS': 'Digital Numbers (DN)'
-      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:00 UTC+1. The phenocamera pointed to a nutrient poor minerogenic mire. The area around the sensors is dominated by flat mire lawn plant communities with bog mosses (Sphagnum balticum, Sphagnum majus and Sphagnum Lindbergii) dominating the bottom layer. The field layer is dominated by the cottongrass (Eriophorum vaginatum) and the dwraf- shrubs: cranberry (Vaccinium oxycoccos L.), bog-rosemary (Andromeda polifolia), deergrass (Trichophorum cespitosum). Sedges (Carex spp.) occur more sparsely.'
-      'SENSOR DESCRIPTION': 'Data acquired with StarDot RGB phenology camera, with wide field of view (FOV) angle of 86 degrees. Images stored in JPG format.'
-      'DATA ACQUISITION': "The original images were acquired with a phenology camera on an observation mast, at a height of 3.3 m above ground, looking north-west (343 degrees) and an off-nadir angle of 45 degrees. The phenocamera acquired images from 5 a.m. to 8 p.m. every hour. The phenocamera operates all year long. The area surveyed by the phenocamera projects a footprint on the ground."
+      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:00 UTC+1. The area around the measurement mast is dominated by flat mire lawn plant communities with bog mosses (Sphagnum balticum and Sphagnum Lindbergii) dominating the bottom layer.  The field layer is dominated by the cottongrass (Eriophorum vaginatum) and the dwraf- shrubs: cranberry (Vaccinium oxycoccos L.), bog-rosemary (Andromeda polifolia), deergrass (Trichophorum cespitosum). Sedges (Carex spp.) occur more sparsely. See: https://www.icos-sweden.se/degero'
+      'SENSOR DESCRIPTION': 'Data acquired with Stardot RGB phenology camera, with wide field of view (FOV) of 60x45 degrees. Images stored in JPG format.'
+      'DATA ACQUISITION': "The original images were acquired with a phenology camera on an observation mast, at a height of 3.3 m above ground, with azimuth at 343 degrees and an off-nadir angle of 82 degrees. The phenocamera acquired images from 5 a.m. to 8 p.m. every hour. The phenocamera operates all year long. The area surveyed by the phenocamera projects a footprint on the ground."
       'PROCESSING METHODS': 
         L1_QFI: 'Data processing Level 1 Quality Filtered Images (QFI) were selected by filtered out manually from the original image collection. Individual flags were used to flag regions of interest (ROIs) that contain haze, shadows, sun glare, rain droplets, fog, or represent low-light, blurry conditions or obstacles in the image regions of interest.'
         L2_RGB_CIMV: 'Data processing level 2 Red Green Blue (RGB) Composite Image Mean Values, daily'
@@ -151,3 +208,76 @@ PhenoCams:
         L3_ROI_TS: 'Data processing level 3 Phenocam - Green and Red Chromatic Coordinates time series of the RGB Composite Image of Mean Values - Region of Interest (ROI) Mean and Standard Deviation, daily values with QFLAG values and individual flags assesment per ROI'
       'DATA PRODUCT TYPE': 'L1_QFI'
       'DATA PRODUCT DESCRIPTION': 'Data Processing Level 1 Quality Filtered Images'
+  P_DEG_MIR_3:
+    aoi: Svartberget
+    backups:
+      aurora02_dirpath: /home/aurora02/data/SITES/Spectral/data/catalog/svartberget/locations/DEG_MIR/platforms/PhenoCam/P_DEG_MIR_2/
+    description: Svartberget
+    ecosystem_of_interest: 
+    location_id: DEG_MIR
+    maintainance_log_filepath: '/home/aurora02/data/SITES/Spectral/code/pycode/SSTC/sstc-core/src/sstc_core/sites/spectral/maintainance/Svartverget-P_DEG_MIR_3-mantainance_log.yaml'
+    phenocam_rois:
+      ROI_01: {'points': [[450, 800], [1750,870], [2750, 900], [2850, 2048], [400, 2048], [700, 1300], [700, 1100]],
+        'color': [0, 255, 0],
+        'thickness': 7, 
+        'updated': '2024-10-29',
+        'comment':'Bellow boardwalk'
+        }
+    legacy_rois:
+      ROI_01: {'points': [],
+          'color': [0, 255, 0],
+          'thickness': 7, 
+          'updated': '2024-10-29',
+          'comment':'No legacy available.',
+          'legacy_platform': ''
+          }
+    platform_id: P_DEG_MIR_3
+    shared_infrastructure: SITES Spectral    
+    deployment_date: 2024
+    status: Active
+    legacy_acronym: DEG_MIR_P03
+    image_dimensions: 3072x2048
+    platform_brand: Mobotix
+    platform_model: M26B-6D061
+    platform_serial_number: '10.29.67.185'
+    # viewing_direction'
+    platform_azimuth_in_degrees: 96
+    platform_degrees_from_nadir: 76
+    platform_field_of_view_in_degrees: 60x45
+    platform_mounting_structure: Flagpole
+    platform_height_in_meters_above_ground: 17.5 m
+    geolocation:
+      point:
+          epsg: "epsg:4326"
+          latitude_dd: 64.182536
+          longitude_dd: 19.558045
+    platform_type: PhenoCam    
+    sftp_dirpath: /svartberget/data/PhenoCam/DEG-MIR-P03
+    station_acronym: SVB
+    station_name: Svartberget
+    viewing_direction': 
+    metadata:
+      'TITLE': ''
+      'SITES STATION': 'Svartberget Research Station'
+      'TIME PERIOD': null
+      'TIME RESOLUTION': HOURLY
+      'TIME ZONE': 'UTC+1'
+      'SAMPLING POINT': 'Phenocam 03 :  platform_id=P_DEG_MIR_3'
+      'LATITUDE': '64.182459'
+      'LONGITUDE': '19.556249'
+      'ALTITUDE': 'Not available'
+      'FILE RETRIEVED FROM': 'https://data.fieldsites.se Link to metadata landing page is available in separate file in the downloaded zip.'
+      'DATA POLICY': 'SITES data is licensed under a Creative Commons Attribution 4.0 international license (http://creativecommons.org/licenses/by/4.0/).'
+      'PARAMETERS & UNITS': 'Digital Numbers (DN)'
+      'DESCRIPTION': 'Collection of quality filtered phenocamera RGB images every half an hour from 10:00 to 14:00 UTC+1. The area around the measurement mast is dominated by flat mire lawn plant communities with bog mosses (Sphagnum balticum and Sphagnum Lindbergii) dominating the bottom layer.  The field layer is dominated by the cottongrass (Eriophorum vaginatum) and the dwraf- shrubs: cranberry (Vaccinium oxycoccos L.), bog-rosemary (Andromeda polifolia), deergrass (Trichophorum cespitosum). Sedges (Carex spp.) occur more sparsely. See: https://www.icos-sweden.se/degero'
+      'SENSOR DESCRIPTION': 'Data acquired with StarDot RGB phenology camera, with wide field of view (FOV) angle of 86 degrees. Images stored in JPG format.'
+      'DATA ACQUISITION': "The original images were acquired with a phenology camera on an observation mast, at a height of 17.5 m above ground, azimuth 96 degrees and an off-nadir angle of 76 degrees. The phenocamera acquired images from 5 a.m. to 8 p.m. every hour. The phenocamera operates all year long. The area surveyed by the phenocamera projects a footprint on the ground."
+      'PROCESSING METHODS': 
+        L1_QFI: 'Data processing Level 1 Quality Filtered Images (QFI) were selected by filtered out manually from the original image collection. Individual flags were used to flag regions of interest (ROIs) that contain haze, shadows, sun glare, rain droplets, fog, or represent low-light, blurry conditions or obstacles in the image regions of interest.'
+        L2_RGB_CIMV: 'Data processing level 2 Red Green Blue (RGB) Composite Image Mean Values, daily'
+        L2_GCC_CIMV: 'Data processing level 2 Green Chromatic Coordinates  (GCC) Composite Image Mean Values, daily'
+        L2_RCC_CIMV: 'Data processing level 2 Red Chromatic Coordinates  (RCC) Composite Image Mean Values, daily' 
+        L3_ROI_TS: 'Data processing level 3 Phenocam - Green and Red Chromatic Coordinates time series of the RGB Composite Image of Mean Values - Region of Interest (ROI) Mean and Standard Deviation, daily values with QFLAG values and individual flags assesment per ROI'
+      'DATA PRODUCT TYPE': 'L1_QFI'
+      'DATA PRODUCT DESCRIPTION': 'Data Processing Level 1 Quality Filtered Images'
+

@@ -1,3 +1,6 @@
+## [0.23.0]
+- updated platforms schema to `0.8-2024. Added `legacy_rois`, `image_dimensions`, `deployment_date`, `shared_infrastructure: ICOS ` and `updated` & `comments` in the dictionary of rois.
+
 ## [0.22.1]
 - Added Machine learning for the `agents.SnowDetectionAgent`
 - Added `io_tools.filter_with_substring`  # decorator
