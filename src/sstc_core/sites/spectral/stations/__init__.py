@@ -11,7 +11,7 @@ from typing import Dict, Any, List
 from sstc_core.sites.spectral.data_products.qflags import compute_qflag
 from sstc_core.sites.spectral.data_products import phenocams
 from sstc_core import version
-
+import yaml
 
 # Get the directory where app.py is located
 current_file = os.path.abspath(__file__)
