@@ -13,6 +13,19 @@ from sstc_core.sites.spectral.data_products import phenocams
 from sstc_core import version
 
 
+# Get the directory where app.py is located
+current_file = os.path.abspath(__file__)
+# Full file path
+full_path = Path(current_file)
+# Convert the path to a list of parts and find the last 'spectral' occurrence
+path_parts = list(full_path.parts)
+last_spectral_index = len(path_parts) - 1 - path_parts[::-1].index('spectral')
+# Join the path parts up to and including the last 'spectral' directory
+up_to_last_spectral_path = Path(*path_parts[:last_spectral_index + 1])
+
+config_filepath = up_to_last_spectral_path / Path('config/catalog_db_filepaths.yaml')
+
+
 class DatabaseError(Exception):
     """Base class for other exceptions"""
     pass
@@ -358,37 +371,59 @@ class DuckDBManager:
             self.close_connection()
             
 class Station(DuckDBManager):
-    def __init__(self, db_dirpath: str, station_name: str):
+    def __init__(self, db_dirpath: Optional[str], station_name: str, config_filepath: str = config_filepath):
         """
         Initializes the Station class with the directory path of the database and the station name.
-
-        The database file is named using the normalized station name. If the file does not exist, a new
-        database is created.
+        If db_dirpath is not provided, it loads the configuration from a YAML file.
 
         Parameters:
-            db_dirpath (str): The directory path where the DuckDB database is located.
+            db_dirpath (Optional[str]): The directory path where the DuckDB database is located. 
+                                         If None, it will be loaded from the YAML configuration.
             station_name (str): The name of the station.
+            config_filepath (str): Path to the configuration YAML file.
         """
         self.station_name = station_name
         self.normalized_station_name = self.normalize_string(station_name)
+        self.db_dirpath = Path(db_dirpath) if db_dirpath else self._load_db_dirpath_from_config(config_filepath)
+        self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_catalog.db"
         self.station_module = self._load_station_module()
         self.meta = getattr(self.station_module, 'meta', {})
         self.locations = getattr(self.station_module, 'locations', {})
         self.platforms = getattr(self.station_module, 'platforms', {})
-        self.db_dirpath = Path(db_dirpath)
-        self.db_filepath = self.db_dirpath / f"{self.normalized_station_name}_catalog.db"
         self.phenocam_quality_weights_filepath = self.meta.get("phenocam_quality_weights_filepath", None)
         self.sftp_dirpath = f'/{self.normalized_station_name}/data/'
-        self.phenocams_default_flags_weights = phenocams.get_default_phenocam_flags(flags_yaml_filepath=phenocams.config_flags_yaml_filepath)
+        self.phenocams_default_flags_weights = phenocams.get_default_phenocam_flags(
+            flags_yaml_filepath=phenocams.config_flags_yaml_filepath
+        )
 
         # Ensure the database file is created before calling the parent constructor
         if not self.db_filepath.exists():
             self.create_new_database()
         
         super().__init__(str(self.db_filepath))
+        self.close_connection()  # Close the connection after initialization
 
-        # Close the connection after initialization
-        self.close_connection()
+    def _load_db_dirpath_from_config(self, config_filepath: str) -> Path:
+        """
+        Loads the db_dirpath and db_filename from the configuration YAML file based on the station name.
+
+        Parameters:
+            config_filepath (str): Path to the configuration YAML file.
+
+        Returns:
+            Path: The directory path of the database for the specified station.
+        """
+        try:
+            with open(config_filepath, 'r') as file:
+                config_data = yaml.safe_load(file)
+            station_config = config_data.get(self.station_name)
+            if not station_config:
+                raise ValueError(f"Configuration for station '{self.station_name}' not found in {config_filepath}.")
+            return Path(station_config['db_dirpath'])
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Configuration file {config_filepath} not found.")
+        except yaml.YAMLError as e:
+            raise ValueError(f"Error parsing the YAML configuration file: {e}")
 
     def _load_station_module(self):
         """
