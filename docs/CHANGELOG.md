@@ -1,3 +1,7 @@
+## [0.24.2]
+- Fixed missing platform_type for Svartberget platforms
+- Added phenocam 3 tho Svartberget location DEG_MIR
+
 ## [0.23.1]
 - Improved the station class so it can autoload the database based on the station_name 
 

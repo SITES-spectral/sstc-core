@@ -10,8 +10,6 @@
 
 ## Contributors
 
-* Lars Eklundh, Professor | Lund University, Department of Physical Geography and Ecosystem Science | SITES spectral Coordinator
-
 * José M. Beltrán-Abaunza, PhD | Lund University, Department of Physical Geography and Ecosystem Science | SITES spectral Research Engineer
 
-* Shangharsha Thapa | Lund University, Department of Physical Geography and Ecosystem Science
+* Lars Eklundh, Professor | Lund University, Department of Physical Geography and Ecosystem Science | SITES spectral Coordinator

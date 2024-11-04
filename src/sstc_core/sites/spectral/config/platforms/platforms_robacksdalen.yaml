@@ -20,7 +20,7 @@ PhenoCams:
         'color': [0, 255, 0],
         'thickness': 7}    
     platform_id: P_RBD_AGR_1
-    platform_type: PhenoCam    
+    platform_type: PhenoCam
     sftp_dirpath: /robacksdalen/data/PhenoCam/RBD-AGR-P01
     station_acronym: RBD
     station_name: Röbäcksdalen
@@ -70,7 +70,7 @@ PhenoCams:
         'color': [0, 255, 0],
         'thickness': 7}    
     platform_id: P_RBD_AGR_2
-    platform_type: PhenoCam    
+    platform_type: PhenoCam
     sftp_dirpath: /robacksdalen/data/PhenoCam/RBD-AGR-P02
     station_acronym: RBD
     station_name: Röbäcksdalen

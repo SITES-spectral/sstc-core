@@ -33,7 +33,7 @@ PhenoCams:
           'legacy_platform': 'SVB-FOR-P01'
           }    
     platform_id: P_SVB-FOR-1
-    platform_type: PhenoCam    
+    platform_type: PhenoCam  
     sftp_dirpath: /svartberget/data/PhenoCam/SVB-FOR-P01
     station_acronym: SVB
     station_name: Svartberget
@@ -93,6 +93,7 @@ PhenoCams:
           }
     shared_infrastructure: SITES Spectral
     platform_id: P_DEG_MIR_1
+    platform_type: PhenoCam
     deployment_date: 20XX
     status: Active
     legacy_acronym: DEG-MIR-P01    
@@ -163,6 +164,7 @@ PhenoCams:
           }
     shared_infrastructure: ICOS
     platform_id: P_DEG_MIR_2
+    platform_type: PhenoCam
     status: Active
     deployment_date: 2016    
     legacy_acronym: DEG-MIR-P02
@@ -232,6 +234,7 @@ PhenoCams:
           'legacy_platform': ''
           }
     platform_id: P_DEG_MIR_3
+    platform_type: PhenoCam
     shared_infrastructure: SITES Spectral    
     deployment_date: 2024
     status: Active

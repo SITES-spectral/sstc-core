@@ -19,4 +19,5 @@ DEG_MIR:
     PhenoCams:
       - 'P_DEG_MIR_1'
       - 'P_DEG_MIR_2'
+      - 'P_DEG_MIR_3'
     
