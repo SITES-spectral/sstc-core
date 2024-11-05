@@ -1,7 +1,7 @@
 iflag_disable_for_processing: 
   value: False
   penalty_value: 1
-iflag_bluish_dominated:
+iflag_bluish_dominated:    # v0.6-2024
   value: False
   penalty_value: 1
 iflag_sunny: 
@@ -28,7 +28,7 @@ iflag_clouds:
 iflag_fog:
   value: False
   penalty_value: 1
-iflag_burned:
+iflag_burned:      # v0.6-2024
   value: False
   penalty_value: 1
 iflag_heavy_rain: 
@@ -91,6 +91,12 @@ iflag_mount_loose:
 iflag_camera_error:
   value: False
   penalty_value: 1
+iflag_wet_patches:      # v0.7-2024
+  value: False
+  penalty_value: 0.75
+iflag_land_management_practice:    # v0.7-2024
+  value: False
+  penalty_value: 0.0
 iflag_other: 
   value: False
   penalty_value: 1

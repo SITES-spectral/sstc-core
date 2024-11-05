@@ -1,14 +1,21 @@
-## [0.24.2]
+[0.24.0]
+- updated iflags to v0.7-2024 by adding two more individual flags: `iflag_wet_patches` and `iflag_land_management_practice`
+
+[0.23.2]
+
 - Fixed missing platform_type for Svartberget platforms
 - Added phenocam 3 tho Svartberget location DEG_MIR
 
-## [0.23.1]
+[0.23.1]
+
 - Improved the station class so it can autoload the database based on the station_name 
 
-## [0.23.0]
+[0.23.0]
+
 - updated platforms schema to `0.8-2024. Added `legacy_rois`, `image_dimensions`, `deployment_date`, `shared_infrastructure: ICOS ` and `updated` & `comments` in the dictionary of rois among other extra platform's parameters
 
-## [0.22.1]
+ [0.22.1]
+
 - Added Machine learning for the `agents.SnowDetectionAgent`
 - Added `io_tools.filter_with_substring`  # decorator
 - Added `io_tools.list_image_files`
@@ -18,14 +25,17 @@
 - Added `io_tools.get_csv_filepaths`
 - Added `io_tools.organize_and_copy_images_with_paths_by_year`
 
-## [0.22.0]
+[0.22.0]
+
 - added `utils.extract_creation_date` replacing `get_image_dates`
 - Intruduced `sites.spectral.agents` module
 
-## [0.21.2]
+[0.21.2]
+
 - Added updated locations and platforms
 
-## [0.21.1]
+[0.21.1]
+
 - added `utils.ensure_directory_exists`
 - Added asa.locations and asa.platforms
 
