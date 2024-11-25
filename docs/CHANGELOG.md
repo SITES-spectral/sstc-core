@@ -1,4 +1,11 @@
+# Change log
+
+[0.24.1]
+
+- Location and Platform updates for Skogaryd with dummy data to be able to work.
+
 [0.24.0]
+
 - updated iflags to v0.7-2024 by adding two more individual flags: `iflag_wet_patches` and `iflag_land_management_practice`
 
 [0.23.2]

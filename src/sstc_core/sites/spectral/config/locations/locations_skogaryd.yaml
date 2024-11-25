@@ -9,6 +9,7 @@ CEM01_FOR:
   platforms: 
     PhenoCams:
       - 'P_CEM01_FOR_1'
+
 CEM02_FOR:
   location_id: 'CEM02_FOR'
   description: 'Skogaryd Central, Mast 2'
@@ -37,16 +38,44 @@ ERS_LAK:
   platforms: 
     PhenoCams:
       - 'P_ERS-LAK_1'
-FOL_WET:
-  location_id: 'FOL_WET'
+
+#FOL_WET:
+#  location_id: 'FOL_WET'
+#  description: ''
+#  legacy_acronym: 'FOL-WET'
+#  is_active: False
+#  mantainance_status: active
+#  platforms: 
+#    PhenoCams:
+#      - 'P_FOL_WET_1'
+#      - 'P_FOL_WET_2'
+
+MAD_FOR:
+  location_id: 'MAD_FOR'
   description: ''
-  legacy_acronym: 'FOL-WET'
-  is_active: False
+  legacy_acronym: 'MAD-FOR'
+  is_active: True
   mantainance_status: active
   platforms: 
     PhenoCams:
-      - 'P_FOL_WET_1'
-      - 'P_FOL_WET_2'
+      - 'P_MAD_FOR_1'
+      
+MAD_WET:
+  location_id: 'MAD_WET'
+  description: ''
+  legacy_acronym: 'MAD-WET'
+  is_active: True
+  mantainance_status: active
+  platforms: 
+    PhenoCams:
+      - 'P_MAD_WET_1'
 
-
-
+#STM_FOR:
+#  location_id: 'STM_FOR'
+#  description: ''
+#  legacy_acronym: 'STM-FOR'
+#  is_active: True
+#  mantainance_status: active
+#  platforms: 
+#    PhenoCams:
+#      - 'P_STM_FOR_1'

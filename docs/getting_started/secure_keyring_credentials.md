@@ -55,6 +55,10 @@ password = 'your_password'
 # Store credentials in keyring
 keyring.set_password(service_name, username, password)
 
+import keyring
+
+keyring.set_password('sftp', 'port', '22')
+
 # Retrieve credentials from keyring
 retrieved_password = keyring.get_password(service_name, username)
 
