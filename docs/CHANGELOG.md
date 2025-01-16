@@ -1,5 +1,10 @@
 # Change log
 
+[0.25.1.0]
+
+- Updated iflags v0.8-2025 adding darwing core DwC category and descriptions.
+
+
 [0.24.1]
 
 - Location and Platform updates for Skogaryd with dummy data to be able to work.

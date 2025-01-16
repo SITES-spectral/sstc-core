@@ -1,0 +1,36 @@
+general_iflags_categories:
+  - name: "Illumination & Weather"
+    description: "Flags related to environmental weather conditions or light variations affecting image quality."
+  
+  - name: "Adverse Weather"
+    description: "Flags indicating harmful or disruptive weather conditions that might negatively impact image quality or camera functionality."
+
+  - name: "Environmental Damage & Changes"
+    description: "Flags related to long-term changes or disturbances in the landscape, such as fires, fallen trees, or environmental degradation."
+
+  - name: "Obstructions & Environmental Features"
+    description: "Flags related to physical obstacles or features (such as wildlife or other visible obstructions) that block or distort the camera's view."
+
+  - name: "Camera Functionality & Integrity"
+    description: "Flags indicating potential errors, malfunctions, or issues with camera operation that might degrade the quality of captured images."
+
+  - name: "Image Quality"
+    description: "Flags specifically related to the quality of images, including exposure, clarity, glare, or color distortion."
+
+  - name: "Land Management Practices"
+    description: "Flags related to human interventions or actions in land management, such as processing flags or specific land-use practices impacting the camera data."
+
+  - name: "Vegetation & Phenology"
+    description: "Flags related to changes in vegetation and phenological stages, such as green-up or leaf fall events, helping track the timing of biological changes in the landscape."
+
+iflags_categories:
+  Data Validity and Quality: For processing and general data quality flags.
+  Meteorology and Atmospheric Conditions: Weather-related conditions affecting observation (e.g., clouds, fog, or rain).
+  Illumination and Shadows: Flags dealing with brightness, glare, or shadows impacting image data.
+  Phenology: Seasonally driven changes in vegetation and ecosystem dynamics.
+  Disturbance: Natural or human-induced alterations, such as fire, burned areas, wetness, fallen trees, etc.
+  Instrument Issues: Technical problems with the camera or its mounting.
+  Scene Visibility: Obstructions caused by transient objects, such as birds or insects, snow, water drops or ice formations on the lens.
+  Anthropogenic Activity: Human interventions, such as land-use or agricultural practices.
+  Solar Geometry: Solar angle and its impact on observations.
+  Other: Catch-all for unspecified or miscellaneous conditions.
