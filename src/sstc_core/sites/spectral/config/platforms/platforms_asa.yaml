@@ -46,7 +46,7 @@ PhenoCams:
         L2_RGB_CIMV: 'Data processing level 2 Red Green Blue (RGB) Composite Image Mean Values, daily'
         L2_GCC_CIMV: 'Data processing level 2 Green Chromatic Coordinates  (GCC) Composite Image Mean Values, daily'
         L2_RCC_CIMV: 'Data processing level 2 Red Chromatic Coordinates  (RCC) Composite Image Mean Values, daily' 
-        L3_ROI_TS: 'Data processing level 3 Phenocam - Green and Red Chromatic Coordinates time series of the RGB Composite Image of Mean Values - Region of Interest (ROI) Mean and Standard Deviation, daily values with QFLAG values and individual flags assesment per ROI'
+        L3_ROI_TS: 'Data processing level 3 Phenocam - daily ROI time-series products, including Green and Red Chromatic Coordinates with individual flags assesment and visually assesed snow cover presence in more than 10% or the region of interest'
       'DATA PRODUCT TYPE': 'L1_QFI'
       'DATA PRODUCT DESCRIPTION': 'Data Processing Level 1 Quality Filtered Images'
       'REFERENCES': 'Richardson, Andrew D., Koen Hufkens, Tom Milliman, Donald M. Aubrecht, Min Chen, Josh M. Gray, Miriam R. Johnston et al. "Tracking vegetation phenology across diverse North American biomes using PhenoCam imagery." Scientific data 5 (2018): 180028.'
