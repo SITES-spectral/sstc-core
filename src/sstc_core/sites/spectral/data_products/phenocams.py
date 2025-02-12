@@ -976,6 +976,8 @@ def calculate_roi_weighted_means_and_stds_per_record(
 
                 if weight > 0:
                     num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
+                    if num_pixels is None:
+                        num_pixels = 0
                     if num_pixels > 0:
                         red_mean = record.get(f"L2_{roi}_SUM_Red", 0) / num_pixels
                         green_mean = record.get(f"L2_{roi}_SUM_Green", 0) / num_pixels
