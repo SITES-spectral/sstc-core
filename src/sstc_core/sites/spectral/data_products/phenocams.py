@@ -787,6 +787,8 @@ def process_records_for_roi(
                 
             weight = 1 if overwrite_weight else calculate_final_weights_for_rois(record, rois_list, iflags_penalties_dict).get(roi, 1)
             num_pixels = record.get(f"L2_{roi}_num_pixels", 0)
+            if num_pixels is None:
+                num_pixels = 0
             if num_pixels > 0:
                 red_mean = record.get(f"L2_{roi}_SUM_Red", 0) / num_pixels
                 green_mean = record.get(f"L2_{roi}_SUM_Green", 0) / num_pixels
